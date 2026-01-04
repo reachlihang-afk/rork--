@@ -60,6 +60,8 @@
     outfitChangeHistoryCleared: '换装历史已清空',
     original: '原图',
     result: '结果',
+    original: '原图',
+    result: '结果',
     similarityScore: '相似度评分',
     referencePhotosLabel: '自拍照:',
     facialSimilarity: '面部相似度',

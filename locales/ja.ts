@@ -60,6 +60,8 @@
     outfitChangeHistoryCleared: '着替え履歴をクリアしました',
     original: '元の画像',
     result: '結果',
+    original: '元の画像',
+    result: '結果',
     similarityScore: '類似度スコア',
     referencePhotosLabel: '自撮り写真：',
     facialSimilarity: '顔の類似度',

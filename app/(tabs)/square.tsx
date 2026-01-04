@@ -586,65 +586,125 @@ export default function SquareScreen() {
             </View>
           )}
 
-          <View style={styles.imageContainer}>
-            <View style={styles.imageWrapper}>
-              <Text style={styles.imageLabel} numberOfLines={1}>{t('square.referencePhoto')}</Text>
-              <TouchableOpacity onPress={() => handleImagePress(post.referencePhotoUri, 'reference', post.id)} activeOpacity={0.9}>
-                <Image source={{ uri: post.referencePhotoUri }} style={styles.postImage} />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.imageWrapper}>
-              <View style={styles.imageLabelRow}>
-                <Text style={styles.imageLabel} numberOfLines={1}>{t('square.verifiedPhoto')}</Text>
-                {post.photoSource === 'library' && (
-                  <TouchableOpacity
-                    testID={`square-library-warning-${post.id}`}
-                    onPress={() => Alert.alert(t('common.tip'), t('result.libraryPhotoWarning'))}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                    activeOpacity={0.7}
-                    style={styles.libraryWarningIconButton}
-                  >
-                    <AlertTriangle size={16} color="#F59E0B" />
+          {post.postType === 'verification' && post.referencePhotoUri && post.editedPhotoUri && (
+            <>
+              <View style={styles.imageContainer}>
+                <View style={styles.imageWrapper}>
+                  <Text style={styles.imageLabel} numberOfLines={1}>{t('square.referencePhoto')}</Text>
+                  <TouchableOpacity onPress={() => handleImagePress(post.referencePhotoUri!, 'reference', post.id)} activeOpacity={0.9}>
+                    <Image source={{ uri: post.referencePhotoUri }} style={styles.postImage} />
                   </TouchableOpacity>
+                </View>
+                <View style={styles.imageWrapper}>
+                  <View style={styles.imageLabelRow}>
+                    <Text style={styles.imageLabel} numberOfLines={1}>{t('square.verifiedPhoto')}</Text>
+                    {post.photoSource === 'library' && (
+                      <TouchableOpacity
+                        testID={`square-library-warning-${post.id}`}
+                        onPress={() => Alert.alert(t('common.tip'), t('result.libraryPhotoWarning'))}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        activeOpacity={0.7}
+                        style={styles.libraryWarningIconButton}
+                      >
+                        <AlertTriangle size={16} color="#F59E0B" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  <TouchableOpacity onPress={() => handleImagePress(post.editedPhotoUri!, 'verified', post.id)} activeOpacity={0.9}>
+                    <Image source={{ uri: post.editedPhotoUri }} style={styles.postImage} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.resultInfo}>
+                {post.credibilityScore !== undefined && (
+                  <View style={styles.scoreContainer}>
+                    <View style={styles.scoreInnerContainer}>
+                      <Text style={styles.scoreLabel} numberOfLines={1}>{t('square.aiScore')}</Text>
+                      <View style={styles.scoreRow}>
+                        <Text style={[styles.scoreValue, { color: getScoreColor(post.credibilityScore) }]}>{formatScore(post.credibilityScore)}</Text>
+                        <Text style={[styles.scoreDescription, { color: getScoreColor(post.credibilityScore) }]} numberOfLines={1}>
+                          {getScoreDescription(post.credibilityScore)}
+                        </Text>
+                      </View>
+                      <View style={styles.userRatingContainer}>
+                        {post.userRatings?.length > 0 && (() => {
+                          const avgRating = getAverageUserRating(post.id);
+                          return avgRating !== null ? (
+                            <>
+                              <Text style={styles.userRatingLabel}>{t('square.userRating')}</Text>
+                              <Text style={[styles.userRatingValue, { color: getScoreColor(avgRating) }]}>
+                                {formatScore(avgRating)} <Text style={styles.ratingCount}>({post.userRatings?.length || 0})</Text>
+                              </Text>
+                            </>
+                          ) : null;
+                        })()}
+                      </View>
+                    </View>
+                  </View>
+                )}
+                {post.verdict && (
+                  <View style={[styles.verdictBadge, { backgroundColor: getVerdictColor(post.verdict) + '20' }]}>
+                    <Text style={[styles.verdictText, { color: getVerdictColor(post.verdict) }]} numberOfLines={1}>
+                      {getVerdictText(post.verdict)}
+                    </Text>
+                  </View>
                 )}
               </View>
-              <TouchableOpacity onPress={() => handleImagePress(post.editedPhotoUri, 'verified', post.id)} activeOpacity={0.9}>
-                <Image source={{ uri: post.editedPhotoUri }} style={styles.postImage} />
-              </TouchableOpacity>
-            </View>
-          </View>
+            </>
+          )}
 
-          <View style={styles.resultInfo}>
-            <View style={styles.scoreContainer}>
-              <View style={styles.scoreInnerContainer}>
-                <Text style={styles.scoreLabel} numberOfLines={1}>{t('square.aiScore')}</Text>
-                <View style={styles.scoreRow}>
-                  <Text style={[styles.scoreValue, { color: getScoreColor(post.credibilityScore) }]}>{formatScore(post.credibilityScore)}</Text>
-                  <Text style={[styles.scoreDescription, { color: getScoreColor(post.credibilityScore) }]} numberOfLines={1}>
-                    {getScoreDescription(post.credibilityScore)}
-                  </Text>
+          {post.postType === 'imageSource' && post.imageUri && (
+            <View style={styles.imageSourceContainer}>
+              <TouchableOpacity onPress={() => handleImagePress(post.imageUri!, 'source', post.id)} activeOpacity={0.9}>
+                <Image source={{ uri: post.imageUri }} style={styles.singleImage} />
+              </TouchableOpacity>
+              {post.entityInfo && (
+                <View style={styles.entityInfoCard}>
+                  <Text style={styles.entityName}>{post.entityInfo.name}</Text>
+                  {post.entityInfo.introduction && (
+                    <Text style={styles.entityIntro} numberOfLines={3}>{post.entityInfo.introduction}</Text>
+                  )}
                 </View>
-                <View style={styles.userRatingContainer}>
-                  {post.userRatings?.length > 0 && (() => {
-                    const avgRating = getAverageUserRating(post.id);
-                    return avgRating !== null ? (
-                      <>
-                        <Text style={styles.userRatingLabel}>{t('square.userRating')}</Text>
-                        <Text style={[styles.userRatingValue, { color: getScoreColor(avgRating) }]}>
-                          {formatScore(avgRating)} <Text style={styles.ratingCount}>({post.userRatings?.length || 0})</Text>
-                        </Text>
-                      </>
-                    ) : null;
-                  })()}
+              )}
+              {post.keywords && post.keywords.length > 0 && (
+                <View style={styles.keywordsContainer}>
+                  {post.keywords.slice(0, 5).map((keyword, index) => (
+                    <View key={index} style={styles.keywordChip}>
+                      <Text style={styles.keywordText}>{keyword}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
+
+          {post.postType === 'outfitChange' && post.originalImageUri && post.resultImageUri && (
+            <View style={styles.outfitChangeContainer}>
+              <View style={styles.outfitImagesRow}>
+                <View style={styles.outfitImageWrapper}>
+                  <Text style={styles.imageLabel} numberOfLines={1}>{t('history.original')}</Text>
+                  <TouchableOpacity onPress={() => handleImagePress(post.originalImageUri!, 'original', post.id)} activeOpacity={0.9}>
+                    <Image source={{ uri: post.originalImageUri }} style={styles.outfitImage} />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.arrowContainer}>
+                  <Text style={styles.arrowText}>→</Text>
+                </View>
+                <View style={styles.outfitImageWrapper}>
+                  <Text style={styles.imageLabel} numberOfLines={1}>{t('history.result')}</Text>
+                  <TouchableOpacity onPress={() => handleImagePress(post.resultImageUri!, 'result', post.id)} activeOpacity={0.9}>
+                    <Image source={{ uri: post.resultImageUri }} style={styles.outfitImage} />
+                  </TouchableOpacity>
                 </View>
               </View>
+              {post.templateName && (
+                <View style={styles.templateBadge}>
+                  <Text style={styles.templateBadgeText}>👔 {post.templateName}</Text>
+                </View>
+              )}
             </View>
-            <View style={[styles.verdictBadge, { backgroundColor: getVerdictColor(post.verdict) + '20' }]}>
-              <Text style={[styles.verdictText, { color: getVerdictColor(post.verdict) }]} numberOfLines={1}>
-                {getVerdictText(post.verdict)}
-              </Text>
-            </View>
-          </View>
+          )}
 
           <View style={styles.actionsRow}>
             <TouchableOpacity
@@ -1602,6 +1662,93 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#0F172A',
     lineHeight: 20,
+  },
+  imageSourceContainer: {
+    marginBottom: 8,
+  },
+  singleImage: {
+    width: '100%',
+    height: 400,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+  },
+  entityInfoCard: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  entityName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0F172A',
+    marginBottom: 6,
+  },
+  entityIntro: {
+    fontSize: 14,
+    color: '#64748B',
+    lineHeight: 20,
+  },
+  keywordsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 12,
+  },
+  keywordChip: {
+    backgroundColor: '#E0F2FE',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  keywordText: {
+    fontSize: 13,
+    color: '#0284C7',
+    fontWeight: '500',
+  },
+  outfitChangeContainer: {
+    marginBottom: 8,
+  },
+  outfitImagesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  outfitImageWrapper: {
+    flex: 1,
+  },
+  outfitImage: {
+    width: '100%',
+    height: 280,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+  },
+  arrowContainer: {
+    width: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  arrowText: {
+    fontSize: 24,
+    color: '#0066FF',
+    fontWeight: '700',
+  },
+  templateBadge: {
+    marginTop: 12,
+    alignSelf: 'flex-start',
+    backgroundColor: '#F0F9FF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+  },
+  templateBadgeText: {
+    fontSize: 14,
+    color: '#0284C7',
+    fontWeight: '600',
   },
 });
 

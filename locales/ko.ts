@@ -60,6 +60,8 @@
     outfitChangeHistoryCleared: '의상 변경 기록이 삭제되었습니다',
     original: '원본',
     result: '결과',
+    original: '원본',
+    result: '결과',
     similarityScore: '유사도 점수',
     referencePhotosLabel: '셀카 사진:',
     facialSimilarity: '얼굴 유사도',

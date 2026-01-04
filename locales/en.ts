@@ -60,6 +60,8 @@
     outfitChangeHistoryCleared: 'Outfit change history cleared',
     original: 'Original',
     result: 'Result',
+    original: 'Original',
+    result: 'Result',
     similarityScore: 'Similarity Score',
     referencePhotosLabel: 'Selfie Photo:',
     facialSimilarity: 'Facial Similarity',
