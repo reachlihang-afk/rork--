@@ -66,3 +66,12 @@ export interface ImageSourceHistory {
   analysis: ImageSourceAnalysis;
   createdAt: number;
 }
+
+export interface OutfitChangeHistory {
+  id: string;
+  originalImageUri: string;
+  resultImageUri: string;
+  templateId: string;
+  templateName: string;
+  createdAt: number;
+}

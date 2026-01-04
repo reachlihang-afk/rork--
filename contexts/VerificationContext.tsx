@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import createContextHook from '@nkzw/create-context-hook';
 import { useEffect, useState } from 'react';
-import { ReferencePhoto, VerificationHistory, VerificationResult, ImageSourceHistory, ImageSourceAnalysis, PhotoMetadata } from '@/types/verification';
+import { ReferencePhoto, VerificationHistory, VerificationResult, ImageSourceHistory, ImageSourceAnalysis, PhotoMetadata, OutfitChangeHistory } from '@/types/verification';
 import { generateObject } from '@rork-ai/toolkit-sdk';
 import { z } from 'zod';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -15,6 +15,7 @@ const getStorageKeys = (userId: string) => ({
   REFERENCE_PHOTOS: `reference_photos_${userId}`,
   VERIFICATION_HISTORY: `verification_history_${userId}`,
   IMAGE_SOURCE_HISTORY: `image_source_history_${userId}`,
+  OUTFIT_CHANGE_HISTORY: `outfit_change_history_${userId}`,
 });
 
 export const [VerificationProvider, useVerification] = createContextHook(() => {
@@ -22,6 +23,7 @@ export const [VerificationProvider, useVerification] = createContextHook(() => {
   const [referencePhotos, setReferencePhotos] = useState<ReferencePhoto[]>([]);
   const [verificationHistory, setVerificationHistory] = useState<VerificationHistory[]>([]);
   const [imageSourceHistory, setImageSourceHistory] = useState<ImageSourceHistory[]>([]);
+  const [outfitChangeHistory, setOutfitChangeHistory] = useState<OutfitChangeHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deviceId, setDeviceId] = useState<string>('');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -39,6 +41,7 @@ export const [VerificationProvider, useVerification] = createContextHook(() => {
       setReferencePhotos([]);
       setVerificationHistory([]);
       setImageSourceHistory([]);
+      setOutfitChangeHistory([]);
       setIsLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -65,10 +68,11 @@ export const [VerificationProvider, useVerification] = createContextHook(() => {
       const id = await getOrCreateDeviceId();
       setDeviceId(id);
       
-      const [photosData, historyData, imageSourceData] = await Promise.all([
+      const [photosData, historyData, imageSourceData, outfitChangeData] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.REFERENCE_PHOTOS),
         AsyncStorage.getItem(STORAGE_KEYS.VERIFICATION_HISTORY),
         AsyncStorage.getItem(STORAGE_KEYS.IMAGE_SOURCE_HISTORY),
+        AsyncStorage.getItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY),
       ]);
 
       if (photosData) {
@@ -151,6 +155,24 @@ export const [VerificationProvider, useVerification] = createContextHook(() => {
           await AsyncStorage.removeItem(STORAGE_KEYS.IMAGE_SOURCE_HISTORY);
           setImageSourceHistory([]);
         }
+      }
+
+      if (outfitChangeData) {
+        try {
+          const parsed = JSON.parse(outfitChangeData);
+          if (Array.isArray(parsed)) {
+            setOutfitChangeHistory(parsed);
+          } else {
+            await AsyncStorage.removeItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY);
+            setOutfitChangeHistory([]);
+          }
+        } catch (error) {
+          console.error('Failed to parse outfit change history:', error);
+          await AsyncStorage.removeItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY);
+          setOutfitChangeHistory([]);
+        }
+      } else {
+        setOutfitChangeHistory([]);
       }
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -676,10 +698,53 @@ Reference photos (${limitedReferencePhotos.length}):`,
     await AsyncStorage.removeItem(STORAGE_KEYS.IMAGE_SOURCE_HISTORY);
   };
 
+  const addOutfitChangeHistory = async (
+    originalImageUri: string,
+    resultImageUri: string,
+    templateId: string,
+    templateName: string
+  ): Promise<string> => {
+    if (!user?.userId) {
+      throw new Error('User not logged in');
+    }
+    const STORAGE_KEYS = getStorageKeys(user.userId);
+    const historyItem: OutfitChangeHistory = {
+      id: `outfit_${Date.now()}`,
+      originalImageUri,
+      resultImageUri,
+      templateId,
+      templateName,
+      createdAt: Date.now(),
+    };
+    const updated = [historyItem, ...outfitChangeHistory];
+    setOutfitChangeHistory(updated);
+    await AsyncStorage.setItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY, JSON.stringify(updated));
+    return historyItem.id;
+  };
+
+  const deleteOutfitChange = async (outfitChangeId: string): Promise<{ success: boolean; message?: string }> => {
+    if (!user?.userId) {
+      return { success: false, message: 'User not logged in' };
+    }
+    const STORAGE_KEYS = getStorageKeys(user.userId);
+    const updated = outfitChangeHistory.filter(item => item.id !== outfitChangeId);
+    setOutfitChangeHistory(updated);
+    await AsyncStorage.setItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY, JSON.stringify(updated));
+    return { success: true };
+  };
+
+  const clearOutfitChangeHistory = async () => {
+    if (!user?.userId) return;
+    const STORAGE_KEYS = getStorageKeys(user.userId);
+    setOutfitChangeHistory([]);
+    await AsyncStorage.removeItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY);
+  };
+
   return {
     referencePhotos,
     verificationHistory,
     imageSourceHistory,
+    outfitChangeHistory,
     isLoading,
     deviceId,
     addReferencePhoto,
@@ -692,5 +757,8 @@ Reference photos (${limitedReferencePhotos.length}):`,
     addImageSourceHistory,
     deleteImageSource,
     clearImageSourceHistory,
+    addOutfitChangeHistory,
+    deleteOutfitChange,
+    clearOutfitChangeHistory,
   };
 });

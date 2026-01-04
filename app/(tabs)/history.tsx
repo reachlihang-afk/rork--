@@ -6,12 +6,12 @@ import { StyleSheet, Text, View, FlatList, TouchableOpacity, Modal, ScrollView, 
 import { useVerification } from '@/contexts/VerificationContext';
 import { useTranslation } from 'react-i18next';
 
-type TabType = 'verification' | 'imageSource';
+type TabType = 'verification' | 'imageSource' | 'outfitChange';
 
 export default function HistoryScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { verificationHistory, imageSourceHistory, clearHistory, clearImageSourceHistory, deleteVerification, deleteImageSource } = useVerification();
+  const { verificationHistory, imageSourceHistory, outfitChangeHistory, clearHistory, clearImageSourceHistory, clearOutfitChangeHistory, deleteVerification, deleteImageSource, deleteOutfitChange } = useVerification();
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('verification');
 
@@ -45,6 +45,24 @@ export default function HistoryScreen() {
           onPress: async () => {
             await clearImageSourceHistory();
             Alert.alert(t('common.success'), t('history.imageSourceHistoryCleared'));
+          },
+        },
+      ]
+    );
+  };
+
+  const handleClearOutfitChangeHistory = () => {
+    Alert.alert(
+      t('history.clearHistory'),
+      t('history.clearOutfitChangeConfirm'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('history.clearHistory'),
+          style: 'destructive',
+          onPress: async () => {
+            await clearOutfitChangeHistory();
+            Alert.alert(t('common.success'), t('history.outfitChangeHistoryCleared'));
           },
         },
       ]
@@ -269,6 +287,93 @@ export default function HistoryScreen() {
     );
   };
 
+  const handleDeleteOutfitChange = (itemId: string) => {
+    Alert.alert(
+      t('history.deleteRecord'),
+      t('history.deleteRecordConfirm'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            await deleteOutfitChange(itemId);
+          },
+        },
+      ]
+    );
+  };
+
+  const renderOutfitChangeHistory = () => {
+    if (outfitChangeHistory.length === 0) {
+      return (
+        <View style={styles.emptyContainer}>
+          <View style={styles.emptyIcon}>
+            <Clock size={48} color="#94A3B8" />
+          </View>
+          <Text style={styles.emptyTitle}>{t('history.noOutfitChangeHistory')}</Text>
+          <Text style={styles.emptyText}>{t('history.noOutfitChangeHistoryDesc')}</Text>
+        </View>
+      );
+    }
+
+    return (
+      <>
+        <View style={styles.headerBar}>
+          <Text style={styles.headerTitle}>{t('history.outfitChangeHistory')}</Text>
+          <TouchableOpacity style={styles.clearButton} onPress={handleClearOutfitChangeHistory}>
+            <Trash2 size={18} color="#DC2626" />
+            <Text style={styles.clearButtonText} numberOfLines={1}>{t('history.clearHistory')}</Text>
+          </TouchableOpacity>
+        </View>
+        <FlatList
+          data={outfitChangeHistory}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          renderItem={({ item }) => (
+            <View style={styles.cardWrapper}>
+              <View style={styles.outfitCard}>
+                <View style={styles.outfitImageRow}>
+                  <View style={styles.outfitImageContainer}>
+                    <Image 
+                      source={{ uri: item.originalImageUri }}
+                      style={styles.outfitImage}
+                      contentFit="cover"
+                    />
+                    <Text style={styles.outfitImageLabel}>{t('history.original')}</Text>
+                  </View>
+                  <Text style={styles.arrowText}>→</Text>
+                  <View style={styles.outfitImageContainer}>
+                    <Image 
+                      source={{ uri: item.resultImageUri }}
+                      style={styles.outfitImage}
+                      contentFit="cover"
+                    />
+                    <Text style={styles.outfitImageLabel}>{t('history.result')}</Text>
+                  </View>
+                </View>
+                <View style={styles.outfitInfo}>
+                  <Text style={styles.outfitTemplate}>{item.templateName}</Text>
+                  <Text style={styles.dateText}>
+                    {new Date(item.createdAt).toLocaleString('zh-CN')}
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={styles.deleteCornerButton}
+                onPress={() => handleDeleteOutfitChange(item.id)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                activeOpacity={0.7}
+              >
+                <Trash2 size={14} color="#DC2626" />
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+      </>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.tabBar}>
@@ -286,6 +391,14 @@ export default function HistoryScreen() {
         >
           <Text style={[styles.tabText, activeTab === 'imageSource' && styles.activeTabText]} numberOfLines={1}>
             {t('history.imageSourceHistory')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'outfitChange' && styles.activeTab]}
+          onPress={() => setActiveTab('outfitChange')}
+        >
+          <Text style={[styles.tabText, activeTab === 'outfitChange' && styles.activeTabText]} numberOfLines={1}>
+            {t('history.outfitChangeHistory')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -315,7 +428,7 @@ export default function HistoryScreen() {
         </Pressable>
       </Modal>
 
-      {activeTab === 'verification' ? renderVerificationHistory() : renderImageSourceHistory()}
+      {activeTab === 'verification' ? renderVerificationHistory() : activeTab === 'imageSource' ? renderImageSourceHistory() : renderOutfitChangeHistory()}
     </View>
   );
 }
@@ -680,5 +793,55 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 12,
+  },
+  outfitCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    shadowColor: '#0066FF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 102, 255, 0.08)',
+  },
+  outfitImageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    marginBottom: 12,
+  },
+  outfitImageContainer: {
+    alignItems: 'center',
+  },
+  outfitImage: {
+    width: 120,
+    height: 160,
+    borderRadius: 12,
+    backgroundColor: '#E2E8F0',
+    marginBottom: 8,
+  },
+  outfitImageLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  arrowText: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#0066FF',
+    marginHorizontal: 8,
+  },
+  outfitInfo: {
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    paddingTop: 12,
+  },
+  outfitTemplate: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 4,
   },
 });

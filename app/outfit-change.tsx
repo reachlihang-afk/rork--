@@ -4,11 +4,12 @@ import { useRouter, Stack } from 'expo-router';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
-import { File, Paths } from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 import { Shirt, Download } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useCoin } from '@/contexts/CoinContext';
+import { useVerification } from '@/contexts/VerificationContext';
 
 type Template = {
   id: string;
@@ -88,6 +89,7 @@ export default function OutfitChangeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { coinBalance, deductCoins } = useCoin();
+  const { addOutfitChangeHistory } = useVerification();
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -144,15 +146,8 @@ export default function OutfitChangeScreen() {
         reader.readAsDataURL(blob);
       });
     } else {
-      const file = new File(uri);
-      const uint8Array = await file.bytes();
-      
-      let binary = '';
-      const len = uint8Array.byteLength;
-      for (let i = 0; i < len; i++) {
-        binary += String.fromCharCode(uint8Array[i]);
-      }
-      return btoa(binary);
+      const base64String = await FileSystem.readAsStringAsync(uri, FileSystem.EncodingType.Base64);
+      return base64String;
     }
   };
 
@@ -195,6 +190,18 @@ export default function OutfitChangeScreen() {
       setResultUri(generatedImageUri);
       await deductCoins(COST_PER_GENERATION);
       
+      // 保存到历史记录
+      try {
+        await addOutfitChangeHistory(
+          imageUri,
+          generatedImageUri,
+          selectedTemplate.id,
+          selectedTemplate.name
+        );
+      } catch (historyError) {
+        console.error('Failed to save to history:', historyError);
+      }
+      
     } catch (error) {
       console.error('Outfit change error:', error);
       Alert.alert(t('common.error'), t('outfitChange.generationFailed'));
@@ -225,18 +232,27 @@ export default function OutfitChangeScreen() {
           return;
         }
 
-        const filename = `outfit-change-${Date.now()}.png`;
-        const file = new File(Paths.cache, filename);
+        const filename = `outfit-change-${Date.now()}.jpg`;
+        const fileUri = `${FileSystem.cacheDirectory}${filename}`;
         
-        const response = await fetch(resultUri);
-        const blob = await response.blob();
-        const arrayBuffer = await blob.arrayBuffer();
-        const uint8Array = new Uint8Array(arrayBuffer);
-        
-        await file.write(uint8Array);
+        // 如果是 base64 数据，直接写入文件
+        if (resultUri.startsWith('data:')) {
+          const base64Data = resultUri.split(',')[1];
+          await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+        } else {
+          // 如果是普通 URL，下载文件
+          await FileSystem.downloadAsync(resultUri, fileUri);
+        }
 
-        const asset = await MediaLibrary.createAssetAsync(file.uri);
-        await MediaLibrary.createAlbumAsync('OutfitChange', asset, false);
+        const asset = await MediaLibrary.createAssetAsync(fileUri);
+        
+        try {
+          await MediaLibrary.createAlbumAsync('OutfitChange', asset, false);
+        } catch (e) {
+          // 相册已存在，忽略错误
+        }
         
         Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
       }
@@ -255,11 +271,16 @@ export default function OutfitChangeScreen() {
           title: t('outfitChange.title'),
           headerStyle: { backgroundColor: '#fff' },
           headerRight: () => (
-            <View style={styles.headerRightContainer}>
+            <TouchableOpacity 
+              style={styles.headerRightContainer}
+              onPress={() => router.push('/recharge' as any)}
+              activeOpacity={0.7}
+            >
               <View style={styles.coinBadge}>
-                <Text style={styles.coinText}>💰 {coinBalance}</Text>
+                <Text style={styles.coinIcon}>💰</Text>
+                <Text style={styles.coinText}>{coinBalance}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
           ),
         }}
       />
@@ -371,15 +392,23 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   coinBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: '#FEF3C7',
-    borderRadius: 12,
+    backgroundColor: '#FFF9E6',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#FFD700',
+    gap: 4,
+  },
+  coinIcon: {
+    fontSize: 16,
   },
   coinText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#92400E',
+    color: '#D4AF37',
   },
   content: {
     padding: 20,
