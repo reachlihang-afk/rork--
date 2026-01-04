@@ -199,6 +199,7 @@ export default function SquareScreen() {
   const [selectedScore, setSelectedScore] = useState(10);
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{ uri: string; type: 'reference' | 'verified'; postId: string } | null>(null);
+  const [expandedIntros, setExpandedIntros] = useState<Set<string>>(new Set());
   const scrollViewRef = useRef<ScrollView>(null);
   const postRefs = useRef<Map<string, View>>(new Map());
   const inputRef = useRef<TextInput>(null);
@@ -352,6 +353,18 @@ export default function SquareScreen() {
     Alert.alert(t('common.success'), t('square.ratingRemoved'));
   }, [selectedPostForRating, user, removeRating, t]);
 
+
+  const toggleIntro = useCallback((postId: string) => {
+    setExpandedIntros(prev => {
+      const next = new Set(prev);
+      if (next.has(postId)) {
+        next.delete(postId);
+      } else {
+        next.add(postId);
+      }
+      return next;
+    });
+  }, []);
 
   const handleImagePress = useCallback(
     (uri: string, type: 'reference' | 'verified', postId: string) => {
@@ -656,14 +669,30 @@ export default function SquareScreen() {
 
           {post.postType === 'imageSource' && post.imageUri && (
             <View style={styles.imageSourceContainer}>
-              <TouchableOpacity onPress={() => handleImagePress(post.imageUri!, 'source', post.id)} activeOpacity={0.9}>
-                <Image source={{ uri: post.imageUri }} style={styles.singleImage} contentFit="cover" />
-              </TouchableOpacity>
+              <View style={styles.singleImageWrapper}>
+                <TouchableOpacity onPress={() => handleImagePress(post.imageUri!, 'source', post.id)} activeOpacity={0.9}>
+                  <Image source={{ uri: post.imageUri }} style={styles.singleImage} contentFit="cover" />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.singleImageWrapper} />
               {post.entityInfo && (
                 <View style={styles.entityInfoCard}>
                   <Text style={styles.entityName}>{post.entityInfo.name}</Text>
                   {post.entityInfo.introduction && (
-                    <Text style={styles.entityIntro} numberOfLines={3}>{post.entityInfo.introduction}</Text>
+                    <TouchableOpacity 
+                      onPress={() => toggleIntro(post.id)}
+                      activeOpacity={post.entityInfo.introduction.length > 28 ? 0.7 : 1}
+                      disabled={post.entityInfo.introduction.length <= 28}
+                    >
+                      <Text style={styles.entityIntro}>
+                        {expandedIntros.has(post.id) 
+                          ? post.entityInfo.introduction
+                          : post.entityInfo.introduction.length > 28
+                            ? post.entityInfo.introduction.substring(0, 28) + '...'
+                            : post.entityInfo.introduction
+                        }
+                      </Text>
+                    </TouchableOpacity>
                   )}
                 </View>
               )}
@@ -1665,6 +1694,12 @@ const styles = StyleSheet.create({
   },
   imageSourceContainer: {
     marginBottom: 8,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'flex-start',
+  },
+  singleImageWrapper: {
+    flex: 1,
   },
   singleImage: {
     width: '100%',
