@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import { File, Paths } from 'expo-file-system';
-import * as FileSystem from 'expo-file-system';
+
 import { Shirt, ChevronLeft, Download } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useCoin } from '@/contexts/CoinContext';
@@ -137,10 +137,15 @@ export default function OutfitChangeScreen() {
         reader.readAsDataURL(blob);
       });
     } else {
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: 'base64',
-      });
-      return base64;
+      const file = new File(uri);
+      const uint8Array = await file.bytes();
+      
+      let binary = '';
+      const len = uint8Array.byteLength;
+      for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(uint8Array[i]);
+      }
+      return btoa(binary);
     }
   };
 
