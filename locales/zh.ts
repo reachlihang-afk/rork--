@@ -254,6 +254,12 @@
   },
   square: {
     title: '广场',
+    publishToSquare: '发布到广场',
+    publishSuccess: '发布成功',
+    publishFailed: '发布失败',
+    loginRequired: '请先登录',
+    editDescription: '编辑描述',
+    descriptionPlaceholder: '添加描述...',
     loginRequired: '请先登录',
     loginToView: '登录查看广场动态',
     noPosts: '暂无动态',

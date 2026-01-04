@@ -5,6 +5,8 @@ import { ArrowLeft, Search, Share2 } from 'lucide-react-native';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Linking, Alert, ActivityIndicator, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useVerification } from '@/contexts/VerificationContext';
+import { useSquare } from '@/contexts/SquareContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { captureRef } from 'react-native-view-shot';
 import ShareableImageSourceResult from '@/components/ShareableImageSourceResult';
 import { saveToGallery } from '@/utils/share';
@@ -15,6 +17,8 @@ export default function ImageSourceResultScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { imageSourceHistory } = useVerification();
+  const { publishPost } = useSquare();
+  const { user } = useAuth();
   const shareViewRef = useRef<View>(null);
   const [isSharing, setIsSharing] = useState(false);
   const [showShareView, setShowShareView] = useState(false);
@@ -22,43 +26,48 @@ export default function ImageSourceResultScreen() {
   const record = imageSourceHistory.find((item) => item.id === id);
 
   const handleShare = async () => {
-    if (isSharing || !record) return;
+    if (isSharing || !record || !user) {
+      if (!user) {
+        Alert.alert(t('common.tip'), t('square.loginRequired'));
+      }
+      return;
+    }
     
     try {
       setIsSharing(true);
-      setShowShareView(true);
-      
-      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      if (!shareViewRef.current) {
-        throw new Error('Share view not ready');
-      }
-
-      console.log('Starting capture...');
-      const uri = await captureRef(shareViewRef, {
-        format: 'png',
-        quality: 1,
-        result: 'tmpfile',
+      // 发布到广场
+      const postId = await publishPost({
+        userId: user.userId,
+        userNickname: user.nickname || user.userId,
+        userAvatar: user.avatar,
+        postType: 'imageSource',
+        imageSourceId: record.id,
+        imageUri: record.imageUri,
+        keywords: record.analysis.keywords,
+        entityInfo: record.analysis.entityInfo,
+        pinnedCommentId: undefined,
       });
 
-      console.log('Captured image URI:', uri);
-
-      if (!uri || uri.length === 0) {
-        throw new Error('Empty capture result');
-      }
-
-      setShowShareView(false);
-
-      const saved = await saveToGallery(uri);
-      if (saved) {
-        Alert.alert(t('common.success'), t('result.saveSuccess'));
-      } else {
-        Alert.alert(t('common.error'), t('result.saveFailed'));
-      }
+      Alert.alert(
+        t('common.success'),
+        t('square.publishSuccess'),
+        [
+          {
+            text: t('common.confirm'),
+            onPress: () => {
+              // 跳转到广场并定位到该帖子
+              router.push({
+                pathname: '/(tabs)/square',
+                params: { postId },
+              } as any);
+            },
+          },
+        ]
+      );
     } catch (error) {
-      console.error('Failed to capture and save:', error);
-      Alert.alert(t('common.error'), t('result.shareFailed'));
-      setShowShareView(false);
+      console.error('Failed to publish to square:', error);
+      Alert.alert(t('common.error'), t('square.publishFailed'));
     } finally {
       setIsSharing(false);
     }
@@ -113,7 +122,10 @@ export default function ImageSourceResultScreen() {
           {isSharing ? (
             <ActivityIndicator size="small" color="#0066FF" />
           ) : (
-            <Share2 size={22} color="#0066FF" />
+            <>
+              <Share2 size={20} color="#0066FF" />
+              <Text style={styles.shareButtonText}>{t('square.publishToSquare')}</Text>
+            </>
           )}
         </TouchableOpacity>
       </View>
@@ -236,7 +248,15 @@ const styles = StyleSheet.create({
     width: 32,
   },
   shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     padding: 8,
+  },
+  shareButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0066FF',
   },
   content: {
     flex: 1,

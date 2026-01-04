@@ -6,10 +6,12 @@ import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system/legacy';
 
-import { Shirt, Download } from 'lucide-react-native';
+import { Shirt, Download, Share2 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useCoin } from '@/contexts/CoinContext';
 import { useVerification } from '@/contexts/VerificationContext';
+import { useSquare } from '@/contexts/SquareContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 type Template = {
   id: string;
@@ -90,12 +92,16 @@ export default function OutfitChangeScreen() {
   const router = useRouter();
   const { coinBalance, deductCoins } = useCoin();
   const { addOutfitChangeHistory } = useVerification();
+  const { publishPost } = useSquare();
+  const { user } = useAuth();
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatingTime, setGeneratingTime] = useState(0);
   const [resultUri, setResultUri] = useState<string | null>(null);
+  const [resultHistoryId, setResultHistoryId] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const COST_PER_GENERATION = 200;
 
@@ -210,12 +216,13 @@ export default function OutfitChangeScreen() {
       
       // 保存到历史记录
       try {
-        await addOutfitChangeHistory(
+        const historyId = await addOutfitChangeHistory(
           imageUri,
           generatedImageUri,
           selectedTemplate.id,
           selectedTemplate.name
         );
+        setResultHistoryId(historyId);
       } catch (historyError) {
         console.error('Failed to save to history:', historyError);
       }
@@ -283,6 +290,51 @@ export default function OutfitChangeScreen() {
       Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  const publishToSquare = async () => {
+    if (!resultUri || !imageUri || !selectedTemplate || !user || !resultHistoryId) {
+      if (!user) {
+        Alert.alert(t('common.tip'), t('square.loginRequired'));
+      }
+      return;
+    }
+
+    setIsPublishing(true);
+    try {
+      const postId = await publishPost({
+        userId: user.userId,
+        userNickname: user.nickname || user.userId,
+        userAvatar: user.avatar,
+        postType: 'outfitChange',
+        outfitChangeId: resultHistoryId,
+        originalImageUri: imageUri,
+        resultImageUri: resultUri,
+        templateName: selectedTemplate.name,
+        pinnedCommentId: undefined,
+      });
+
+      Alert.alert(
+        t('common.success'),
+        t('square.publishSuccess'),
+        [
+          {
+            text: t('common.confirm'),
+            onPress: () => {
+              router.push({
+                pathname: '/(tabs)/square',
+                params: { postId },
+              } as any);
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Failed to publish to square:', error);
+      Alert.alert(t('common.error'), t('square.publishFailed'));
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -359,20 +411,36 @@ export default function OutfitChangeScreen() {
           <View style={styles.section}>
             <View style={styles.resultHeader}>
               <Text style={styles.sectionTitle}>{t('outfitChange.result')}</Text>
-              <TouchableOpacity
-                style={styles.downloadButton}
-                onPress={downloadImage}
-                disabled={isDownloading}
-              >
-                {isDownloading ? (
-                  <ActivityIndicator size="small" color="#0066FF" />
-                ) : (
-                  <>
-                    <Download size={18} color="#0066FF" />
-                    <Text style={styles.downloadButtonText}>{t('outfitChange.downloadToAlbum')}</Text>
-                  </>
-                )}
-              </TouchableOpacity>
+              <View style={styles.resultActions}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={publishToSquare}
+                  disabled={isPublishing}
+                >
+                  {isPublishing ? (
+                    <ActivityIndicator size="small" color="#0066FF" />
+                  ) : (
+                    <>
+                      <Share2 size={16} color="#0066FF" />
+                      <Text style={styles.actionButtonText}>{t('square.publishToSquare')}</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={downloadImage}
+                  disabled={isDownloading}
+                >
+                  {isDownloading ? (
+                    <ActivityIndicator size="small" color="#0066FF" />
+                  ) : (
+                    <>
+                      <Download size={16} color="#0066FF" />
+                      <Text style={styles.actionButtonText}>{t('outfitChange.downloadToAlbum')}</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
             <View style={styles.resultContainer}>
               <Image source={{ uri: resultUri }} style={styles.resultImage} contentFit="cover" />
@@ -449,6 +517,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
+  },
+  resultActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#EFF6FF',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  actionButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#0066FF',
   },
   downloadButton: {
     flexDirection: 'row',

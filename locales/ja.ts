@@ -254,6 +254,12 @@
   },
   square: {
     title: '広場',
+    publishToSquare: '広場に投稿',
+    publishSuccess: '投稿に成功しました',
+    publishFailed: '投稿に失敗しました',
+    loginRequired: 'まずログインしてください',
+    editDescription: '説明を編集',
+    descriptionPlaceholder: '説明を追加...',
     loginRequired: 'まずログインしてください',
     loginToView: 'ログインして広場の投稿を表示',
     noPosts: '投稿がまだありません',

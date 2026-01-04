@@ -13,12 +13,28 @@ export interface SquarePost {
   userId: string;
   userNickname: string;
   userAvatar?: string;
-  verificationResultId: string;
-  credibilityScore: number;
-  verdict: 'authentic' | 'slightly-edited' | 'heavily-edited' | 'suspicious';
-  referencePhotoUri: string;
-  editedPhotoUri: string;
+  postType: 'verification' | 'imageSource' | 'outfitChange';
+  verificationResultId?: string;
+  credibilityScore?: number;
+  verdict?: 'authentic' | 'slightly-edited' | 'heavily-edited' | 'suspicious';
+  referencePhotoUri?: string;
+  editedPhotoUri?: string;
   photoSource?: 'camera' | 'library';
+  // 找出处相关字段
+  imageSourceId?: string;
+  imageUri?: string;
+  keywords?: string[];
+  entityInfo?: {
+    type: 'person' | 'animal' | 'plant' | 'other';
+    name?: string;
+    introduction?: string;
+  };
+  // 换装相关字段
+  outfitChangeId?: string;
+  originalImageUri?: string;
+  resultImageUri?: string;
+  templateName?: string;
+  // 通用字段
   description?: string;
   createdAt: number;
   likes: string[];
@@ -77,15 +93,24 @@ export const [SquareProvider, useSquare] = createContextHook(() => {
       userId: String(raw.userId ?? ''),
       userNickname: String(raw.userNickname ?? ''),
       userAvatar: raw.userAvatar ? String(raw.userAvatar) : undefined,
-      verificationResultId: String(raw.verificationResultId ?? ''),
-      credibilityScore: typeof raw.credibilityScore === 'number' ? raw.credibilityScore : 0,
-      verdict: (raw.verdict as SquarePost['verdict']) ?? 'suspicious',
-      referencePhotoUri: String(raw.referencePhotoUri ?? ''),
-      editedPhotoUri: String(raw.editedPhotoUri ?? ''),
+      postType: raw.postType || 'verification',
+      verificationResultId: raw.verificationResultId ? String(raw.verificationResultId) : undefined,
+      credibilityScore: typeof raw.credibilityScore === 'number' ? raw.credibilityScore : undefined,
+      verdict: raw.verdict as SquarePost['verdict'],
+      referencePhotoUri: raw.referencePhotoUri ? String(raw.referencePhotoUri) : undefined,
+      editedPhotoUri: raw.editedPhotoUri ? String(raw.editedPhotoUri) : undefined,
       photoSource:
         raw.photoSource === 'camera' || raw.photoSource === 'library'
           ? (raw.photoSource as 'camera' | 'library')
-          : 'camera',
+          : undefined,
+      imageSourceId: raw.imageSourceId ? String(raw.imageSourceId) : undefined,
+      imageUri: raw.imageUri ? String(raw.imageUri) : undefined,
+      keywords: Array.isArray(raw.keywords) ? raw.keywords : undefined,
+      entityInfo: raw.entityInfo,
+      outfitChangeId: raw.outfitChangeId ? String(raw.outfitChangeId) : undefined,
+      originalImageUri: raw.originalImageUri ? String(raw.originalImageUri) : undefined,
+      resultImageUri: raw.resultImageUri ? String(raw.resultImageUri) : undefined,
+      templateName: raw.templateName ? String(raw.templateName) : undefined,
       description: raw.description ? String(raw.description) : undefined,
       createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : Date.now(),
       likes,
@@ -179,10 +204,20 @@ export const [SquareProvider, useSquare] = createContextHook(() => {
   }, []);
 
   const publishPost = useCallback(async (post: Omit<SquarePost, 'id' | 'createdAt' | 'likes' | 'comments' | 'userRatings'>) => {
-    const existingPost = posts.find(p => p.verificationResultId === post.verificationResultId);
+    // 根据不同类型检查是否已存在
+    let existingPost;
+    if (post.postType === 'verification' && post.verificationResultId) {
+      existingPost = posts.find(p => p.verificationResultId === post.verificationResultId);
+    } else if (post.postType === 'imageSource' && post.imageSourceId) {
+      existingPost = posts.find(p => p.imageSourceId === post.imageSourceId);
+    } else if (post.postType === 'outfitChange' && post.outfitChangeId) {
+      existingPost = posts.find(p => p.outfitChangeId === post.outfitChangeId);
+    }
+    
     if (existingPost) {
       return existingPost.id;
     }
+    
     const newPost: SquarePost = {
       ...post,
       id: `post_${Date.now()}`,
@@ -349,9 +384,9 @@ export const [SquareProvider, useSquare] = createContextHook(() => {
     }
   }, [posts]);
 
-  const updatePostDescription = useCallback(async (verificationResultId: string, description: string) => {
+  const updatePostDescription = useCallback(async (postId: string, description: string) => {
     const updated = posts.map(post => {
-      if (post.verificationResultId === verificationResultId) {
+      if (post.id === postId) {
         return { ...post, description };
       }
       return post;

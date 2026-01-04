@@ -254,6 +254,12 @@
   },
   square: {
     title: 'Square',
+    publishToSquare: 'Publish to Square',
+    publishSuccess: 'Published successfully',
+    publishFailed: 'Failed to publish',
+    loginRequired: 'Please login first',
+    editDescription: 'Edit description',
+    descriptionPlaceholder: 'Add description...',
     loginRequired: 'Please login first',
     loginToView: 'Login to view square posts',
     noPosts: 'No posts yet',

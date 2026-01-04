@@ -254,6 +254,12 @@
   },
   square: {
     title: '광장',
+    publishToSquare: '광장에 게시',
+    publishSuccess: '게시 성공',
+    publishFailed: '게시 실패',
+    loginRequired: '먼저 로그인하세요',
+    editDescription: '설명 편집',
+    descriptionPlaceholder: '설명 추가...',
     loginRequired: '먼저 로그인하세요',
     loginToView: '로그인하여 광장 게시물 보기',
     noPosts: '아직 게시물이 없습니다',
