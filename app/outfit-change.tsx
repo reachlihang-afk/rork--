@@ -386,7 +386,12 @@ export default function OutfitChangeScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('outfitChange.selectTemplate')}</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{t('outfitChange.selectTemplate')}</Text>
+            <View style={styles.costBadge}>
+              <Text style={styles.costBadgeText}>💰 {COST_PER_GENERATION}</Text>
+            </View>
+          </View>
           <Text style={styles.sectionDesc}>{t('outfitChange.selectTemplateDesc')}</Text>
           
           <View style={styles.templatesGrid}>
@@ -447,12 +452,6 @@ export default function OutfitChangeScreen() {
             </View>
           </View>
         )}
-
-        <View style={styles.costInfo}>
-          <Text style={styles.costText}>
-            {t('outfitChange.costPerGeneration', { cost: COST_PER_GENERATION })}
-          </Text>
-        </View>
 
         <TouchableOpacity
           style={[
@@ -554,11 +553,27 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#0066FF',
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: '#0F172A',
-    marginBottom: 6,
+  },
+  costBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  costBadgeText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#92400E',
   },
   sectionDesc: {
     fontSize: 14,
@@ -653,18 +668,6 @@ const styles = StyleSheet.create({
   resultImage: {
     width: '100%',
     aspectRatio: 3 / 4,
-  },
-  costInfo: {
-    backgroundColor: '#FEF3C7',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  costText: {
-    fontSize: 14,
-    color: '#92400E',
-    textAlign: 'center',
-    fontWeight: '600',
   },
   generateButton: {
     backgroundColor: '#0066FF',
