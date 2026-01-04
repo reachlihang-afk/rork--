@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import { File, Paths } from 'expo-file-system';
+import * as FileSystem from 'expo-file-system';
 import { Shirt, ChevronLeft, Download } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useCoin } from '@/contexts/CoinContext';
@@ -136,17 +137,10 @@ export default function OutfitChangeScreen() {
         reader.readAsDataURL(blob);
       });
     } else {
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64 = reader.result as string;
-          resolve(base64.split(',')[1]);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: 'base64',
       });
+      return base64;
     }
   };
 
