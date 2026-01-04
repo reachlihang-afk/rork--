@@ -226,8 +226,7 @@ export default function OutfitChangeScreen() {
         const arrayBuffer = await blob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
         
-        file.create();
-        file.write(uint8Array);
+        await file.write(uint8Array);
 
         const asset = await MediaLibrary.createAssetAsync(file.uri);
         await MediaLibrary.createAlbumAsync('OutfitChange', asset, false);
