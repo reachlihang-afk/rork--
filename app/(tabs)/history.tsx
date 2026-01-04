@@ -378,6 +378,14 @@ export default function HistoryScreen() {
     <View style={styles.container}>
       <View style={styles.tabBar}>
         <TouchableOpacity
+          style={[styles.tab, activeTab === 'outfitChange' && styles.activeTab]}
+          onPress={() => setActiveTab('outfitChange')}
+        >
+          <Text style={[styles.tabText, activeTab === 'outfitChange' && styles.activeTabText]} numberOfLines={1}>
+            {t('history.outfitChangeHistory')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
           style={[styles.tab, activeTab === 'verification' && styles.activeTab]}
           onPress={() => setActiveTab('verification')}
         >
@@ -391,14 +399,6 @@ export default function HistoryScreen() {
         >
           <Text style={[styles.tabText, activeTab === 'imageSource' && styles.activeTabText]} numberOfLines={1}>
             {t('history.imageSourceHistory')}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'outfitChange' && styles.activeTab]}
-          onPress={() => setActiveTab('outfitChange')}
-        >
-          <Text style={[styles.tabText, activeTab === 'outfitChange' && styles.activeTabText]} numberOfLines={1}>
-            {t('history.outfitChangeHistory')}
           </Text>
         </TouchableOpacity>
       </View>

@@ -533,50 +533,49 @@ export default function SquareScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
-              {post.templateName && (
-                <View style={styles.templateBadge}>
-                  <Text style={styles.templateBadgeText}>👔 {post.templateName}</Text>
+              <View style={styles.templateBadgeRow}>
+                {post.templateName && (
+                  <View style={styles.templateBadge}>
+                    <Text style={styles.templateBadgeText}>👔 {post.templateName}</Text>
+                  </View>
+                )}
+                <View style={styles.actionButtonContainer}>
+                  <TouchableOpacity
+                    style={styles.moreButton}
+                    onPress={() => handleTogglePopup(post.id)}
+                  >
+                    <MoreHorizontal size={20} color="#64748B" />
+                  </TouchableOpacity>
+                  
+                  {activePopup === post.id && (
+                    <View style={styles.actionPopup}>
+                      <TouchableOpacity
+                        style={styles.popupItem}
+                        onPress={() => handleLikeFromPopup(post.id)}
+                      >
+                        <Heart
+                          size={16}
+                          color="#fff"
+                          fill={post.likes.includes(user.userId) ? '#fff' : 'none'}
+                        />
+                        <Text style={styles.popupText} numberOfLines={1}>
+                          {post.likes.includes(user.userId) ? t('square.unlike') : t('square.like')}
+                        </Text>
+                      </TouchableOpacity>
+                      <View style={styles.popupDivider} />
+                      <TouchableOpacity
+                        style={styles.popupItem}
+                        onPress={() => handleOpenComments(post.id)}
+                      >
+                        <MessageSquare size={16} color="#fff" />
+                        <Text style={styles.popupText} numberOfLines={1}>{t('square.comment')}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
-              )}
+              </View>
             </View>
           )}
-
-          <View style={styles.actionsRow}>
-            <View style={styles.actionButtonContainer}>
-              <TouchableOpacity
-                style={styles.moreButton}
-                onPress={() => handleTogglePopup(post.id)}
-              >
-                <MoreHorizontal size={20} color="#64748B" />
-              </TouchableOpacity>
-              
-              {activePopup === post.id && (
-                <View style={styles.actionPopup}>
-                  <TouchableOpacity
-                    style={styles.popupItem}
-                    onPress={() => handleLikeFromPopup(post.id)}
-                  >
-                    <Heart
-                      size={16}
-                      color="#fff"
-                      fill={post.likes.includes(user.userId) ? '#fff' : 'none'}
-                    />
-                    <Text style={styles.popupText} numberOfLines={1}>
-                      {post.likes.includes(user.userId) ? t('square.unlike') : t('square.like')}
-                    </Text>
-                  </TouchableOpacity>
-                  <View style={styles.popupDivider} />
-                  <TouchableOpacity
-                    style={styles.popupItem}
-                    onPress={() => handleOpenComments(post.id)}
-                  >
-                    <MessageSquare size={16} color="#fff" />
-                    <Text style={styles.popupText} numberOfLines={1}>{t('square.comment')}</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          </View>
 
           {(post.likes.length > 0 || post.comments.length > 0) && (
             <View style={styles.interactionArea}>
@@ -1564,8 +1563,13 @@ const styles = StyleSheet.create({
     color: '#0066FF',
     fontWeight: '700',
   },
-  templateBadge: {
+  templateBadgeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: 12,
+  },
+  templateBadge: {
     alignSelf: 'flex-start',
     backgroundColor: '#F0F9FF',
     paddingHorizontal: 16,

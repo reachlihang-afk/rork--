@@ -23,7 +23,7 @@ export default function ProfileScreen() {
   const [showVisibilityModal, setShowVisibilityModal] = useState(false);
   const [showTimeRangeModal, setShowTimeRangeModal] = useState(false);
   
-  const { verification, imageSource } = getRemainingFreeCounts();
+  const { verification, imageSource, outfitChange } = getRemainingFreeCounts();
 
   const handleLanguageSelect = async (lang: Language) => {
     await changeLanguage(lang);
@@ -173,6 +173,11 @@ export default function ProfileScreen() {
             <Text style={styles.usageTitle} numberOfLines={2}>{t('profile.remainingFreeTimes')}</Text>
             <View style={styles.usageRow}>
               <View style={styles.usageItem}>
+                <Text style={styles.usageCount}>{outfitChange}</Text>
+                <Text style={styles.usageLabel} numberOfLines={2}>{t('profile.outfitChangeTimes')}</Text>
+              </View>
+              <View style={styles.usageDivider} />
+              <View style={styles.usageItem}>
                 <Text style={styles.usageCount}>{verification}</Text>
                 <Text style={styles.usageLabel} numberOfLines={2}>{t('profile.verificationTimes')}</Text>
               </View>
@@ -228,6 +233,23 @@ export default function ProfileScreen() {
               <Text style={styles.privacyTitle}>{t('friends.privacySettings')}</Text>
             </View>
             
+            <TouchableOpacity 
+              style={styles.privacyOption}
+              onPress={() => setShowVisibilityModal(true)}
+            >
+              <Text style={styles.privacyOptionText}>{t('friends.outfitHistoryVisibility')}</Text>
+              <View style={styles.privacyValueContainer}>
+                <Text style={styles.privacyValue}>
+                  {privacySettings.historyVisibility === 'everyone' && t('friends.visibilityEveryone')}
+                  {privacySettings.historyVisibility === 'friends_only' && t('friends.visibilityFriendsOnly')}
+                  {privacySettings.historyVisibility === 'none' && t('friends.visibilityNone')}
+                </Text>
+                <ChevronRight size={16} color="#64748B" />
+              </View>
+            </TouchableOpacity>
+
+            <View style={styles.privacyDivider} />
+
             <TouchableOpacity 
               style={styles.privacyOption}
               onPress={() => setShowVisibilityModal(true)}
