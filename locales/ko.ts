@@ -264,6 +264,7 @@
     publishSuccess: '게시 성공',
     publishSuccessPrompt: '게시 성공. 광장 페이지로 이동하시겠습니까?',
     publishFailed: '게시 실패',
+    publishDisabledByPrivacy: '개인 정보 설정으로 인해 이 기록을 광장에 게시할 수 없습니다',
     loginRequired: '먼저 로그인하세요',
     editDescription: '설명 편집',
     descriptionPlaceholder: '설명 추가...',

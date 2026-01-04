@@ -264,6 +264,7 @@
     publishSuccess: 'Published successfully',
     publishSuccessPrompt: 'Published successfully. Go to Square page?',
     publishFailed: 'Failed to publish',
+    publishDisabledByPrivacy: 'Your privacy settings do not allow this record to be published to the Square',
     loginRequired: 'Please login first',
     editDescription: 'Edit description',
     descriptionPlaceholder: 'Add description...',

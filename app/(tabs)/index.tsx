@@ -97,7 +97,7 @@ export default function HomeScreen() {
                 key={item.id}
                 style={styles.recentCard}
                 onPress={() => {
-                  // 可以添加查看详情页面
+                  router.push(`/outfit-change-detail/${item.id}` as any);
                 }}
               >
                 <Image 

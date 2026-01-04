@@ -264,6 +264,7 @@
     publishSuccess: '投稿に成功しました',
     publishSuccessPrompt: '公開しました。広場ページに移動しますか？',
     publishFailed: '投稿に失敗しました',
+    publishDisabledByPrivacy: 'プライバシー設定により、この記録を広場に公開できません',
     loginRequired: 'まずログインしてください',
     editDescription: '説明を編集',
     descriptionPlaceholder: '説明を追加...',

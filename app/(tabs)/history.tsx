@@ -332,7 +332,11 @@ export default function HistoryScreen() {
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
             <View style={styles.cardWrapper}>
-              <View style={styles.outfitCard}>
+              <TouchableOpacity
+                style={styles.outfitCard}
+                onPress={() => router.push(`/outfit-change-detail/${item.id}` as any)}
+                activeOpacity={0.7}
+              >
                 <View style={styles.outfitImageRow}>
                   <View style={styles.outfitImageContainer}>
                     <Image 
@@ -358,7 +362,7 @@ export default function HistoryScreen() {
                     {new Date(item.createdAt).toLocaleString('zh-CN')}
                   </Text>
                 </View>
-              </View>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.deleteCornerButton}
                 onPress={() => handleDeleteOutfitChange(item.id)}

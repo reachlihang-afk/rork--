@@ -264,6 +264,7 @@
     publishSuccess: '发布成功',
     publishSuccessPrompt: '发布成功，是否跳转到广场页面？',
     publishFailed: '发布失败',
+    publishDisabledByPrivacy: '您的隐私设置不允许将此记录发布到广场',
     loginRequired: '请先登录',
     editDescription: '编辑描述',
     descriptionPlaceholder: '添加描述...',
