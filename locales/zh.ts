@@ -33,6 +33,8 @@ export default {
     lookupTip: '💡 验证码在验证完成后显示，可用于分享验证结果给他人查看',
     findSource: '找出处',
     findSourceDesc: '上传图片找到来源',
+    outfitChange: '一键换装',
+    outfitChangeDesc: '选择模板快速换装',
     welcome: '欢迎 {{name}}！',
   },
   history: {
@@ -353,5 +355,19 @@ export default {
     timeRangeThreeDays: '仅三天内',
     historyNotAllowed: '该用户不允许好友查看验证记录',
     noHistoryYet: '暂无验证记录',
+  },
+  outfitChange: {
+    title: '一键换装',
+    uploadImage: '上传照片',
+    uploadImageDesc: '选择或拍摄一张人物照片',
+    selectTemplate: '选择换装模板',
+    selectTemplateDesc: '选择想要的服装风格',
+    result: '换装结果',
+    costPerGeneration: '每次生成消耗 {{cost}} 金币',
+    generate: '开始生成',
+    selectImageAndTemplate: '请先上传照片并选择模板',
+    insufficientCoins: '金币不足，请充值',
+    generationFailed: '生成失败，请重试',
+    reupload: '重新上传',
   },
 };

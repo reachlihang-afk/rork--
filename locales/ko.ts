@@ -33,6 +33,8 @@ export default {
     lookupTip: '💡 검증 코드는 완료 후 표시되며, 다른 사람과 공유할 수 있습니다',
     findSource: '출처 찾기',
     findSourceDesc: '이미지를 업로드하여 출처 찾기',
+    outfitChange: '의상 체인지',
+    outfitChangeDesc: '템플릿으로 빠른 의상 변경',
     welcome: '환영합니다 {{name}}!',
   },
   history: {
@@ -344,5 +346,19 @@ export default {
     timeRangeThreeDays: '최근 3일',
     historyNotAllowed: '이 사용자는 친구에게 검증 기록 보기를 허용하지 않습니다',
     noHistoryYet: '아직 검증 기록이 없습니다',
+  },
+  outfitChange: {
+    title: '의상 체인지',
+    uploadImage: '사진 업로드',
+    uploadImageDesc: '인물 사진을 선택하거나 촬영',
+    selectTemplate: '템플릿 선택',
+    selectTemplateDesc: '원하는 의상 스타일 선택',
+    result: '결과',
+    costPerGeneration: '생성당 {{cost}} 코인 소비',
+    generate: '생성 시작',
+    selectImageAndTemplate: '사진을 업로드하고 템플릿을 선택하세요',
+    insufficientCoins: '코인 부족, 충전하세요',
+    generationFailed: '생성 실패, 다시 시도하세요',
+    reupload: '다시 업로드',
   },
 };

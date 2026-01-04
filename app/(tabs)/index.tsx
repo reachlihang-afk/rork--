@@ -62,6 +62,17 @@ export default function HomeScreen() {
         <View style={styles.quickActions}>
           <TouchableOpacity 
             style={styles.quickActionCard}
+            onPress={() => router.push('/outfit-change' as any)}
+          >
+            <View style={styles.quickActionIcon}>
+              <Text style={styles.actionIconText}>👔</Text>
+            </View>
+            <Text style={styles.quickActionTitle} numberOfLines={2}>{t('home.outfitChange')}</Text>
+            <Text style={styles.quickActionDescription} numberOfLines={3}>{t('home.outfitChangeDesc')}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.quickActionCard}
             onPress={() => router.push('/lookup-verification' as any)}
           >
             <View style={styles.quickActionIcon}>
@@ -225,11 +236,12 @@ const styles = StyleSheet.create({
   },
   quickActions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 14,
     marginBottom: 24,
   },
   quickActionCard: {
-    flex: 1,
+    width: '48%',
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 20,

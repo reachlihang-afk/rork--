@@ -33,6 +33,8 @@ export default {
     lookupTip: '💡 検証コードは完了後に表示され、他の人と共有できます',
     findSource: '出処を探す',
     findSourceDesc: '画像をアップロードして出処を見つける',
+    outfitChange: '着せ替え',
+    outfitChangeDesc: 'テンプレートで簡単着せ替え',
     welcome: 'ようこそ {{name}}！',
   },
   history: {
@@ -344,5 +346,19 @@ export default {
     timeRangeThreeDays: '過去3日間',
     historyNotAllowed: 'このユーザーは友達に検証記録の表示を許可していません',
     noHistoryYet: '検証記録がまだありません',
+  },
+  outfitChange: {
+    title: '着せ替え',
+    uploadImage: '写真をアップロード',
+    uploadImageDesc: '人物の写真を選択または撮影',
+    selectTemplate: 'テンプレート選択',
+    selectTemplateDesc: 'お好みの服装スタイルを選択',
+    result: '結果',
+    costPerGeneration: '生成ごとに {{cost}} コイン消費',
+    generate: '生成開始',
+    selectImageAndTemplate: '写真をアップロードしてテンプレートを選択してください',
+    insufficientCoins: 'コイン不足、チャージしてください',
+    generationFailed: '生成に失敗しました。もう一度お試しください',
+    reupload: '再アップロード',
   },
 };

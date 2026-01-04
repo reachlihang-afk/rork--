@@ -33,6 +33,8 @@ export default {
     lookupTip: '💡 Verification code is shown after completion, can be shared with others',
     findSource: 'Find Source',
     findSourceDesc: 'Upload image to find its source',
+    outfitChange: 'Outfit Change',
+    outfitChangeDesc: 'Choose template for quick outfit change',
     welcome: 'Welcome {{name}}!',
   },
   history: {
@@ -353,5 +355,19 @@ export default {
     timeRangeThreeDays: 'Last 3 Days',
     historyNotAllowed: 'User does not allow friends to view history',
     noHistoryYet: 'No verification history yet',
+  },
+  outfitChange: {
+    title: 'Outfit Change',
+    uploadImage: 'Upload Photo',
+    uploadImageDesc: 'Select or take a photo of a person',
+    selectTemplate: 'Select Template',
+    selectTemplateDesc: 'Choose your desired clothing style',
+    result: 'Result',
+    costPerGeneration: '{{cost}} coins per generation',
+    generate: 'Generate',
+    selectImageAndTemplate: 'Please upload a photo and select a template',
+    insufficientCoins: 'Insufficient coins, please recharge',
+    generationFailed: 'Generation failed, please try again',
+    reupload: 'Reupload',
   },
 };
