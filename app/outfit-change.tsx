@@ -317,10 +317,14 @@ export default function OutfitChangeScreen() {
 
       Alert.alert(
         t('common.success'),
-        t('square.publishSuccess'),
+        t('square.publishSuccessPrompt'),
         [
           {
-            text: t('common.confirm'),
+            text: t('common.no'),
+            style: 'cancel',
+          },
+          {
+            text: t('common.yes'),
             onPress: () => {
               router.push({
                 pathname: '/(tabs)/square',
