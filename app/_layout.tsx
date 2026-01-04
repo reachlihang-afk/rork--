@@ -101,6 +101,18 @@ function RootLayoutNav() {
           headerStyle: { backgroundColor: '#fff' },
         }} 
       />
+      <Stack.Screen 
+        name="outfit-change" 
+        options={{ 
+          headerShown: false,
+        }} 
+      />
+      <Stack.Screen 
+        name="lookup-verification" 
+        options={{ 
+          headerShown: false,
+        }} 
+      />
 
     </Stack>
   );
