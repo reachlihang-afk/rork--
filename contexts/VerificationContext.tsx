@@ -702,7 +702,8 @@ Reference photos (${limitedReferencePhotos.length}):`,
     originalImageUri: string,
     resultImageUri: string,
     templateId: string,
-    templateName: string
+    templateName: string,
+    allowSquarePublish: boolean = true
   ): Promise<string> => {
     if (!user?.userId) {
       throw new Error('User not logged in');
@@ -715,6 +716,7 @@ Reference photos (${limitedReferencePhotos.length}):`,
       templateId,
       templateName,
       createdAt: Date.now(),
+      allowSquarePublish,
     };
     
     // 限制历史记录数量为5条，防止存储溢出（每条记录包含大量base64图片数据）
@@ -761,6 +763,18 @@ Reference photos (${limitedReferencePhotos.length}):`,
     await AsyncStorage.removeItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY);
   };
 
+  const updateOutfitChangePrivacy = async (outfitChangeId: string, allowSquarePublish: boolean): Promise<void> => {
+    if (!user?.userId) {
+      throw new Error('User not logged in');
+    }
+    const STORAGE_KEYS = getStorageKeys(user.userId);
+    const updated = outfitChangeHistory.map(item => 
+      item.id === outfitChangeId ? { ...item, allowSquarePublish } : item
+    );
+    setOutfitChangeHistory(updated);
+    await AsyncStorage.setItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY, JSON.stringify(updated));
+  };
+
   return {
     referencePhotos,
     verificationHistory,
@@ -781,5 +795,6 @@ Reference photos (${limitedReferencePhotos.length}):`,
     addOutfitChangeHistory,
     deleteOutfitChange,
     clearOutfitChangeHistory,
+    updateOutfitChangePrivacy,
   };
 });

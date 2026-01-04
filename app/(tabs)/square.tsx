@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Image as ExpoImage } from 'expo-image';
 import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, RefreshControl, Alert, TextInput, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Modal, PanResponder, Animated } from 'react-native';
-import { Heart, MessageSquare, Trash2, MoreHorizontal, Pin, Star, X, AlertTriangle } from 'lucide-react-native';
+import { Heart, MessageSquare, Trash2, MoreHorizontal, Pin, X, AlertTriangle } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSquare, SquarePost, SquareComment } from '@/contexts/SquareContext';
@@ -9,16 +9,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-
-interface RatingModalProps {
-  visible: boolean;
-  onClose: () => void;
-  selectedScore: number;
-  onScoreChange: (score: number) => void;
-  onConfirm: () => void;
-  onRemove: () => void;
-  hasExistingRating: boolean;
-}
 
 type ZoomableImageProps = {
   uri: string;
@@ -42,148 +32,9 @@ function ZoomableImage({ uri }: ZoomableImageProps) {
   );
 }
 
-function RatingModal({
-  visible,
-  onClose,
-  selectedScore,
-  onScoreChange,
-  onConfirm,
-  onRemove,
-  hasExistingRating
-}: RatingModalProps) {
-  const { t } = useTranslation();
-  const pan = useRef(new Animated.Value(0)).current;
-  const sliderWidth = 300;
-  const scoreRange = 10;
-
-  const panResponder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: () => true,
-        onPanResponderGrant: (_, gestureState) => {
-          const newScore = Math.max(0, Math.min(10, (gestureState.x0 - 40) / (sliderWidth / scoreRange)));
-          onScoreChange(Math.round(newScore * 10) / 10);
-        },
-        onPanResponderMove: (_, gestureState) => {
-          const position = gestureState.moveX - 40;
-          const clampedPosition = Math.max(0, Math.min(sliderWidth, position));
-          const newScore = Math.max(0, Math.min(10, (clampedPosition / sliderWidth) * scoreRange));
-          onScoreChange(Math.round(newScore * 10) / 10);
-          pan.setValue(clampedPosition);
-        },
-        onPanResponderRelease: () => {},
-      }),
-    [onScoreChange, pan, sliderWidth, scoreRange]
-  );
-
-  const getGradientColor = (score: number): string[] => {
-    if (score <= 3) {
-      return ['#DC2626', '#EF4444', '#F87171'];
-    } else if (score <= 6) {
-      return ['#EA580C', '#F59E0B', '#FBBF24'];
-    } else {
-      return ['#059669', '#10B981', '#34D399'];
-    }
-  };
-
-  const thumbPosition = (selectedScore / scoreRange) * sliderWidth;
-
-  return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={ratingStyles.overlay}>
-          <TouchableWithoutFeedback>
-            <View style={ratingStyles.content}>
-              <View style={ratingStyles.header}>
-                <Text style={ratingStyles.title}>{t('square.selectScore')}</Text>
-                <TouchableOpacity onPress={onClose}>
-                  <X size={24} color="#64748B" />
-                </TouchableOpacity>
-              </View>
-
-              <View style={ratingStyles.scoreDisplay}>
-                <Text style={ratingStyles.scoreNumber}>{selectedScore % 1 === 0 ? selectedScore.toFixed(0) : selectedScore.toFixed(1)}</Text>
-                <Text style={ratingStyles.scoreLabel}>/10</Text>
-              </View>
-
-              <View style={ratingStyles.sliderContainer}>
-                <View style={ratingStyles.sliderWrapper} {...panResponder.panHandlers}>
-                  <LinearGradient
-                    colors={['#DC2626', '#F59E0B', '#FBBF24', '#34D399', '#10B981']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={ratingStyles.gradientBar}
-                  />
-                  <Animated.View
-                    style={[
-                      ratingStyles.thumb,
-                      {
-                        left: thumbPosition - 20,
-                        backgroundColor: getGradientColor(selectedScore)[1],
-                      },
-                    ]}
-                  >
-                    <View style={ratingStyles.thumbInner} />
-                  </Animated.View>
-                </View>
-
-                <View style={ratingStyles.scaleMarks}>
-                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((mark) => (
-                    <TouchableOpacity
-                      key={mark}
-                      style={ratingStyles.scaleMark}
-                      onPress={() => onScoreChange(mark)}
-                    >
-                      <View
-                        style={[
-                          ratingStyles.scaleMarkLine,
-                          mark === selectedScore && ratingStyles.scaleMarkLineActive,
-                        ]}
-                      />
-                      <Text
-                        style={[
-                          ratingStyles.scaleMarkText,
-                          mark === selectedScore && ratingStyles.scaleMarkTextActive,
-                        ]}
-                      >
-                        {mark}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              <View style={ratingStyles.actions}>
-                {hasExistingRating && (
-                  <TouchableOpacity style={ratingStyles.removeButton} onPress={onRemove}>
-                    <Text style={ratingStyles.removeButtonText}>{t('square.removeRating')}</Text>
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity
-                  style={[ratingStyles.cancelButton, hasExistingRating && { flex: 1 }]}
-                  onPress={onClose}
-                >
-                  <Text style={ratingStyles.cancelButtonText}>{t('common.cancel')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[ratingStyles.confirmButton, hasExistingRating && { flex: 1 }]}
-                  onPress={onConfirm}
-                >
-                  <Text style={ratingStyles.confirmButtonText}>{t('square.confirmRating')}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
-  );
-}
-
 export default function SquareScreen() {
   const { t } = useTranslation();
-  const { posts, likePost, deletePost, addComment, deleteComment, pinComment, ratePost, removeRating, getUserRating, getAverageUserRating } = useSquare();
+  const { posts, likePost, deletePost, addComment, deleteComment, pinComment } = useSquare();
   const { user } = useAuth();
   const { highlightPostId } = useLocalSearchParams<{ highlightPostId?: string }>();
 
@@ -194,9 +45,6 @@ export default function SquareScreen() {
   const [replyTo, setReplyTo] = useState<{ commentId: string; userId: string; nickname: string } | null>(null);
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
   const [highlightedPost, setHighlightedPost] = useState<string | null>(null);
-  const [ratingModalVisible, setRatingModalVisible] = useState(false);
-  const [selectedPostForRating, setSelectedPostForRating] = useState<string | null>(null);
-  const [selectedScore, setSelectedScore] = useState(10);
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{ uri: string; type: 'reference' | 'verified'; postId: string } | null>(null);
   const [expandedIntros, setExpandedIntros] = useState<Set<string>>(new Set());
@@ -325,34 +173,6 @@ export default function SquareScreen() {
       return userId.slice(-4);
     });
   };
-
-  const handleRatePress = useCallback((postId: string) => {
-    if (!user) {
-      Alert.alert(t('common.tip'), t('square.loginRequired'));
-      return;
-    }
-    const existingRating = getUserRating(postId, user.userId);
-    setSelectedPostForRating(postId);
-    setSelectedScore(existingRating || 10);
-    setRatingModalVisible(true);
-  }, [user, t, getUserRating]);
-
-  const handleConfirmRating = useCallback(async () => {
-    if (!selectedPostForRating || !user) return;
-    await ratePost(selectedPostForRating, user.userId, selectedScore);
-    setRatingModalVisible(false);
-    setSelectedPostForRating(null);
-    Alert.alert(t('common.success'), t('square.ratingSuccess'));
-  }, [selectedPostForRating, user, selectedScore, ratePost, t]);
-
-  const handleRemoveRating = useCallback(async () => {
-    if (!selectedPostForRating || !user) return;
-    await removeRating(selectedPostForRating, user.userId);
-    setRatingModalVisible(false);
-    setSelectedPostForRating(null);
-    Alert.alert(t('common.success'), t('square.ratingRemoved'));
-  }, [selectedPostForRating, user, removeRating, t]);
-
 
   const toggleIntro = useCallback((postId: string) => {
     setExpandedIntros(prev => {
@@ -639,19 +459,6 @@ export default function SquareScreen() {
                         <Text style={[styles.scoreDescription, { color: getScoreColor(post.credibilityScore) }]} numberOfLines={1}>
                           {getScoreDescription(post.credibilityScore)}
                         </Text>
-                      </View>
-                      <View style={styles.userRatingContainer}>
-                        {post.userRatings?.length > 0 && (() => {
-                          const avgRating = getAverageUserRating(post.id);
-                          return avgRating !== null ? (
-                            <>
-                              <Text style={styles.userRatingLabel}>{t('square.userRating')}</Text>
-                              <Text style={[styles.userRatingValue, { color: getScoreColor(avgRating) }]}>
-                                {formatScore(avgRating)} <Text style={styles.ratingCount}>({post.userRatings?.length || 0})</Text>
-                              </Text>
-                            </>
-                          ) : null;
-                        })()}
                       </View>
                     </View>
                   </View>
@@ -953,16 +760,6 @@ export default function SquareScreen() {
             </View>
           </KeyboardAvoidingView>
         )}
-
-        <RatingModal
-          visible={ratingModalVisible}
-          onClose={() => setRatingModalVisible(false)}
-          selectedScore={selectedScore}
-          onScoreChange={setSelectedScore}
-          onConfirm={handleConfirmRating}
-          onRemove={handleRemoveRating}
-          hasExistingRating={selectedPostForRating ? getUserRating(selectedPostForRating, user?.userId || '') !== null : false}
-        />
 
         <Modal
           visible={imageViewerVisible}

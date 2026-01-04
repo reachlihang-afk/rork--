@@ -94,7 +94,7 @@ type OutfitMode = 'template' | 'custom';
 export default function OutfitChangeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { coinBalance, deductCoins } = useCoin();
+  const { coinBalance, canUseOutfitChange, useOutfitChange, getRemainingFreeCounts } = useCoin();
   const { addOutfitChangeHistory } = useVerification();
   const { publishPost } = useSquare();
   const { user } = useAuth();
@@ -108,8 +108,6 @@ export default function OutfitChangeScreen() {
   const [resultHistoryId, setResultHistoryId] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
-
-  const COST_PER_GENERATION = 200;
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -301,8 +299,10 @@ export default function OutfitChangeScreen() {
       return;
     }
 
-    if (coinBalance < COST_PER_GENERATION) {
-      Alert.alert(t('common.tip'), t('outfitChange.insufficientCoins'));
+    // 检查是否可以使用换装功能
+    const { canUse, message } = canUseOutfitChange();
+    if (!canUse) {
+      Alert.alert(t('common.tip'), message);
       return;
     }
 
@@ -461,7 +461,9 @@ export default function OutfitChangeScreen() {
       const generatedImageUri = `data:${data.image.mimeType};base64,${data.image.base64Data}`;
       
       setResultUri(generatedImageUri);
-      await deductCoins(COST_PER_GENERATION);
+      
+      // 使用换装次数（可能消耗免费次数或金币）
+      await useOutfitChange();
       
       // 保存到历史记录
       try {
@@ -686,7 +688,7 @@ export default function OutfitChangeScreen() {
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{t('outfitChange.selectTemplate')}</Text>
               <View style={styles.costBadge}>
-                <Text style={styles.costBadgeText}>💰 {COST_PER_GENERATION}</Text>
+                <Text style={styles.costBadgeText}>🎁 {t('outfitChange.remainingFree')}: {getRemainingFreeCounts().outfitChange}</Text>
               </View>
             </View>
             <Text style={styles.sectionDesc}>{t('outfitChange.selectTemplateDesc')}</Text>
@@ -713,7 +715,7 @@ export default function OutfitChangeScreen() {
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{t('outfitChange.uploadOutfitImages')}</Text>
               <View style={styles.costBadge}>
-                <Text style={styles.costBadgeText}>💰 {COST_PER_GENERATION}</Text>
+                <Text style={styles.costBadgeText}>🎁 {t('outfitChange.remainingFree')}: {getRemainingFreeCounts().outfitChange}</Text>
               </View>
             </View>
             <Text style={styles.sectionDesc}>{t('outfitChange.uploadOutfitImagesDesc')}</Text>

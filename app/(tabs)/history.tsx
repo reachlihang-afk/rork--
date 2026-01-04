@@ -13,7 +13,7 @@ export default function HistoryScreen() {
   const router = useRouter();
   const { verificationHistory, imageSourceHistory, outfitChangeHistory, clearHistory, clearImageSourceHistory, clearOutfitChangeHistory, deleteVerification, deleteImageSource, deleteOutfitChange } = useVerification();
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('verification');
+  const [activeTab, setActiveTab] = useState<TabType>('outfitChange');
 
   const handleClearVerificationHistory = () => {
     Alert.alert(

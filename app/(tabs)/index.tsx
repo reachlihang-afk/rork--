@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { referencePhotos, verificationHistory } = useVerification();
+  const { referencePhotos, verificationHistory, outfitChangeHistory } = useVerification();
   const { user } = useAuth();
 
   const hasReferencePhotos = referencePhotos.length > 0;
@@ -19,7 +19,7 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <View style={styles.iconContainer}>
-            <ShieldCheck size={40} color="#fff" strokeWidth={2.5} />
+            <Text style={styles.iconEmoji}>👔</Text>
           </View>
           <Text style={styles.title}>{t('home.title')}</Text>
           <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
@@ -37,23 +37,17 @@ export default function HomeScreen() {
           
           <TouchableOpacity 
             style={[styles.actionCard, styles.actionCardPrimary]}
-            onPress={() => {
-              if (hasReferencePhotos) {
-                router.push('/verify-photo' as any);
-              } else {
-                router.push('/upload-reference' as any);
-              }
-            }}
+            onPress={() => router.push('/outfit-change' as any)}
           >
             <View style={styles.actionIcon}>
-              <Sparkles size={24} color="#fff" />
+              <Text style={styles.actionIconEmoji}>✨</Text>
             </View>
             <View style={styles.actionContent}>
               <Text style={[styles.actionTitle, styles.actionTitlePrimary]}>
-                {t('home.quickStart')}
+                {t('home.outfitChange')}
               </Text>
               <Text style={[styles.actionDescription, styles.actionDescriptionPrimary]}>
-                {hasReferencePhotos ? t('home.uploadEditedPhoto') : '先上传参考照片，再验证自拍照片'}
+                {t('home.outfitChangeDesc')}
               </Text>
             </View>
           </TouchableOpacity>
@@ -94,39 +88,40 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {verificationHistory.length > 0 && (
+        {outfitChangeHistory.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{t('home.recentVerifications')}</Text>
+              <Text style={styles.sectionTitle}>{t('home.outfitHistory')}</Text>
               <TouchableOpacity onPress={() => router.push('/history' as any)}>
                 <Text style={styles.viewAllText}>{t('home.viewAll')}</Text>
               </TouchableOpacity>
             </View>
-            {verificationHistory.slice(0, 3).map((item) => (
+            {outfitChangeHistory.slice(0, 3).map((item) => (
               <TouchableOpacity
-                key={item.result.id}
+                key={item.id}
                 style={styles.recentCard}
-                onPress={() => router.push({
-                  pathname: '/result/[id]' as any,
-                  params: { id: item.result.id },
-                })}
+                onPress={() => {
+                  // 可以添加查看详情页面
+                }}
               >
                 <Image 
-                  source={{ uri: item.request.referencePhotos[0]?.uri }}
+                  source={{ uri: item.originalImageUri }}
                   style={styles.recentImage}
                   contentFit="cover"
                 />
                 <View style={styles.recentContent}>
-                  <Text style={[styles.recentScore, { color: getScoreColor(item.result.credibilityScore) }]}>
-                    {formatScore(item.result.credibilityScore)}/10
+                  <Text style={styles.recentTemplateName}>
+                    {item.templateName}
                   </Text>
                   <Text style={styles.recentDate}>
-                    {formatDateTime(item.result.completedAt)}
+                    {formatDateTime(item.createdAt)}
                   </Text>
                 </View>
-                <Text style={[styles.recentVerdict, { color: getScoreColor(item.result.credibilityScore) }]}>
-                  {getVerdictText(item.result.verdict, t)}
-                </Text>
+                <Image 
+                  source={{ uri: item.resultImageUri }}
+                  style={styles.recentResultImage}
+                  contentFit="cover"
+                />
               </TouchableOpacity>
             ))}
           </View>
@@ -200,6 +195,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 16,
     elevation: 8,
+  },
+  iconEmoji: {
+    fontSize: 40,
   },
   title: {
     fontSize: 28,
@@ -351,6 +349,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  actionIconEmoji: {
+    fontSize: 24,
+  },
   actionIconDisabled: {
     backgroundColor: '#F1F5F9',
   },
@@ -436,6 +437,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginLeft: 12,
     alignSelf: 'center',
+  },
+  recentResultImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 14,
+    backgroundColor: '#E2E8F0',
+    marginLeft: 12,
+  },
+  recentTemplateName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 4,
   },
   sectionHeader: {
     flexDirection: 'row',

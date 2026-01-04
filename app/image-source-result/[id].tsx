@@ -1,14 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { Image } from 'expo-image';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Search, Share2, Download } from 'lucide-react-native';
+import { ArrowLeft, Search, Download } from 'lucide-react-native';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Linking, Alert, ActivityIndicator, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useVerification } from '@/contexts/VerificationContext';
-import { useSquare } from '@/contexts/SquareContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { captureRef } from 'react-native-view-shot';
-import ShareableImageSourceResult from '@/components/ShareableImageSourceResult';
 import { saveToGallery } from '@/utils/share';
 import { useTranslation } from 'react-i18next';
 
@@ -17,12 +13,7 @@ export default function ImageSourceResultScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { imageSourceHistory } = useVerification();
-  const { publishPost } = useSquare();
-  const { user } = useAuth();
-  const shareViewRef = useRef<View>(null);
-  const [isSharing, setIsSharing] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [showShareView, setShowShareView] = useState(false);
 
   const record = imageSourceHistory.find((item) => item.id === id);
 
@@ -42,54 +33,6 @@ export default function ImageSourceResultScreen() {
       Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
     } finally {
       setIsDownloading(false);
-    }
-  };
-
-  const handleShare = async () => {
-    if (isSharing || !record || !user) {
-      if (!user) {
-        Alert.alert(t('common.tip'), t('square.loginRequired'));
-      }
-      return;
-    }
-    
-    try {
-      setIsSharing(true);
-
-      // 发布到广场
-      const postId = await publishPost({
-        userId: user.userId,
-        userNickname: user.nickname || user.userId,
-        userAvatar: user.avatar,
-        postType: 'imageSource',
-        imageSourceId: record.id,
-        imageUri: record.imageUri,
-        keywords: record.analysis.keywords,
-        entityInfo: record.analysis.entityInfo,
-        pinnedCommentId: undefined,
-      });
-
-      Alert.alert(
-        t('common.success'),
-        t('square.publishSuccess'),
-        [
-          {
-            text: t('common.confirm'),
-            onPress: () => {
-              // 跳转到广场并定位到该帖子
-              router.push({
-                pathname: '/(tabs)/square',
-                params: { postId },
-              } as any);
-            },
-          },
-        ]
-      );
-    } catch (error) {
-      console.error('Failed to publish to square:', error);
-      Alert.alert(t('common.error'), t('square.publishFailed'));
-    } finally {
-      setIsSharing(false);
     }
   };
 
@@ -132,34 +75,19 @@ export default function ImageSourceResultScreen() {
           <ArrowLeft size={24} color="#0F172A" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('imageSource.detailTitle')}</Text>
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            onPress={handleShare}
-            style={styles.actionButton}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            activeOpacity={0.6}
-            disabled={isSharing}
-          >
-            {isSharing ? (
-              <ActivityIndicator size="small" color="#0066FF" />
-            ) : (
-              <Share2 size={20} color="#0066FF" />
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleDownload}
-            style={styles.actionButton}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            activeOpacity={0.6}
-            disabled={isDownloading}
-          >
-            {isDownloading ? (
-              <ActivityIndicator size="small" color="#0066FF" />
-            ) : (
-              <Download size={20} color="#0066FF" />
-            )}
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          onPress={handleDownload}
+          style={styles.actionButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          activeOpacity={0.6}
+          disabled={isDownloading}
+        >
+          {isDownloading ? (
+            <ActivityIndicator size="small" color="#0066FF" />
+          ) : (
+            <Download size={20} color="#0066FF" />
+          )}
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
@@ -238,15 +166,6 @@ export default function ImageSourceResultScreen() {
           <Text style={styles.bottomBackText}>{t('common.back')}</Text>
         </TouchableOpacity>
       </ScrollView>
-
-      <Modal visible={showShareView} transparent={false} animationType="none">
-        <View style={{ flex: 1 }}>
-          <ShareableImageSourceResult
-            ref={shareViewRef}
-            record={record}
-          />
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }

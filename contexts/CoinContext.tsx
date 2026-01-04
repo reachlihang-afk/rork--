@@ -7,6 +7,7 @@ interface DailyUsage {
   date: string;
   verificationCount: number;
   imageSourceCount: number;
+  outfitChangeCount: number;
 }
 
 const STORAGE_KEYS = {
@@ -14,7 +15,7 @@ const STORAGE_KEYS = {
   DAILY_USAGE: 'daily_usage',
 };
 
-const FREE_DAILY_LIMIT_REGISTERED = 3;
+const FREE_DAILY_LIMIT_REGISTERED = 5;
 const FREE_DAILY_LIMIT_GUEST = 1;
 const COIN_COST_PER_USE = 100;
 
@@ -29,6 +30,7 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
     date: getTodayDate(),
     verificationCount: 0,
     imageSourceCount: 0,
+    outfitChangeCount: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -39,6 +41,7 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
         date: today,
         verificationCount: 0,
         imageSourceCount: 0,
+        outfitChangeCount: 0,
       };
     }
     return usage;
@@ -96,6 +99,7 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
               date: getTodayDate(),
               verificationCount: 0,
               imageSourceCount: 0,
+              outfitChangeCount: 0,
             };
             setDailyUsage(newUsage);
           } else {
@@ -116,6 +120,7 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
                 date: getTodayDate(),
                 verificationCount: 0,
                 imageSourceCount: 0,
+                outfitChangeCount: 0,
               };
               setDailyUsage(newUsage);
             }
@@ -127,6 +132,7 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
             date: getTodayDate(),
             verificationCount: 0,
             imageSourceCount: 0,
+            outfitChangeCount: 0,
           };
           setDailyUsage(newUsage);
         }
@@ -135,6 +141,7 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
           date: getTodayDate(),
           verificationCount: 0,
           imageSourceCount: 0,
+          outfitChangeCount: 0,
         };
         setDailyUsage(newUsage);
       }
@@ -145,6 +152,7 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
         date: getTodayDate(),
         verificationCount: 0,
         imageSourceCount: 0,
+        outfitChangeCount: 0,
       });
     } finally {
       setIsLoading(false);
@@ -285,6 +293,57 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
     return true;
   };
 
+  const canUseOutfitChange = (): { canUse: boolean; needsCoins: boolean; message: string } => {
+    const resetUsage = resetDailyUsageIfNeeded(dailyUsage);
+    const freeLimit = isLoggedIn ? FREE_DAILY_LIMIT_REGISTERED : FREE_DAILY_LIMIT_GUEST;
+
+    if (resetUsage.outfitChangeCount < freeLimit) {
+      return { canUse: true, needsCoins: false, message: '使用免费次数' };
+    }
+
+    if (!isLoggedIn) {
+      return { 
+        canUse: false, 
+        needsCoins: false, 
+        message: '未登录用户每天仅限1次免费换装，请登录后继续使用' 
+      };
+    }
+
+    if (coinBalance >= COIN_COST_PER_USE) {
+      return { canUse: true, needsCoins: true, message: `需要消耗${COIN_COST_PER_USE}金币` };
+    }
+
+    return { 
+      canUse: false, 
+      needsCoins: true, 
+      message: `金币不足，需要${COIN_COST_PER_USE}金币，请充值` 
+    };
+  };
+
+  const useOutfitChange = async (): Promise<boolean> => {
+    const { canUse, needsCoins } = canUseOutfitChange();
+    if (!canUse) {
+      return false;
+    }
+
+    const resetUsage = resetDailyUsageIfNeeded(dailyUsage);
+    const newUsage = {
+      ...resetUsage,
+      outfitChangeCount: resetUsage.outfitChangeCount + 1,
+    };
+
+    if (needsCoins) {
+      const success = await deductCoins(COIN_COST_PER_USE);
+      if (!success) {
+        return false;
+      }
+    }
+
+    setDailyUsage(newUsage);
+    await saveData(coinBalance - (needsCoins ? COIN_COST_PER_USE : 0), newUsage);
+    return true;
+  };
+
   const getRemainingFreeCounts = () => {
     const resetUsage = resetDailyUsageIfNeeded(dailyUsage);
     const freeLimit = isLoggedIn ? FREE_DAILY_LIMIT_REGISTERED : FREE_DAILY_LIMIT_GUEST;
@@ -292,6 +351,7 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
     return {
       verification: Math.max(0, freeLimit - resetUsage.verificationCount),
       imageSource: Math.max(0, freeLimit - resetUsage.imageSourceCount),
+      outfitChange: Math.max(0, freeLimit - resetUsage.outfitChangeCount),
     };
   };
 
@@ -303,8 +363,10 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
     deductCoins,
     canUseVerification,
     canUseImageSource,
+    canUseOutfitChange,
     useVerification,
     useImageSource,
+    useOutfitChange,
     getRemainingFreeCounts,
   };
 });

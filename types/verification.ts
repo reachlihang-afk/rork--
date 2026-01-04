@@ -74,4 +74,5 @@ export interface OutfitChangeHistory {
   templateId: string;
   templateName: string;
   createdAt: number;
+  allowSquarePublish?: boolean; // 是否允许发布到广场
 }
