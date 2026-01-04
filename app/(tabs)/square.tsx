@@ -592,7 +592,7 @@ export default function SquareScreen() {
                 <View style={styles.imageWrapper}>
                   <Text style={styles.imageLabel} numberOfLines={1}>{t('square.referencePhoto')}</Text>
                   <TouchableOpacity onPress={() => handleImagePress(post.referencePhotoUri!, 'reference', post.id)} activeOpacity={0.9}>
-                    <Image source={{ uri: post.referencePhotoUri }} style={styles.postImage} />
+                    <Image source={{ uri: post.referencePhotoUri }} style={styles.postImage} contentFit="cover" />
                   </TouchableOpacity>
                 </View>
                 <View style={styles.imageWrapper}>
@@ -611,7 +611,7 @@ export default function SquareScreen() {
                     )}
                   </View>
                   <TouchableOpacity onPress={() => handleImagePress(post.editedPhotoUri!, 'verified', post.id)} activeOpacity={0.9}>
-                    <Image source={{ uri: post.editedPhotoUri }} style={styles.postImage} />
+                    <Image source={{ uri: post.editedPhotoUri }} style={styles.postImage} contentFit="cover" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -657,7 +657,7 @@ export default function SquareScreen() {
           {post.postType === 'imageSource' && post.imageUri && (
             <View style={styles.imageSourceContainer}>
               <TouchableOpacity onPress={() => handleImagePress(post.imageUri!, 'source', post.id)} activeOpacity={0.9}>
-                <Image source={{ uri: post.imageUri }} style={styles.singleImage} />
+                <Image source={{ uri: post.imageUri }} style={styles.singleImage} contentFit="cover" />
               </TouchableOpacity>
               {post.entityInfo && (
                 <View style={styles.entityInfoCard}>
@@ -685,7 +685,7 @@ export default function SquareScreen() {
                 <View style={styles.outfitImageWrapper}>
                   <Text style={styles.imageLabel} numberOfLines={1}>{t('history.original')}</Text>
                   <TouchableOpacity onPress={() => handleImagePress(post.originalImageUri!, 'original', post.id)} activeOpacity={0.9}>
-                    <Image source={{ uri: post.originalImageUri }} style={styles.outfitImage} />
+                    <Image source={{ uri: post.originalImageUri }} style={styles.outfitImage} contentFit="cover" />
                   </TouchableOpacity>
                 </View>
                 <View style={styles.arrowContainer}>
@@ -694,7 +694,7 @@ export default function SquareScreen() {
                 <View style={styles.outfitImageWrapper}>
                   <Text style={styles.imageLabel} numberOfLines={1}>{t('history.result')}</Text>
                   <TouchableOpacity onPress={() => handleImagePress(post.resultImageUri!, 'result', post.id)} activeOpacity={0.9}>
-                    <Image source={{ uri: post.resultImageUri }} style={styles.outfitImage} />
+                    <Image source={{ uri: post.resultImageUri }} style={styles.outfitImage} contentFit="cover" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1668,7 +1668,7 @@ const styles = StyleSheet.create({
   },
   singleImage: {
     width: '100%',
-    height: 400,
+    aspectRatio: 1,
     borderRadius: 12,
     backgroundColor: '#F1F5F9',
   },
@@ -1721,7 +1721,7 @@ const styles = StyleSheet.create({
   },
   outfitImage: {
     width: '100%',
-    height: 280,
+    aspectRatio: 1,
     borderRadius: 12,
     backgroundColor: '#F1F5F9',
   },
