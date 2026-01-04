@@ -87,6 +87,8 @@ const templates: Template[] = [
   },
 ];
 
+type OutfitMode = 'template' | 'custom';
+
 export default function OutfitChangeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -94,8 +96,10 @@ export default function OutfitChangeScreen() {
   const { addOutfitChangeHistory } = useVerification();
   const { publishPost } = useSquare();
   const { user } = useAuth();
+  const [mode, setMode] = useState<OutfitMode>('template');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [customOutfitImages, setCustomOutfitImages] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatingTime, setGeneratingTime] = useState(0);
   const [resultUri, setResultUri] = useState<string | null>(null);
@@ -119,6 +123,31 @@ export default function OutfitChangeScreen() {
     }
   };
 
+  const pickCustomOutfitImage = async () => {
+    if (customOutfitImages.length >= 3) {
+      Alert.alert(t('common.tip'), t('outfitChange.maxImagesReached'));
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: false,
+      quality: 0.6, // 降低质量以减小文件大小
+      allowsMultipleSelection: true,
+      selectionLimit: 3 - customOutfitImages.length,
+    });
+
+    if (!result.canceled && result.assets) {
+      const newImages = result.assets.map(asset => asset.uri);
+      setCustomOutfitImages(prev => [...prev, ...newImages].slice(0, 3));
+      setResultUri(null);
+    }
+  };
+
+  const removeCustomOutfitImage = (index: number) => {
+    setCustomOutfitImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     
@@ -139,19 +168,87 @@ export default function OutfitChangeScreen() {
     }
   };
 
-  const convertToBase64 = async (uri: string): Promise<string> => {
+  const compressImageWeb = async (blob: Blob, maxWidth: number = 800, quality: number = 0.7): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      if (Platform.OS !== 'web') {
+        resolve(blob);
+        return;
+      }
+      
+      const img = document.createElement('img') as HTMLImageElement;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // 等比例缩放
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+        
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (compressedBlob) => {
+            if (compressedBlob) {
+              console.log('[compressImageWeb] Original size:', blob.size, 'Compressed size:', compressedBlob.size);
+              resolve(compressedBlob);
+            } else {
+              reject(new Error('Failed to compress image'));
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(blob);
+    });
+  };
+
+  const convertToBase64 = async (uri: string, compress: boolean = true): Promise<string> => {
     if (Platform.OS === 'web') {
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64 = reader.result as string;
-          resolve(base64.split(',')[1]);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
+      try {
+        console.log('[convertToBase64] Converting web image:', uri.substring(0, 100));
+        const response = await fetch(uri);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status}`);
+        }
+        let blob = await response.blob();
+        console.log('[convertToBase64] Original blob size:', blob.size, 'bytes');
+        
+        // 压缩图片（针对自定义穿搭模式）
+        if (compress && blob.size > 500000) { // 如果大于500KB则压缩
+          console.log('[convertToBase64] Compressing image...');
+          blob = await compressImageWeb(blob, 800, 0.7);
+        }
+        
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = reader.result as string;
+            const base64Data = base64.split(',')[1];
+            console.log('[convertToBase64] Conversion complete, base64 length:', base64Data.length);
+            resolve(base64Data);
+          };
+          reader.onerror = (error) => {
+            console.error('[convertToBase64] FileReader error:', error);
+            reject(error);
+          };
+          reader.readAsDataURL(blob);
+        });
+      } catch (error) {
+        console.error('[convertToBase64] Web conversion error:', error);
+        throw new Error('图片转换失败，请重新选择图片');
+      }
     } else {
       const base64String = await FileSystem.readAsStringAsync(uri, {
         encoding: FileSystem.EncodingType.Base64,
@@ -161,8 +258,18 @@ export default function OutfitChangeScreen() {
   };
 
   const generateOutfitChange = async () => {
-    if (!imageUri || !selectedTemplate) {
-      Alert.alert(t('common.tip'), t('outfitChange.selectImageAndTemplate'));
+    if (!imageUri) {
+      Alert.alert(t('common.tip'), t('outfitChange.selectImage'));
+      return;
+    }
+
+    if (mode === 'template' && !selectedTemplate) {
+      Alert.alert(t('common.tip'), t('outfitChange.selectTemplate'));
+      return;
+    }
+
+    if (mode === 'custom' && customOutfitImages.length === 0) {
+      Alert.alert(t('common.tip'), t('outfitChange.selectOutfitImages'));
       return;
     }
 
@@ -182,23 +289,67 @@ export default function OutfitChangeScreen() {
     }, 1000);
 
     try {
-      const base64Image = await convertToBase64(imageUri);
+      console.log('[OutfitChange] Starting generation, mode:', mode);
+      const base64Image = await convertToBase64(imageUri, mode === 'custom'); // 自定义模式启用压缩
+      console.log('[OutfitChange] Main image converted, size:', base64Image.length);
       
+      let requestBody;
+      if (mode === 'template') {
+        requestBody = {
+          prompt: selectedTemplate!.prompt,
+          images: [{ type: 'image', image: base64Image }],
+          aspectRatio: '3:4',
+        };
+        console.log('[OutfitChange] Template mode request body prepared');
+      } else {
+        // 自定义穿搭模式
+        console.log('[OutfitChange] Custom mode, converting', customOutfitImages.length, 'outfit images');
+        
+        try {
+          const outfitBase64Images = await Promise.all(
+            customOutfitImages.map(async (uri, index) => {
+              console.log(`[OutfitChange] Converting outfit image ${index + 1}/${customOutfitImages.length}`);
+              const base64 = await convertToBase64(uri, true); // 启用压缩
+              console.log(`[OutfitChange] Outfit image ${index + 1} converted, size:`, base64.length);
+              return base64;
+            })
+          );
+          
+          const prompt = `IMPORTANT: Keep the person's face, facial features, hairstyle, and body structure exactly the same as in the original image. Only apply the clothing items, accessories, shoes, bags, and hats from the reference images to the VISIBLE body parts in the original image. Do not change or regenerate the person's identity or appearance. Only modify the clothing on the parts that are already visible in the original photo. If a clothing item (like shoes) requires body parts not visible in the original image, DO NOT add those body parts - simply ignore that item. Maintain the original photo's composition, framing, and the person's exact appearance.`;
+          
+          requestBody = {
+            prompt: prompt,
+            images: [
+              { type: 'image', image: base64Image },
+              ...outfitBase64Images.map(img => ({ type: 'reference', image: img }))
+            ],
+            aspectRatio: '3:4',
+          };
+          console.log('[OutfitChange] Custom mode request body prepared with', requestBody.images.length, 'images');
+        } catch (conversionError) {
+          console.error('[OutfitChange] Error converting outfit images:', conversionError);
+          throw new Error('图片转换失败，请重试');
+        }
+      }
+      
+      console.log('[OutfitChange] Sending request to API...');
       const response = await fetch('https://toolkit.rork.com/images/edit/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          prompt: selectedTemplate.prompt,
-          images: [{ type: 'image', image: base64Image }],
-          aspectRatio: '3:4',
-        }),
+        body: JSON.stringify(requestBody),
       });
+      console.log('[OutfitChange] API response received, status:', response.status);
 
       if (!response.ok) {
         const errorData = await response.text();
-        console.error('API Error:', response.status, errorData);
+        console.error('[OutfitChange] API Error:', response.status, errorData);
+        
+        if (response.status === 413) {
+          throw new Error('图片过大，请选择较小的图片或减少图片数量');
+        }
+        
         throw new Error(`生成失败: HTTP ${response.status}`);
       }
 
@@ -216,11 +367,14 @@ export default function OutfitChangeScreen() {
       
       // 保存到历史记录
       try {
+        const templateId = mode === 'template' ? selectedTemplate!.id : 'custom-outfit';
+        const templateName = mode === 'template' ? selectedTemplate!.name : t('outfitChange.customOutfit');
+        
         const historyId = await addOutfitChangeHistory(
           imageUri,
           generatedImageUri,
-          selectedTemplate.id,
-          selectedTemplate.name
+          templateId,
+          templateName
         );
         setResultHistoryId(historyId);
       } catch (historyError) {
@@ -228,8 +382,16 @@ export default function OutfitChangeScreen() {
       }
       
     } catch (error: any) {
-      console.error('Outfit change error:', error);
-      const errorMessage = error.message || t('outfitChange.generationFailed');
+      console.error('[OutfitChange] Generation error:', error);
+      let errorMessage = t('outfitChange.generationFailed');
+      
+      if (error.message === 'Failed to fetch') {
+        errorMessage = '网络连接失败，请检查网络连接后重试';
+        console.error('[OutfitChange] Network error - Failed to fetch');
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       Alert.alert(t('common.error'), errorMessage);
     } finally {
       clearInterval(timer);
@@ -294,12 +456,16 @@ export default function OutfitChangeScreen() {
   };
 
   const publishToSquare = async () => {
-    if (!resultUri || !imageUri || !selectedTemplate || !user || !resultHistoryId) {
+    if (!resultUri || !imageUri || !user || !resultHistoryId) {
       if (!user) {
         Alert.alert(t('common.tip'), t('square.loginRequired'));
       }
       return;
     }
+
+    const templateName = mode === 'template' 
+      ? (selectedTemplate?.name || '') 
+      : t('outfitChange.customOutfit');
 
     setIsPublishing(true);
     try {
@@ -311,7 +477,7 @@ export default function OutfitChangeScreen() {
         outfitChangeId: resultHistoryId,
         originalImageUri: imageUri,
         resultImageUri: resultUri,
-        templateName: selectedTemplate.name,
+        templateName: templateName,
         pinnedCommentId: undefined,
       });
 
@@ -390,15 +556,44 @@ export default function OutfitChangeScreen() {
         </View>
 
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t('outfitChange.selectTemplate')}</Text>
-            <View style={styles.costBadge}>
-              <Text style={styles.costBadgeText}>💰 {COST_PER_GENERATION}</Text>
-            </View>
+          <Text style={styles.sectionTitle}>{t('outfitChange.selectMode')}</Text>
+          <View style={styles.modeSelector}>
+            <TouchableOpacity
+              style={[styles.modeButton, mode === 'template' && styles.modeButtonActive]}
+              onPress={() => {
+                setMode('template');
+                setResultUri(null);
+              }}
+            >
+              <Text style={[styles.modeButtonText, mode === 'template' && styles.modeButtonTextActive]}>
+                {t('outfitChange.templateMode')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modeButton, mode === 'custom' && styles.modeButtonActive]}
+              onPress={() => {
+                setMode('custom');
+                setResultUri(null);
+              }}
+            >
+              <Text style={[styles.modeButtonText, mode === 'custom' && styles.modeButtonTextActive]}>
+                {t('outfitChange.customMode')}
+              </Text>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.sectionDesc}>{t('outfitChange.selectTemplateDesc')}</Text>
-          
-          <View style={styles.templatesGrid}>
+        </View>
+
+        {mode === 'template' ? (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t('outfitChange.selectTemplate')}</Text>
+              <View style={styles.costBadge}>
+                <Text style={styles.costBadgeText}>💰 {COST_PER_GENERATION}</Text>
+              </View>
+            </View>
+            <Text style={styles.sectionDesc}>{t('outfitChange.selectTemplateDesc')}</Text>
+            
+            <View style={styles.templatesGrid}>
             {templates.map((template) => (
               <TouchableOpacity
                 key={template.id}
@@ -415,6 +610,48 @@ export default function OutfitChangeScreen() {
             ))}
           </View>
         </View>
+        ) : (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t('outfitChange.uploadOutfitImages')}</Text>
+              <View style={styles.costBadge}>
+                <Text style={styles.costBadgeText}>💰 {COST_PER_GENERATION}</Text>
+              </View>
+            </View>
+            <Text style={styles.sectionDesc}>{t('outfitChange.uploadOutfitImagesDesc')}</Text>
+            
+            <View style={styles.outfitImagesContainer}>
+              {customOutfitImages.map((uri, index) => (
+                <View key={index} style={styles.outfitImageItem}>
+                  <Image source={{ uri }} style={styles.outfitImagePreview} contentFit="cover" />
+                  <TouchableOpacity
+                    style={styles.removeImageButton}
+                    onPress={() => removeCustomOutfitImage(index)}
+                  >
+                    <Text style={styles.removeImageText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+              
+              {customOutfitImages.length < 3 && (
+                <TouchableOpacity
+                  style={styles.addOutfitImageButton}
+                  onPress={pickCustomOutfitImage}
+                  disabled={isGenerating}
+                >
+                  <Text style={styles.addOutfitImageIcon}>+</Text>
+                  <Text style={styles.addOutfitImageText}>{t('outfitChange.addImage')}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            
+            {customOutfitImages.length > 0 && (
+              <Text style={styles.imageCountText}>
+                {t('outfitChange.imageCount', { count: customOutfitImages.length, max: 3 })}
+              </Text>
+            )}
+          </View>
+        )}
 
         {resultUri && (
           <View style={styles.section}>
@@ -460,10 +697,20 @@ export default function OutfitChangeScreen() {
         <TouchableOpacity
           style={[
             styles.generateButton,
-            (!imageUri || !selectedTemplate || isGenerating) && styles.generateButtonDisabled,
+            (
+              !imageUri || 
+              isGenerating || 
+              (mode === 'template' && !selectedTemplate) || 
+              (mode === 'custom' && customOutfitImages.length === 0)
+            ) && styles.generateButtonDisabled,
           ]}
           onPress={generateOutfitChange}
-          disabled={!imageUri || !selectedTemplate || isGenerating}
+          disabled={
+            !imageUri || 
+            isGenerating || 
+            (mode === 'template' && !selectedTemplate) || 
+            (mode === 'custom' && customOutfitImages.length === 0)
+          }
         >
           {isGenerating ? (
             <View style={styles.generatingContainer}>
@@ -697,5 +944,91 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  modeSelector: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  modeButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  modeButtonActive: {
+    borderColor: '#0066FF',
+    backgroundColor: '#F0F9FF',
+  },
+  modeButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  modeButtonTextActive: {
+    color: '#0066FF',
+  },
+  outfitImagesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  outfitImageItem: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  outfitImagePreview: {
+    width: '100%',
+    height: '100%',
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  removeImageText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  addOutfitImageButton: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  addOutfitImageIcon: {
+    fontSize: 32,
+    color: '#94A3B8',
+  },
+  addOutfitImageText: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  imageCountText: {
+    marginTop: 12,
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
   },
 });

@@ -716,9 +716,30 @@ Reference photos (${limitedReferencePhotos.length}):`,
       templateName,
       createdAt: Date.now(),
     };
-    const updated = [historyItem, ...outfitChangeHistory];
+    
+    // 限制历史记录数量为5条，防止存储溢出（每条记录包含大量base64图片数据）
+    const updated = [historyItem, ...outfitChangeHistory].slice(0, 5);
     setOutfitChangeHistory(updated);
-    await AsyncStorage.setItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY, JSON.stringify(updated));
+    
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY, JSON.stringify(updated));
+      console.log('[VerificationContext] Outfit change history saved, total:', updated.length);
+    } catch (error) {
+      console.error('[VerificationContext] Failed to save history, storage quota exceeded:', error);
+      // 如果保存失败（存储溢出），只保留最新的1条记录
+      const minimal = [historyItem];
+      setOutfitChangeHistory(minimal);
+      try {
+        await AsyncStorage.setItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY, JSON.stringify(minimal));
+        console.log('[VerificationContext] Saved minimal history (1 item) after quota exceeded');
+      } catch (minimalError) {
+        console.error('[VerificationContext] Even minimal save failed:', minimalError);
+        // 最后的尝试：清空历史记录
+        setOutfitChangeHistory([]);
+        await AsyncStorage.removeItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY);
+      }
+    }
+    
     return historyItem.id;
   };
 
