@@ -369,5 +369,9 @@ export default {
     insufficientCoins: '金币不足，请充值',
     generationFailed: '生成失败，请重试',
     reupload: '重新上传',
+    downloadToAlbum: '下载到相册',
+    downloadSuccess: '已保存到相册',
+    downloadFailed: '下载失败',
+    mediaLibraryPermission: '需要相册访问权限',
   },
 };

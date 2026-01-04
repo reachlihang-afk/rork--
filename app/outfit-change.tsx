@@ -3,7 +3,9 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import { Shirt, ChevronLeft } from 'lucide-react-native';
+import * as MediaLibrary from 'expo-media-library';
+import { File, Paths } from 'expo-file-system';
+import { Shirt, ChevronLeft, Download } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useCoin } from '@/contexts/CoinContext';
 
@@ -82,6 +84,7 @@ export default function OutfitChangeScreen() {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [resultUri, setResultUri] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const COST_PER_GENERATION = 200;
 
@@ -194,6 +197,52 @@ export default function OutfitChangeScreen() {
     }
   };
 
+  const downloadImage = async () => {
+    if (!resultUri) return;
+
+    setIsDownloading(true);
+
+    try {
+      if (Platform.OS === 'web') {
+        const link = document.createElement('a');
+        link.href = resultUri;
+        link.download = `outfit-change-${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
+      } else {
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        
+        if (status !== 'granted') {
+          Alert.alert(t('errors.permissionDenied'), t('outfitChange.mediaLibraryPermission'));
+          return;
+        }
+
+        const filename = `outfit-change-${Date.now()}.png`;
+        const file = new File(Paths.cache, filename);
+        
+        const response = await fetch(resultUri);
+        const blob = await response.blob();
+        const arrayBuffer = await blob.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+        
+        file.create();
+        file.write(uint8Array);
+
+        const asset = await MediaLibrary.createAssetAsync(file.uri);
+        await MediaLibrary.createAlbumAsync('OutfitChange', asset, false);
+        
+        Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -261,7 +310,23 @@ export default function OutfitChangeScreen() {
 
         {resultUri && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('outfitChange.result')}</Text>
+            <View style={styles.resultHeader}>
+              <Text style={styles.sectionTitle}>{t('outfitChange.result')}</Text>
+              <TouchableOpacity
+                style={styles.downloadButton}
+                onPress={downloadImage}
+                disabled={isDownloading}
+              >
+                {isDownloading ? (
+                  <ActivityIndicator size="small" color="#0066FF" />
+                ) : (
+                  <>
+                    <Download size={18} color="#0066FF" />
+                    <Text style={styles.downloadButtonText}>{t('outfitChange.downloadToAlbum')}</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
             <View style={styles.resultContainer}>
               <Image source={{ uri: resultUri }} style={styles.resultImage} contentFit="cover" />
             </View>
@@ -352,6 +417,28 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 28,
+  },
+  resultHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  downloadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  downloadButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0066FF',
   },
   sectionTitle: {
     fontSize: 18,

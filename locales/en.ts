@@ -369,5 +369,9 @@ export default {
     insufficientCoins: 'Insufficient coins, please recharge',
     generationFailed: 'Generation failed, please try again',
     reupload: 'Reupload',
+    downloadToAlbum: 'Save to Album',
+    downloadSuccess: 'Saved to album',
+    downloadFailed: 'Download failed',
+    mediaLibraryPermission: 'Media library permission required',
   },
 };

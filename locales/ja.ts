@@ -360,5 +360,9 @@ export default {
     insufficientCoins: 'コイン不足、チャージしてください',
     generationFailed: '生成に失敗しました。もう一度お試しください',
     reupload: '再アップロード',
+    downloadToAlbum: 'アルバムに保存',
+    downloadSuccess: 'アルバムに保存しました',
+    downloadFailed: 'ダウンロード失敗',
+    mediaLibraryPermission: 'メディアライブラリへのアクセス許可が必要です',
   },
 };

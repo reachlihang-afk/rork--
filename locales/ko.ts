@@ -360,5 +360,9 @@ export default {
     insufficientCoins: '코인 부족, 충전하세요',
     generationFailed: '생성 실패, 다시 시도하세요',
     reupload: '다시 업로드',
+    downloadToAlbum: '앨범에 저장',
+    downloadSuccess: '앨범에 저장되었습니다',
+    downloadFailed: '다운로드 실패',
+    mediaLibraryPermission: '미디어 라이브러리 액세스 권한이 필요합니다',
   },
 };
