@@ -1,6 +1,6 @@
-import { User, LogOut, Coins, ChevronRight, Globe, Edit3, Users, Shield } from 'lucide-react-native';
+﻿import { User, LogOut, Coins, ChevronRight, Globe, Edit3, Users, Shield } from 'lucide-react-native';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, Alert, ActivityIndicator, Modal, Pressable, ScrollView, Image, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Alert, ActivityIndicator, Modal, Pressable, ScrollView, Image, Keyboard, Platform } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCoin } from '@/contexts/CoinContext';
 import { useLanguage, Language, languageNames } from '@/contexts/LanguageContext';
@@ -386,26 +386,35 @@ export default function ProfileScreen() {
   }
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <View style={styles.iconContainer}>
-              <User size={40} color="#0066FF" strokeWidth={2.5} />
-            </View>
-            <Text style={styles.title}>{t('profile.phoneLogin')}</Text>
+    <>
+      <ScrollView 
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <View style={styles.iconContainer}>
+            <User size={40} color="#0066FF" strokeWidth={2.5} />
           </View>
+          <Text style={styles.title}>{t('profile.phoneLogin')}</Text>
+        </View>
 
-          <View style={styles.form}>
+        <View style={styles.form}>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>{t('profile.phone')}</Text>
               <TextInput
                 style={styles.input}
                 placeholder={t('profile.phonePlaceholder')}
                 keyboardType="phone-pad"
+                inputMode="tel"
                 maxLength={11}
                 value={phone}
                 onChangeText={setPhone}
+                editable={true}
+                selectTextOnFocus={true}
+                autoComplete={Platform.OS === 'web' ? 'tel' : 'off'}
+                pointerEvents="auto"
               />
             </View>
 
@@ -416,9 +425,14 @@ export default function ProfileScreen() {
                   style={[styles.input, styles.codeInput]}
                   placeholder={t('profile.verificationCodePlaceholder')}
                   keyboardType="number-pad"
+                  inputMode="numeric"
                   maxLength={6}
                   value={verificationCode}
                   onChangeText={setVerificationCode}
+                  editable={true}
+                  selectTextOnFocus={true}
+                  autoComplete={Platform.OS === 'web' ? 'one-time-code' : 'off'}
+                  pointerEvents="auto"
                 />
                 <TouchableOpacity
                   style={[styles.sendCodeButton, (countdown > 0) && styles.sendCodeButtonDisabled]}
@@ -467,43 +481,43 @@ export default function ProfileScreen() {
             </View>
           </TouchableOpacity>
         </View>
+      </ScrollView>
 
-        <Modal
-          visible={showLanguageModal}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowLanguageModal(false)}
-        >
-          <Pressable style={styles.modalOverlay} onPress={() => setShowLanguageModal(false)}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{t('profile.selectLanguage')}</Text>
-              {(['zh', 'en', 'ja', 'ko'] as Language[]).map((lang) => (
-                <TouchableOpacity
-                  key={lang}
-                  style={[
-                    styles.languageOption,
-                    currentLanguage === lang && styles.languageOptionActive,
-                  ]}
-                  onPress={() => handleLanguageSelect(lang)}
-                >
-                  <Text style={[
-                    styles.languageOptionText,
-                    currentLanguage === lang && styles.languageOptionTextActive,
-                  ]}>
-                    {languageNames[lang]}
-                  </Text>
-                  {currentLanguage === lang && (
-                    <View style={styles.checkMark}>
-                      <Text style={styles.checkMarkText}>✓</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-          </Pressable>
-        </Modal>
-      </View>
-    </TouchableWithoutFeedback>
+      <Modal
+        visible={showLanguageModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowLanguageModal(false)}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{t('profile.selectLanguage')}</Text>
+            {(['zh', 'en', 'ja', 'ko'] as Language[]).map((lang) => (
+              <TouchableOpacity
+                key={lang}
+                style={[
+                  styles.languageOption,
+                  currentLanguage === lang && styles.languageOptionActive,
+                ]}
+                onPress={() => handleLanguageSelect(lang)}
+              >
+                <Text style={[
+                  styles.languageOptionText,
+                  currentLanguage === lang && styles.languageOptionTextActive,
+                ]}>
+                  {languageNames[lang]}
+                </Text>
+                {currentLanguage === lang && (
+                  <View style={styles.checkMark}>
+                    <Text style={styles.checkMarkText}>✓</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
+    </>
   );
 }
 
@@ -511,6 +525,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   content: {
     padding: 20,
@@ -637,6 +654,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.03,
     shadowRadius: 4,
     elevation: 1,
+    outlineStyle: 'none' as any,
+    ...(Platform.OS === 'web' && {
+      outlineWidth: 0,
+      cursor: 'text' as any,
+    }),
   },
   codeRow: {
     flexDirection: 'row',

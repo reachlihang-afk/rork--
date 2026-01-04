@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
+import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { VerificationProvider } from "@/contexts/VerificationContext";
 import { AuthContext } from "@/contexts/AuthContext";
@@ -10,6 +11,11 @@ import { CoinProvider } from "@/contexts/CoinContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SquareProvider } from "@/contexts/SquareContext";
 import { FriendsContext } from "@/contexts/FriendsContext";
+
+// Import CSS for web platform
+if (Platform.OS === 'web') {
+  require('./web-input-fix.css');
+}
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.

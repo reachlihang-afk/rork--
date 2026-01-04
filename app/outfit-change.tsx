@@ -41,11 +41,11 @@ const templates: Template[] = [
     icon: '👔',
   },
   {
-    id: 'casual',
-    name: '休闲装',
-    nameEn: 'Casual',
-    prompt: 'Change the outfit to casual street style clothing - t-shirt and jeans or comfortable everyday wear',
-    icon: '👕',
+    id: 'beggar',
+    name: '乞丐装',
+    nameEn: 'Beggar Outfit',
+    prompt: 'Change the outfit to beggar or tattered clothing - worn-out, ragged clothes with patches and tears',
+    icon: '🥺',
   },
   {
     id: 'sport',
@@ -74,6 +74,13 @@ const templates: Template[] = [
     nameEn: 'Superhero',
     prompt: 'Change the outfit to a superhero costume with cape and heroic style',
     icon: '🦸',
+  },
+  {
+    id: 'newyear-horse',
+    name: '新年装-马年',
+    nameEn: 'New Year - Year of Horse',
+    prompt: 'Change the outfit to Chinese New Year festive clothing with horse year theme - red and gold colors, traditional patterns with horse motifs',
+    icon: '🐴',
   },
 ];
 

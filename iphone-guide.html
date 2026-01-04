@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iPhone 连接指南</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .device {
+            text-align: center;
+            font-size: 60px;
+            margin: 20px 0;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .step h2 {
+            color: #667eea;
+            margin-top: 0;
+            font-size: 20px;
+        }
+        .step-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .url-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .url-box h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+        .url {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+        .button {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #5568d3;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .warning strong {
+            color: #856404;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #155724;
+        }
+        .code {
+            background: #f8f9fa;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+        }
+        ol {
+            line-height: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 iPhone 连接指南</h1>
+        <div class="device">🍎</div>
+        
+        <div class="success">
+            ✅ <strong>好消息！</strong> Expo 开发服务器已经在运行中！<br>
+            运行在: <code class="code">http://localhost:8081</code>
+        </div>
+
+        <div class="step">
+            <h2><span class="step-number">1</span>确认 Expo Go 已安装</h2>
+            <p>在 iPhone 的 App Store 搜索并安装 <strong>"Expo Go"</strong></p>
+            <p>📥 App Store 链接: <a href="https://apps.apple.com/app/expo-go/id982107779" target="_blank">点击下载</a></p>
+        </div>
+
+        <div class="step">
+            <h2><span class="step-number">2</span>打开 Expo Go APP</h2>
+            <p>在 iPhone 上打开刚安装的 <strong>Expo Go</strong> 应用</p>
+        </div>
+
+        <div class="step">
+            <h2><span class="step-number">3</span>选择连接方式</h2>
+            <p>在 Expo Go 中，你会看到底部有两个选项：</p>
+            <ul>
+                <li><strong>Scan QR code</strong> - 扫描二维码</li>
+                <li><strong>Enter URL manually</strong> - 手动输入 URL</li>
+            </ul>
+        </div>
+
+        <div class="url-box">
+            <h3>🔗 方式 A：使用本地网络连接</h3>
+            <p>如果 iPhone 和电脑在<strong>同一个 WiFi</strong>：</p>
+            <div class="url">exp://192.168.31.155:8081</div>
+            <p><small>将此 URL 复制到 Expo Go 的"Enter URL manually"中</small></p>
+        </div>
+
+        <div class="url-box">
+            <h3>🌐 方式 B：使用隧道连接（推荐）</h3>
+            <p>如果看到电脑命令窗口中有类似这样的 URL：</p>
+            <div class="url">exp://xxx-xxx.tunnel.dev</div>
+            <p><small>将隧道 URL 复制到 Expo Go 中（不需要同一 WiFi）</small></p>
+        </div>
+
+        <div class="step">
+            <h2><span class="step-number">4</span>查看命令窗口</h2>
+            <p>请查看电脑上正在运行的黑色命令窗口，找到：</p>
+            <ol>
+                <li>查找以 <code class="code">exp://</code> 开头的 URL</li>
+                <li>或者查找二维码（如果显示的话）</li>
+                <li>复制 URL 或用 iPhone 相机扫描二维码</li>
+            </ol>
+        </div>
+
+        <div class="warning">
+            <strong>💡 提示：</strong><br>
+            • 如果使用本地 IP (192.168.31.155)，确保 iPhone 和电脑连接同一 WiFi<br>
+            • 如果使用隧道 URL (.tunnel.dev)，任何网络都可以<br>
+            • iPhone 相机可以直接扫描二维码，会自动打开 Expo Go<br>
+        </div>
+
+        <div class="step">
+            <h2><span class="step-number">5</span>如果看不到 URL</h2>
+            <p>在命令窗口中按以下键：</p>
+            <ul>
+                <li>按 <code class="code">Shift</code> 键查看更多选项</li>
+                <li>按 <code class="code">?</code> 查看帮助</li>
+                <li>或者直接尝试在 Expo Go 中输入本地 IP 地址</li>
+            </ul>
+        </div>
+
+        <div class="success">
+            <strong>🎉 连接成功后：</strong><br>
+            • APP 会自动加载并运行<br>
+            • 修改代码后会自动刷新（热更新）<br>
+            • 摇晃手机可以打开开发者菜单<br>
+        </div>
+
+        <hr style="margin: 40px 0; border: none; border-top: 2px solid #e9ecef;">
+
+        <div style="text-align: center; color: #6c757d;">
+            <p><strong>需要帮助？</strong></p>
+            <p>1. 确保命令窗口中显示 "Tunnel ready"</p>
+            <p>2. 在 Expo Go 中先尝试本地 IP，再尝试隧道 URL</p>
+            <p>3. 如果还是连不上，检查防火墙设置</p>
+        </div>
+    </div>
+
+    <script>
+        // 自动检测是否在移动设备上
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            // 在移动设备上，尝试直接打开
+            const urls = [
+                'exp://192.168.31.155:8081',
+                'exp://localhost:8081'
+            ];
+            
+            setTimeout(() => {
+                if (confirm('检测到你在移动设备上，是否尝试在 Expo Go 中打开？')) {
+                    window.location.href = urls[0];
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
+
+

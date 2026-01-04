@@ -1,0 +1,72 @@
+/* Fix for TextInput on Web - React Native Web */
+
+/* CRITICAL: Override all pointer-events blocking */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Remove default browser input styling */
+input,
+textarea {
+  outline: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  box-shadow: none !important;
+  pointer-events: auto !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  cursor: text !important;
+}
+
+/* Ensure inputs are focusable and clickable */
+input:focus,
+textarea:focus {
+  outline: none !important;
+}
+
+/* Fix for React Native Web TextInput containers */
+[data-focusable="true"],
+[data-focusable="true"] *,
+div[style*="pointer-events"] input,
+div[style*="pointer-events"] textarea {
+  pointer-events: auto !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+}
+
+/* Ensure proper z-index for inputs */
+input,
+textarea {
+  position: relative !important;
+  z-index: 999 !important;
+}
+
+/* Fix for disabled-looking inputs */
+input:not([disabled]),
+textarea:not([disabled]) {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  cursor: text !important;
+}
+
+/* Override any parent pointer-events */
+input,
+textarea,
+input *,
+textarea * {
+  pointer-events: auto !important;
+}
+
+/* Ensure input is always interactive */
+input[type="text"],
+input[type="tel"],
+input[type="number"],
+textarea {
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  -webkit-touch-callout: default !important;
+}
+

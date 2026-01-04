@@ -1,4 +1,4 @@
-export default {
+﻿export default {
   common: {
     back: '返回',
     confirm: '确定',
@@ -377,11 +377,12 @@ export default {
       christmas: '圣诞装',
       bikini: '比基尼',
       formal: '正装',
-      casual: '休闲装',
+      beggar: '乞丐装',
       sport: '运动装',
       wedding: '婚纱/礼服',
       traditional: '汉服',
       superhero: '超级英雄',
+      'newyear-horse': '新年装-马年',
     },
   },
 };

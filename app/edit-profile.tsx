@@ -211,6 +211,8 @@ export default function EditProfileScreen() {
               autoCapitalize="none"
               returnKeyType="done"
               blurOnSubmit={true}
+              editable={true}
+              selectTextOnFocus={true}
               onFocus={() => {
                 console.log('[EditProfile] Nickname input focused');
               }}
@@ -330,6 +332,7 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
+    outlineStyle: 'none' as any,
   },
   hint: {
     fontSize: 12,

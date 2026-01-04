@@ -149,6 +149,8 @@ export default function AddFriendScreen() {
               autoCapitalize="none"
               returnKeyType="search"
               onSubmitEditing={handleSearch}
+              editable={true}
+              selectTextOnFocus={true}
             />
             <TouchableOpacity
               style={styles.searchButton}
@@ -226,6 +228,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
+    outlineStyle: 'none' as any,
   },
   searchButton: {
     width: 48,

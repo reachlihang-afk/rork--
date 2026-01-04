@@ -843,6 +843,8 @@ export default function SquareScreen() {
                   maxLength={200}
                   multiline
                   textAlignVertical="top"
+                  editable={true}
+                  selectTextOnFocus={true}
                   onBlur={() => {
                     if (!commentText.trim()) {
                       setCommentingPost(null);
@@ -1279,6 +1281,7 @@ const styles = StyleSheet.create({
     maxHeight: 80,
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    outlineStyle: 'none' as any,
   },
   commentSendButton: {
     width: 40,

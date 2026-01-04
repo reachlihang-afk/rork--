@@ -1,4 +1,4 @@
-export default {
+﻿export default {
   common: {
     back: '戻る',
     confirm: '確認',
@@ -368,11 +368,12 @@ export default {
       christmas: 'クリスマス服',
       bikini: 'ビキニ',
       formal: 'フォーマル',
-      casual: 'カジュアル',
+      beggar: '乞食の服',
       sport: 'スポーツウェア',
       wedding: 'ウェディング',
       traditional: '漢服',
       superhero: 'スーパーヒーロー',
+      'newyear-horse': '新年服 - 馬年',
     },
   },
 };

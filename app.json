@@ -1,4 +1,4 @@
-{
+﻿{
   "expo": {
     "name": "网图克星",
     "slug": "zhen-shi-pian-ping-fen",
@@ -42,7 +42,8 @@
       ]
     },
     "web": {
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "bundler": "metro"
     },
     "plugins": [
       [

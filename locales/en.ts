@@ -1,4 +1,4 @@
-export default {
+﻿export default {
   common: {
     back: 'Back',
     confirm: 'Confirm',
@@ -377,11 +377,12 @@ export default {
       christmas: 'Christmas',
       bikini: 'Bikini',
       formal: 'Formal',
-      casual: 'Casual',
+      beggar: 'Beggar Outfit',
       sport: 'Sportswear',
       wedding: 'Wedding',
       traditional: 'Hanfu',
       superhero: 'Superhero',
+      'newyear-horse': 'New Year - Year of Horse',
     },
   },
 };
