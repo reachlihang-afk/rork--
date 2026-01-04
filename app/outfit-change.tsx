@@ -244,35 +244,36 @@ export default function OutfitChangeScreen() {
         document.body.removeChild(link);
         Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
       } else {
+        // 请求相册权限
+        console.log('Requesting media library permission...');
         const { status } = await MediaLibrary.requestPermissionsAsync();
         
         if (status !== 'granted') {
+          console.error('Media library permission denied');
           Alert.alert(t('errors.permissionDenied'), t('outfitChange.mediaLibraryPermission'));
           return;
         }
 
-        const filename = `outfit-change-${Date.now()}.jpg`;
-        const fileUri = `${FileSystem.cacheDirectory}${filename}`;
-        
-        // 如果是 base64 数据，直接写入文件
+        console.log('Permission granted, preparing to save image...');
+
+        // 如果是 base64 数据 URL，需要先保存为临时文件
+        let fileUri = resultUri;
         if (resultUri.startsWith('data:')) {
+          const filename = `outfit-change-${Date.now()}.jpg`;
+          fileUri = `${FileSystem.cacheDirectory}${filename}`;
+          
+          console.log('Converting base64 to file:', fileUri);
           const base64Data = resultUri.split(',')[1];
           await FileSystem.writeAsStringAsync(fileUri, base64Data, {
             encoding: FileSystem.EncodingType.Base64,
           });
-        } else {
-          // 如果是普通 URL，下载文件
-          await FileSystem.downloadAsync(resultUri, fileUri);
+          console.log('File saved to cache directory');
         }
 
-        const asset = await MediaLibrary.createAssetAsync(fileUri);
-        
-        try {
-          await MediaLibrary.createAlbumAsync('OutfitChange', asset, false);
-        } catch (e) {
-          // 相册已存在，忽略错误
-        }
-        
+        // 使用 saveToLibraryAsync 直接保存到相册
+        console.log('Saving to gallery:', fileUri);
+        await MediaLibrary.saveToLibraryAsync(fileUri);
+        console.log('Image saved to gallery successfully');
         Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
       }
     } catch (error) {
