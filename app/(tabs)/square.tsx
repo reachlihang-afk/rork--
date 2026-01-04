@@ -674,7 +674,6 @@ export default function SquareScreen() {
                   <Image source={{ uri: post.imageUri }} style={styles.singleImage} contentFit="cover" />
                 </TouchableOpacity>
               </View>
-              <View style={styles.singleImageWrapper} />
               {post.entityInfo && (
                 <View style={styles.entityInfoCard}>
                   <Text style={styles.entityName}>{post.entityInfo.name}</Text>
@@ -723,7 +722,7 @@ export default function SquareScreen() {
                 <View style={styles.outfitImageWrapper}>
                   <Text style={styles.imageLabel} numberOfLines={1}>{t('history.result')}</Text>
                   <TouchableOpacity onPress={() => handleImagePress(post.resultImageUri!, 'result', post.id)} activeOpacity={0.9}>
-                    <Image source={{ uri: post.resultImageUri }} style={styles.outfitImage} contentFit="cover" />
+                    <Image source={{ uri: post.resultImageUri }} style={styles.outfitImageResult} contentFit="cover" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1759,6 +1758,13 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     borderRadius: 12,
     backgroundColor: '#F1F5F9',
+  },
+  outfitImageResult: {
+    width: '95%',
+    aspectRatio: 1,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+    alignSelf: 'center',
   },
   arrowContainer: {
     width: 30,

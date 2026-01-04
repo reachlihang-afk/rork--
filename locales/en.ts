@@ -378,7 +378,7 @@
     selectTemplate: 'Select Template',
     selectTemplateDesc: 'Choose your desired clothing style',
     uploadOutfitImages: 'Upload Outfit Items',
-    uploadOutfitImagesDesc: 'Upload clothes, bags, shoes, hats, accessories (max 2)\n💡 Important: Only upload items for visible body parts, otherwise AI will not display them',
+    uploadOutfitImagesDesc: 'Upload clothes, bags, shoes, hats, accessories (max 2) - Important: Only upload items for visible body parts, otherwise AI will not display them',
     addImage: 'Add Image',
     imageCount: '{{count}}/{{max}} images',
     maxImagesReached: 'Maximum 2 images allowed',

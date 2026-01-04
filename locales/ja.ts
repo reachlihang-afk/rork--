@@ -369,7 +369,7 @@
     selectTemplate: 'テンプレート選択',
     selectTemplateDesc: 'お好みの服装スタイルを選択',
     uploadOutfitImages: '服装アイテム画像',
-    uploadOutfitImagesDesc: '服、バッグ、靴、帽子、アクセサリーなど（最大2枚）\n💡 重要：写真に見える体の部位に対応するアイテムのみアップロードしてください。そうでない場合、AIは表示しません',
+    uploadOutfitImagesDesc: '服、バッグ、靴、帽子、アクセサリーなど（最大2枚） - 重要：写真に見える体の部位に対応するアイテムのみアップロードしてください。そうでない場合、AIは表示しません',
     addImage: '画像を追加',
     imageCount: '{{count}}/{{max}} 枚',
     maxImagesReached: '最大2枚まで追加できます',

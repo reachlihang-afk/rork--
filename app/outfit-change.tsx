@@ -21,68 +21,70 @@ type Template = {
   icon: string;
 };
 
+const COMMON_PROMPT_PREFIX = 'IMPORTANT: Keep face, facial expression, hairstyle, pose, and photo framing EXACTLY as in original. Only change clothing in the EXACT visible areas. If only partial clothing is visible, apply only to that partial area. Do NOT extend or complete the image. ';
+
 const templates: Template[] = [
   {
     id: 'christmas',
     name: '圣诞装',
     nameEn: 'Christmas',
-    prompt: 'Change the outfit to Christmas style clothing - Santa outfit, festive sweater, or holiday themed clothes with red and green colors',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Christmas style clothing - Santa outfit, festive sweater, or holiday themed clothes with red and green colors',
     icon: '🎄',
   },
   {
     id: 'bikini',
     name: '比基尼',
     nameEn: 'Bikini',
-    prompt: 'Change the outfit to a bikini swimsuit, beach style',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to a bikini swimsuit, beach style',
     icon: '👙',
   },
   {
     id: 'formal',
     name: '正装',
     nameEn: 'Formal',
-    prompt: 'Change the outfit to formal business attire - suit and tie for men or professional dress for women',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to formal business attire - suit and tie for men or professional dress for women',
     icon: '👔',
   },
   {
     id: 'beggar',
     name: '乞丐装',
     nameEn: 'Beggar Outfit',
-    prompt: 'Change the outfit to beggar or tattered clothing - worn-out, ragged clothes with patches and tears',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to beggar or tattered clothing - worn-out, ragged clothes with patches and tears',
     icon: '🥺',
   },
   {
     id: 'sport',
     name: '运动装',
     nameEn: 'Sportswear',
-    prompt: 'Change the outfit to athletic sportswear - sports jersey, athletic pants, or gym clothes',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to athletic sportswear - sports jersey, athletic pants, or gym clothes',
     icon: '🏃',
   },
   {
     id: 'wedding',
     name: '婚纱/礼服',
     nameEn: 'Wedding',
-    prompt: 'Change the outfit to elegant wedding attire - wedding dress for women or formal tuxedo for men',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to elegant wedding attire - wedding dress for women or formal tuxedo for men',
     icon: '👰',
   },
   {
     id: 'traditional',
     name: '汉服',
     nameEn: 'Hanfu',
-    prompt: 'Change the outfit to traditional Chinese Hanfu clothing with elegant ancient style',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to traditional Chinese Hanfu clothing with elegant ancient style',
     icon: '🏮',
   },
   {
     id: 'superhero',
     name: '超级英雄',
     nameEn: 'Superhero',
-    prompt: 'Change the outfit to a superhero costume with cape and heroic style',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to a superhero costume with cape and heroic style',
     icon: '🦸',
   },
   {
     id: 'newyear-horse',
     name: '新年装-马年',
     nameEn: 'New Year - Year of Horse',
-    prompt: 'Change the outfit to Chinese New Year festive clothing with horse year theme - red and gold colors, traditional patterns with horse motifs',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Chinese New Year festive clothing with horse year theme - red and gold colors, traditional patterns with horse motifs',
     icon: '🐴',
   },
 ];
@@ -342,21 +344,49 @@ export default function OutfitChangeScreen() {
             })
           );
           
-          const prompt = `CRITICAL INSTRUCTIONS - Follow precisely:
+          const prompt = `CRITICAL INSTRUCTIONS - Follow EXACTLY:
 
-1. PRESERVE IDENTITY: Keep the person's face, facial features, skin tone, eye color, hairstyle, and body structure EXACTLY as in the original image. Do NOT alter the person's identity or appearance.
+1. PRESERVE EVERYTHING: Keep 100% unchanged:
+   - Face, facial expression, eye direction, mouth position
+   - Facial features, skin tone, eye color
+   - Hairstyle, hair color, hair position
+   - Body structure, pose, posture
+   - Background, lighting, shadows
+   - Photo framing and cropping
 
-2. CLOTHING APPLICATION: Apply clothing items, accessories, shoes, bags, and hats from the reference images to the person, but ONLY on body parts that are VISIBLE in the original image.
+2. PARTIAL VISIBILITY RULE: 
+   - If the original image shows ONLY HALF of a shirt → apply ONLY HALF of the new shirt in the SAME visible area
+   - If only sleeves are visible → apply ONLY sleeves from the reference clothing
+   - If only upper body is visible → apply ONLY upper body clothing
+   - NEVER complete or extend clothing beyond what's visible in the original
+   - NEVER add or generate body parts that are cropped out or not visible
 
-3. HAT/HEADWEAR: If a hat or headwear is provided in the reference images, place it naturally on the person's head WITHOUT changing their hairstyle underneath. The hat should sit realistically on top of their existing hair.
+3. EXACT FRAMING: 
+   - Keep the EXACT same cropping and framing as the original
+   - If original is cut off at waist → result must also cut off at waist
+   - If original shows partial clothing → result must show SAME partial view
+   - Do NOT try to show the "complete" outfit
 
-4. ACCESSORIES: Apply accessories (bags, jewelry, etc.) in natural positions that match the person's pose and the visible parts of their body.
+4. CLOTHING APPLICATION:
+   - Apply clothing textures, colors, and patterns from reference images
+   - Apply ONLY to the EXACT visible areas in the original photo
+   - Match the perspective and angle of the original photo
+   - If only 30% of a garment is visible, apply only 30%
 
-5. MISSING BODY PARTS: If a clothing item requires body parts NOT visible in the original (e.g., shoes when legs are not shown), completely IGNORE that item. Do NOT generate or add missing body parts.
+5. HAT/HEADWEAR: 
+   - Place naturally on head WITHOUT changing hairstyle or hair visibility
+   - If head is partially cropped, keep it partially cropped
 
-6. COMPOSITION: Maintain the original photo's framing, background, lighting, and overall composition. Only the clothing should change.
+6. IGNORE IMPOSSIBLE ITEMS:
+   - If shoes are in reference but feet not visible → completely ignore shoes
+   - If pants are in reference but legs not visible → completely ignore pants
+   - Do NOT generate missing body parts to accommodate clothing
 
-7. REALISM: Ensure all applied items fit naturally and realistically on the person, matching their size and proportions.`;
+7. NO MODIFICATIONS:
+   - Do NOT change facial expression
+   - Do NOT adjust pose or body position  
+   - Do NOT extend or complete the image
+   - ONLY replace visible clothing textures/colors in existing areas`;
           
           requestBody = {
             prompt: prompt,

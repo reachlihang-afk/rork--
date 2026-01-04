@@ -369,7 +369,7 @@
     selectTemplate: '템플릿 선택',
     selectTemplateDesc: '원하는 의상 스타일 선택',
     uploadOutfitImages: '의상 아이템 업로드',
-    uploadOutfitImagesDesc: '옷, 가방, 신발, 모자, 액세서리 등 (최대 2장)\n💡 중요: 사진에 보이는 신체 부위에 해당하는 아이템만 업로드하세요. 그렇지 않으면 AI가 표시하지 않습니다',
+    uploadOutfitImagesDesc: '옷, 가방, 신발, 모자, 액세서리 등 (최대 2장) - 중요: 사진에 보이는 신체 부위에 해당하는 아이템만 업로드하세요. 그렇지 않으면 AI가 표시하지 않습니다',
     addImage: '이미지 추가',
     imageCount: '{{count}}/{{max}} 장',
     maxImagesReached: '최대 2장까지 추가할 수 있습니다',

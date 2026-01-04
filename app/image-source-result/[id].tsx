@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Image } from 'expo-image';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Search, Share2 } from 'lucide-react-native';
+import { ArrowLeft, Search, Share2, Download } from 'lucide-react-native';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Linking, Alert, ActivityIndicator, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useVerification } from '@/contexts/VerificationContext';
@@ -21,9 +21,29 @@ export default function ImageSourceResultScreen() {
   const { user } = useAuth();
   const shareViewRef = useRef<View>(null);
   const [isSharing, setIsSharing] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [showShareView, setShowShareView] = useState(false);
 
   const record = imageSourceHistory.find((item) => item.id === id);
+
+  const handleDownload = async () => {
+    if (!record || isDownloading) return;
+
+    setIsDownloading(true);
+    try {
+      const success = await saveToGallery(record.imageUri);
+      if (success) {
+        Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
+      } else {
+        Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const handleShare = async () => {
     if (isSharing || !record || !user) {
@@ -112,22 +132,34 @@ export default function ImageSourceResultScreen() {
           <ArrowLeft size={24} color="#0F172A" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('imageSource.detailTitle')}</Text>
-        <TouchableOpacity
-          onPress={handleShare}
-          style={styles.shareButton}
-          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-          activeOpacity={0.6}
-          disabled={isSharing}
-        >
-          {isSharing ? (
-            <ActivityIndicator size="small" color="#0066FF" />
-          ) : (
-            <>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            onPress={handleShare}
+            style={styles.actionButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            activeOpacity={0.6}
+            disabled={isSharing}
+          >
+            {isSharing ? (
+              <ActivityIndicator size="small" color="#0066FF" />
+            ) : (
               <Share2 size={20} color="#0066FF" />
-              <Text style={styles.shareButtonText}>{t('square.publishToSquare')}</Text>
-            </>
-          )}
-        </TouchableOpacity>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleDownload}
+            style={styles.actionButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            activeOpacity={0.6}
+            disabled={isDownloading}
+          >
+            {isDownloading ? (
+              <ActivityIndicator size="small" color="#0066FF" />
+            ) : (
+              <Download size={20} color="#0066FF" />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
@@ -247,10 +279,12 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 32,
   },
-  shareButton: {
+  headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 12,
+  },
+  actionButton: {
     padding: 8,
   },
   shareButtonText: {

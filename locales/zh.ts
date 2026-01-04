@@ -378,7 +378,7 @@
     selectTemplate: '选择换装模板',
     selectTemplateDesc: '选择想要的服装风格',
     uploadOutfitImages: '上传服饰图片',
-    uploadOutfitImagesDesc: '上传衣服、包包、鞋子、帽子、饰品等图片（最多2张）\n💡 重要提示：请只上传照片中可见身体部位对应的服饰，否则AI将不予显示',
+    uploadOutfitImagesDesc: '上传衣服、包包、鞋子、帽子、饰品等图片（最多2张） - 重要提示：请只上传照片中可见身体部位对应的服饰，否则AI将不予显示',
     addImage: '添加图片',
     imageCount: '已添加 {{count}}/{{max}} 张',
     maxImagesReached: '最多只能添加2张图片',
