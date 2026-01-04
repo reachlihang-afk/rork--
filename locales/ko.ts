@@ -31,6 +31,8 @@
     pleaseUploadReference: '먼저 참조 사진을 업로드하세요',
     firstStep: '첫 번째 단계',
     startVerification: '검증 시작',
+    photoVerification: '사진 인증',
+    photoVerificationDesc: '사진 진위 확인',
     lookupVerification: '검증 조회',
     lookupVerificationDesc: '4자리 코드를 입력하여 기록 보기',
     lookupTip: '💡 검증 코드는 완료 후 표시되며, 다른 사람과 공유할 수 있습니다',

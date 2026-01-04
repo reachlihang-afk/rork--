@@ -31,6 +31,8 @@
     pleaseUploadReference: '请先上传参考照片',
     firstStep: '第一步',
     startVerification: '开始验证',
+    photoVerification: '人照合一验证',
+    photoVerificationDesc: '验证照片真实性',
     lookupVerification: '查看验证',
     lookupVerificationDesc: '输入4位验证码查看验证记录',
     lookupTip: '💡 验证码在验证完成后显示，可用于分享验证结果给他人查看',

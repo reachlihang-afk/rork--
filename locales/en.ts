@@ -31,6 +31,8 @@
     pleaseUploadReference: 'Please upload reference photos first',
     firstStep: 'First Step',
     startVerification: 'Start Verification',
+    photoVerification: 'Photo Verification',
+    photoVerificationDesc: 'Verify photo authenticity',
     lookupVerification: 'Lookup Verification',
     lookupVerificationDesc: 'Enter 4-digit code to view records',
     lookupTip: '💡 Verification code is shown after completion, can be shared with others',

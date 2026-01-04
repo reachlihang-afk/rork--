@@ -32,27 +32,6 @@ export default function HomeScreen() {
 
 
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('home.quickStart')}</Text>
-          
-          <TouchableOpacity 
-            style={[styles.actionCard, styles.actionCardPrimary]}
-            onPress={() => router.push('/outfit-change' as any)}
-          >
-            <View style={styles.actionIcon}>
-              <Text style={styles.actionIconEmoji}>✨</Text>
-            </View>
-            <View style={styles.actionContent}>
-              <Text style={[styles.actionTitle, styles.actionTitlePrimary]}>
-                {t('home.outfitChange')}
-              </Text>
-              <Text style={[styles.actionDescription, styles.actionDescriptionPrimary]}>
-                {t('home.outfitChangeDesc')}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
         <View style={styles.quickActions}>
           <TouchableOpacity 
             style={styles.quickActionCard}
@@ -67,13 +46,19 @@ export default function HomeScreen() {
 
           <TouchableOpacity 
             style={styles.quickActionCard}
-            onPress={() => router.push('/lookup-verification' as any)}
+            onPress={() => {
+              if (hasReferencePhotos) {
+                router.push('/verify-photo' as any);
+              } else {
+                router.push('/upload-reference' as any);
+              }
+            }}
           >
             <View style={styles.quickActionIcon}>
-              <Text style={styles.actionIconText}>🔍</Text>
+              <ShieldCheck size={24} color="#0066FF" />
             </View>
-            <Text style={styles.quickActionTitle} numberOfLines={2}>{t('home.lookupVerification')}</Text>
-            <Text style={styles.quickActionDescription} numberOfLines={3}>{t('home.lookupVerificationDesc')}</Text>
+            <Text style={styles.quickActionTitle} numberOfLines={2}>{t('home.photoVerification')}</Text>
+            <Text style={styles.quickActionDescription} numberOfLines={3}>{t('home.photoVerificationDesc')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -85,6 +70,17 @@ export default function HomeScreen() {
             </View>
             <Text style={styles.quickActionTitle} numberOfLines={2}>{t('home.findSource')}</Text>
             <Text style={styles.quickActionDescription} numberOfLines={3}>{t('home.findSourceDesc')}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.quickActionCard}
+            onPress={() => router.push('/lookup-verification' as any)}
+          >
+            <View style={styles.quickActionIcon}>
+              <Text style={styles.actionIconText}>🔍</Text>
+            </View>
+            <Text style={styles.quickActionTitle} numberOfLines={2}>{t('home.lookupVerification')}</Text>
+            <Text style={styles.quickActionDescription} numberOfLines={3}>{t('home.lookupVerificationDesc')}</Text>
           </TouchableOpacity>
         </View>
 

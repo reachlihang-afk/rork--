@@ -31,6 +31,8 @@
     pleaseUploadReference: '最初に参照写真をアップロードしてください',
     firstStep: '最初のステップ',
     startVerification: '検証を開始',
+    photoVerification: '写真認証',
+    photoVerificationDesc: '写真の真正性を検証',
     lookupVerification: '検証を確認',
     lookupVerificationDesc: '4桁のコードを入力して記録を表示',
     lookupTip: '💡 検証コードは完了後に表示され、他の人と共有できます',

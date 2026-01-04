@@ -542,15 +542,6 @@ export default function SquareScreen() {
           )}
 
           <View style={styles.actionsRow}>
-            <TouchableOpacity
-              style={styles.rateButton}
-              onPress={() => handleRatePress(post.id)}
-            >
-              <Star size={16} color="#F59E0B" fill={getUserRating(post.id, user.userId) !== null ? '#F59E0B' : 'none'} />
-              <Text style={styles.rateButtonText}>
-                {getUserRating(post.id, user.userId) !== null ? t('square.myRating') : t('square.ratePost')}
-              </Text>
-            </TouchableOpacity>
             <View style={styles.actionButtonContainer}>
               <TouchableOpacity
                 style={styles.moreButton}
