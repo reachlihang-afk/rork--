@@ -124,7 +124,7 @@ export default function OutfitChangeScreen() {
   };
 
   const pickCustomOutfitImage = async () => {
-    if (customOutfitImages.length >= 3) {
+    if (customOutfitImages.length >= 2) {
       Alert.alert(t('common.tip'), t('outfitChange.maxImagesReached'));
       return;
     }
@@ -132,14 +132,14 @@ export default function OutfitChangeScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: false,
-      quality: 0.6, // 降低质量以减小文件大小
+      quality: 0.5, // 进一步降低质量以减小文件大小
       allowsMultipleSelection: true,
-      selectionLimit: 3 - customOutfitImages.length,
+      selectionLimit: 2 - customOutfitImages.length,
     });
 
     if (!result.canceled && result.assets) {
       const newImages = result.assets.map(asset => asset.uri);
-      setCustomOutfitImages(prev => [...prev, ...newImages].slice(0, 3));
+      setCustomOutfitImages(prev => [...prev, ...newImages].slice(0, 2));
       setResultUri(null);
     }
   };
@@ -228,9 +228,9 @@ export default function OutfitChangeScreen() {
         // 强制压缩所有图片以避免413错误
         if (compress) {
           console.log('[convertToBase64] Compressing image...');
-          // 更激进的压缩参数：主图和服饰图都使用较小尺寸和较低质量
-          const maxWidth = isMainImage ? 512 : 400;
-          const quality = isMainImage ? 0.5 : 0.4;
+          // 极度激进的压缩参数以确保请求体不会太大
+          const maxWidth = isMainImage ? 480 : 360;
+          const quality = isMainImage ? 0.45 : 0.35;
           blob = await compressImageWeb(blob, maxWidth, quality);
           console.log('[convertToBase64] After first compression:', blob.size, 'bytes');
         }
@@ -243,13 +243,13 @@ export default function OutfitChangeScreen() {
             const sizeInKB = Math.round(base64Data.length / 1024);
             console.log('[convertToBase64] Conversion complete, base64 size:', sizeInKB, 'KB');
             
-            // 如果base64数据仍然太大（>500KB），进行二次压缩
-            if (compress && base64Data.length > 500000) {
+            // 如果base64数据仍然太大（>400KB），进行二次压缩
+            if (compress && base64Data.length > 400000) {
               console.log('[convertToBase64] Data still too large (', sizeInKB, 'KB), applying aggressive secondary compression...');
               // 重新压缩为更小的尺寸和更低质量
               fetch(uri)
                 .then(res => res.blob())
-                .then(newBlob => compressImageWeb(newBlob, isMainImage ? 400 : 320, 0.3))
+                .then(newBlob => compressImageWeb(newBlob, isMainImage ? 360 : 280, 0.25))
                 .then(finalBlob => {
                   const finalReader = new FileReader();
                   finalReader.onloadend = () => {
@@ -290,7 +290,7 @@ export default function OutfitChangeScreen() {
     }
 
     if (mode === 'template' && !selectedTemplate) {
-      Alert.alert(t('common.tip'), t('outfitChange.selectTemplate'));
+      Alert.alert(t('common.tip'), t('outfitChange.selectImageAndTemplate'));
       return;
     }
 
@@ -342,7 +342,21 @@ export default function OutfitChangeScreen() {
             })
           );
           
-          const prompt = `IMPORTANT: Keep the person's face, facial features, hairstyle, and body structure exactly the same as in the original image. Only apply the clothing items, accessories, shoes, bags, and hats from the reference images to the VISIBLE body parts in the original image. Do not change or regenerate the person's identity or appearance. Only modify the clothing on the parts that are already visible in the original photo. If a clothing item (like shoes) requires body parts not visible in the original image, DO NOT add those body parts - simply ignore that item. Maintain the original photo's composition, framing, and the person's exact appearance.`;
+          const prompt = `CRITICAL INSTRUCTIONS - Follow precisely:
+
+1. PRESERVE IDENTITY: Keep the person's face, facial features, skin tone, eye color, hairstyle, and body structure EXACTLY as in the original image. Do NOT alter the person's identity or appearance.
+
+2. CLOTHING APPLICATION: Apply clothing items, accessories, shoes, bags, and hats from the reference images to the person, but ONLY on body parts that are VISIBLE in the original image.
+
+3. HAT/HEADWEAR: If a hat or headwear is provided in the reference images, place it naturally on the person's head WITHOUT changing their hairstyle underneath. The hat should sit realistically on top of their existing hair.
+
+4. ACCESSORIES: Apply accessories (bags, jewelry, etc.) in natural positions that match the person's pose and the visible parts of their body.
+
+5. MISSING BODY PARTS: If a clothing item requires body parts NOT visible in the original (e.g., shoes when legs are not shown), completely IGNORE that item. Do NOT generate or add missing body parts.
+
+6. COMPOSITION: Maintain the original photo's framing, background, lighting, and overall composition. Only the clothing should change.
+
+7. REALISM: Ensure all applied items fit naturally and realistically on the person, matching their size and proportions.`;
           
           requestBody = {
             prompt: prompt,
@@ -365,19 +379,19 @@ export default function OutfitChangeScreen() {
       const requestSizeMB = (requestSizeKB / 1024).toFixed(2);
       console.log('[OutfitChange] Request body size:', requestSizeKB, 'KB (', requestSizeMB, 'MB)');
       
-      // 如果请求体超过8MB，警告用户（服务器可能限制10MB）
-      if (requestBodyString.length > 8 * 1024 * 1024) {
+      // 如果请求体超过5MB，警告用户（经验显示超过5MB容易失败）
+      if (requestBodyString.length > 5 * 1024 * 1024) {
         console.warn('[OutfitChange] Request body is very large:', requestSizeMB, 'MB');
         Alert.alert(
           t('common.tip'),
-          `图片数据较大（${requestSizeMB}MB），可能会生成失败。建议减少图片数量或选择更小的图片。`,
+          `图片数据较大（${requestSizeMB}MB），很可能会生成失败。\n\n强烈建议：${mode === 'custom' ? '只上传1张服饰图片' : '选择更小的照片'}`,
           [
             { text: t('common.cancel'), style: 'cancel', onPress: () => { 
               clearInterval(timer);
               setIsGenerating(false);
               setGeneratingTime(0);
             }},
-            { text: '继续生成', onPress: () => {} }
+            { text: '继续尝试', onPress: () => {} }
           ]
         );
       }
@@ -399,8 +413,8 @@ export default function OutfitChangeScreen() {
         if (response.status === 413) {
           // 即使已经压缩，仍然过大，建议减少图片数量
           const suggestion = mode === 'custom' 
-            ? '建议：\n1. 只上传1-2张服饰图片\n2. 确保原始照片不要太大\n3. 选择较小的图片文件'
-            : '建议：\n1. 重新选择更小的照片\n2. 使用裁剪功能减小图片尺寸';
+            ? '建议：\n1. 只上传1张服饰图片试试\n2. 确保原始照片不要太大\n3. 选择文件大小较小的图片'
+            : '建议：\n1. 重新选择更小的照片\n2. 使用裁剪功能减小图片尺寸\n3. 选择文件大小较小的图片';
           throw new Error(`图片数据过大，服务器拒绝处理\n\n${suggestion}`);
         }
         
@@ -687,7 +701,7 @@ export default function OutfitChangeScreen() {
                 </View>
               ))}
               
-              {customOutfitImages.length < 3 && (
+              {customOutfitImages.length < 2 && (
                 <TouchableOpacity
                   style={styles.addOutfitImageButton}
                   onPress={pickCustomOutfitImage}
@@ -701,7 +715,7 @@ export default function OutfitChangeScreen() {
             
             {customOutfitImages.length > 0 && (
               <Text style={styles.imageCountText}>
-                {t('outfitChange.imageCount', { count: customOutfitImages.length, max: 3 })}
+                {t('outfitChange.imageCount', { count: customOutfitImages.length, max: 2 })}
               </Text>
             )}
           </View>
