@@ -114,7 +114,7 @@ export default function OutfitChangeScreen() {
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [3, 4],
-      quality: 1,
+      quality: 0.7, // 降低质量以减小文件大小，后续还会进一步压缩
     });
 
     if (!result.canceled && result.assets[0]) {
@@ -159,7 +159,7 @@ export default function OutfitChangeScreen() {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [3, 4],
-      quality: 1,
+      quality: 0.7, // 降低质量以减小文件大小，后续还会进一步压缩
     });
 
     if (!result.canceled && result.assets[0]) {
@@ -214,7 +214,7 @@ export default function OutfitChangeScreen() {
     });
   };
 
-  const convertToBase64 = async (uri: string, compress: boolean = true): Promise<string> => {
+  const convertToBase64 = async (uri: string, compress: boolean = true, isMainImage: boolean = false): Promise<string> => {
     if (Platform.OS === 'web') {
       try {
         console.log('[convertToBase64] Converting web image:', uri.substring(0, 100));
@@ -225,10 +225,14 @@ export default function OutfitChangeScreen() {
         let blob = await response.blob();
         console.log('[convertToBase64] Original blob size:', blob.size, 'bytes');
         
-        // 压缩图片（针对自定义穿搭模式）
-        if (compress && blob.size > 500000) { // 如果大于500KB则压缩
+        // 强制压缩所有图片以避免413错误
+        if (compress) {
           console.log('[convertToBase64] Compressing image...');
-          blob = await compressImageWeb(blob, 800, 0.7);
+          // 更激进的压缩参数：主图和服饰图都使用较小尺寸和较低质量
+          const maxWidth = isMainImage ? 512 : 400;
+          const quality = isMainImage ? 0.5 : 0.4;
+          blob = await compressImageWeb(blob, maxWidth, quality);
+          console.log('[convertToBase64] After first compression:', blob.size, 'bytes');
         }
         
         return new Promise((resolve, reject) => {
@@ -236,8 +240,30 @@ export default function OutfitChangeScreen() {
           reader.onloadend = () => {
             const base64 = reader.result as string;
             const base64Data = base64.split(',')[1];
-            console.log('[convertToBase64] Conversion complete, base64 length:', base64Data.length);
-            resolve(base64Data);
+            const sizeInKB = Math.round(base64Data.length / 1024);
+            console.log('[convertToBase64] Conversion complete, base64 size:', sizeInKB, 'KB');
+            
+            // 如果base64数据仍然太大（>500KB），进行二次压缩
+            if (compress && base64Data.length > 500000) {
+              console.log('[convertToBase64] Data still too large (', sizeInKB, 'KB), applying aggressive secondary compression...');
+              // 重新压缩为更小的尺寸和更低质量
+              fetch(uri)
+                .then(res => res.blob())
+                .then(newBlob => compressImageWeb(newBlob, isMainImage ? 400 : 320, 0.3))
+                .then(finalBlob => {
+                  const finalReader = new FileReader();
+                  finalReader.onloadend = () => {
+                    const finalBase64 = (finalReader.result as string).split(',')[1];
+                    console.log('[convertToBase64] Secondary compression complete, final length:', finalBase64.length, 'bytes');
+                    resolve(finalBase64);
+                  };
+                  finalReader.onerror = reject;
+                  finalReader.readAsDataURL(finalBlob);
+                })
+                .catch(reject);
+            } else {
+              resolve(base64Data);
+            }
           };
           reader.onerror = (error) => {
             console.error('[convertToBase64] FileReader error:', error);
@@ -290,7 +316,8 @@ export default function OutfitChangeScreen() {
 
     try {
       console.log('[OutfitChange] Starting generation, mode:', mode);
-      const base64Image = await convertToBase64(imageUri, mode === 'custom'); // 自定义模式启用压缩
+      // 始终启用压缩以避免413错误
+      const base64Image = await convertToBase64(imageUri, true, true); // 强制压缩主图
       console.log('[OutfitChange] Main image converted, size:', base64Image.length);
       
       let requestBody;
@@ -309,7 +336,7 @@ export default function OutfitChangeScreen() {
           const outfitBase64Images = await Promise.all(
             customOutfitImages.map(async (uri, index) => {
               console.log(`[OutfitChange] Converting outfit image ${index + 1}/${customOutfitImages.length}`);
-              const base64 = await convertToBase64(uri, true); // 启用压缩
+              const base64 = await convertToBase64(uri, true, false); // 启用压缩，这是服饰图（非主图）
               console.log(`[OutfitChange] Outfit image ${index + 1} converted, size:`, base64.length);
               return base64;
             })
@@ -332,13 +359,36 @@ export default function OutfitChangeScreen() {
         }
       }
       
+      // 计算请求体大小
+      const requestBodyString = JSON.stringify(requestBody);
+      const requestSizeKB = Math.round(requestBodyString.length / 1024);
+      const requestSizeMB = (requestSizeKB / 1024).toFixed(2);
+      console.log('[OutfitChange] Request body size:', requestSizeKB, 'KB (', requestSizeMB, 'MB)');
+      
+      // 如果请求体超过8MB，警告用户（服务器可能限制10MB）
+      if (requestBodyString.length > 8 * 1024 * 1024) {
+        console.warn('[OutfitChange] Request body is very large:', requestSizeMB, 'MB');
+        Alert.alert(
+          t('common.tip'),
+          `图片数据较大（${requestSizeMB}MB），可能会生成失败。建议减少图片数量或选择更小的图片。`,
+          [
+            { text: t('common.cancel'), style: 'cancel', onPress: () => { 
+              clearInterval(timer);
+              setIsGenerating(false);
+              setGeneratingTime(0);
+            }},
+            { text: '继续生成', onPress: () => {} }
+          ]
+        );
+      }
+      
       console.log('[OutfitChange] Sending request to API...');
       const response = await fetch('https://toolkit.rork.com/images/edit/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        body: requestBodyString,
       });
       console.log('[OutfitChange] API response received, status:', response.status);
 
@@ -347,7 +397,11 @@ export default function OutfitChangeScreen() {
         console.error('[OutfitChange] API Error:', response.status, errorData);
         
         if (response.status === 413) {
-          throw new Error('图片过大，请选择较小的图片或减少图片数量');
+          // 即使已经压缩，仍然过大，建议减少图片数量
+          const suggestion = mode === 'custom' 
+            ? '建议：\n1. 只上传1-2张服饰图片\n2. 确保原始照片不要太大\n3. 选择较小的图片文件'
+            : '建议：\n1. 重新选择更小的照片\n2. 使用裁剪功能减小图片尺寸';
+          throw new Error(`图片数据过大，服务器拒绝处理\n\n${suggestion}`);
         }
         
         throw new Error(`生成失败: HTTP ${response.status}`);
