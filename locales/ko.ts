@@ -363,6 +363,7 @@
     result: '결과',
     costPerGeneration: '생성당 {{cost}} 코인 소비',
     generate: '생성 시작',
+    generating: '생성 중',
     selectImageAndTemplate: '사진을 업로드하고 템플릿을 선택하세요',
     insufficientCoins: '코인 부족, 충전하세요',
     generationFailed: '생성 실패, 다시 시도하세요',

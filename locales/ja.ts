@@ -363,6 +363,7 @@
     result: '結果',
     costPerGeneration: '生成ごとに {{cost}} コイン消費',
     generate: '生成開始',
+    generating: '生成中',
     selectImageAndTemplate: '写真をアップロードしてテンプレートを選択してください',
     insufficientCoins: 'コイン不足、チャージしてください',
     generationFailed: '生成に失敗しました。もう一度お試しください',

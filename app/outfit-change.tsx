@@ -93,6 +93,7 @@ export default function OutfitChangeScreen() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatingTime, setGeneratingTime] = useState(0);
   const [resultUri, setResultUri] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -164,6 +165,13 @@ export default function OutfitChangeScreen() {
 
     setIsGenerating(true);
     setResultUri(null);
+    setGeneratingTime(0);
+
+    // 开始计时
+    const startTime = Date.now();
+    const timer = setInterval(() => {
+      setGeneratingTime(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
 
     try {
       const base64Image = await convertToBase64(imageUri);
@@ -181,10 +189,18 @@ export default function OutfitChangeScreen() {
       });
 
       if (!response.ok) {
-        throw new Error('Generation failed');
+        const errorData = await response.text();
+        console.error('API Error:', response.status, errorData);
+        throw new Error(`生成失败: HTTP ${response.status}`);
       }
 
       const data = await response.json();
+      
+      if (!data.image || !data.image.base64Data) {
+        console.error('Invalid response data:', data);
+        throw new Error('生成失败: 服务器返回数据格式错误');
+      }
+
       const generatedImageUri = `data:${data.image.mimeType};base64,${data.image.base64Data}`;
       
       setResultUri(generatedImageUri);
@@ -202,11 +218,14 @@ export default function OutfitChangeScreen() {
         console.error('Failed to save to history:', historyError);
       }
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Outfit change error:', error);
-      Alert.alert(t('common.error'), t('outfitChange.generationFailed'));
+      const errorMessage = error.message || t('outfitChange.generationFailed');
+      Alert.alert(t('common.error'), errorMessage);
     } finally {
+      clearInterval(timer);
       setIsGenerating(false);
+      setGeneratingTime(0);
     }
   };
 
@@ -373,7 +392,12 @@ export default function OutfitChangeScreen() {
           disabled={!imageUri || !selectedTemplate || isGenerating}
         >
           {isGenerating ? (
-            <ActivityIndicator color="#fff" />
+            <View style={styles.generatingContainer}>
+              <ActivityIndicator size="small" color="#fff" />
+              <Text style={styles.generateButtonText}>
+                {t('outfitChange.generating')} {generatingTime}s
+              </Text>
+            </View>
           ) : (
             <Text style={styles.generateButtonText}>{t('outfitChange.generate')}</Text>
           )}
@@ -570,5 +594,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#fff',
+  },
+  generatingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
 });

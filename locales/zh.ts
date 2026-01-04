@@ -372,6 +372,7 @@
     result: '换装结果',
     costPerGeneration: '每次生成消耗 {{cost}} 金币',
     generate: '开始生成',
+    generating: '生成中',
     selectImageAndTemplate: '请先上传照片并选择模板',
     insufficientCoins: '金币不足，请充值',
     generationFailed: '生成失败，请重试',

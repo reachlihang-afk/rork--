@@ -372,6 +372,7 @@
     result: 'Result',
     costPerGeneration: '{{cost}} coins per generation',
     generate: 'Generate',
+    generating: 'Generating',
     selectImageAndTemplate: 'Please upload a photo and select a template',
     insufficientCoins: 'Insufficient coins, please recharge',
     generationFailed: 'Generation failed, please try again',
