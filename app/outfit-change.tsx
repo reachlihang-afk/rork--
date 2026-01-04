@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Platform } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import { File, Paths } from 'expo-file-system';
 
-import { Shirt, ChevronLeft, Download } from 'lucide-react-native';
+import { Shirt, Download } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useCoin } from '@/contexts/CoinContext';
 
@@ -250,20 +250,19 @@ export default function OutfitChangeScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <ChevronLeft size={24} color="#0F172A" />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <View style={styles.iconContainer}>
-            <Shirt size={24} color="#fff" />
-          </View>
-          <Text style={styles.headerTitle}>{t('outfitChange.title')}</Text>
-        </View>
-        <View style={styles.coinBadge}>
-          <Text style={styles.coinText}>💰 {coinBalance}</Text>
-        </View>
-      </View>
+      <Stack.Screen
+        options={{
+          title: t('outfitChange.title'),
+          headerStyle: { backgroundColor: '#fff' },
+          headerRight: () => (
+            <View style={styles.headerRightContainer}>
+              <View style={styles.coinBadge}>
+                <Text style={styles.coinText}>💰 {coinBalance}</Text>
+              </View>
+            </View>
+          ),
+        }}
+      />
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.section}>
@@ -368,42 +367,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#0066FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#0F172A',
+  headerRightContainer: {
+    marginRight: 10,
   },
   coinBadge: {
     paddingHorizontal: 12,

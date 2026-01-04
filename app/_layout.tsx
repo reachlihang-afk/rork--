@@ -104,7 +104,8 @@ function RootLayoutNav() {
       <Stack.Screen 
         name="outfit-change" 
         options={{ 
-          headerShown: false,
+          headerShown: true,
+          headerStyle: { backgroundColor: '#fff' },
         }} 
       />
       <Stack.Screen 
