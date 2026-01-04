@@ -19,7 +19,7 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <View style={styles.iconContainer}>
-            <Text style={styles.iconEmoji}>👔</Text>
+            <Text style={styles.iconEmoji}>✨</Text>
           </View>
           <Text style={styles.title}>{t('home.title')}</Text>
           <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
@@ -38,7 +38,7 @@ export default function HomeScreen() {
             onPress={() => router.push('/outfit-change' as any)}
           >
             <View style={styles.quickActionIcon}>
-              <Text style={styles.actionIconText}>👔</Text>
+              <Text style={styles.actionIconText}>💃</Text>
             </View>
             <Text style={styles.quickActionTitle} numberOfLines={2}>{t('home.outfitChange')}</Text>
             <Text style={styles.quickActionDescription} numberOfLines={3}>{t('home.outfitChangeDesc')}</Text>
@@ -55,7 +55,7 @@ export default function HomeScreen() {
             }}
           >
             <View style={styles.quickActionIcon}>
-              <ShieldCheck size={24} color="#0066FF" />
+              <Text style={styles.actionIconText}>💖</Text>
             </View>
             <Text style={styles.quickActionTitle} numberOfLines={2}>{t('home.photoVerification')}</Text>
             <Text style={styles.quickActionDescription} numberOfLines={3}>{t('home.photoVerificationDesc')}</Text>
@@ -66,7 +66,7 @@ export default function HomeScreen() {
             onPress={() => router.push('/image-source' as any)}
           >
             <View style={styles.quickActionIcon}>
-              <SearchX size={24} color="#0066FF" />
+              <Text style={styles.actionIconText}>🔮</Text>
             </View>
             <Text style={styles.quickActionTitle} numberOfLines={2}>{t('home.findSource')}</Text>
             <Text style={styles.quickActionDescription} numberOfLines={3}>{t('home.findSourceDesc')}</Text>
@@ -77,7 +77,7 @@ export default function HomeScreen() {
             onPress={() => router.push('/lookup-verification' as any)}
           >
             <View style={styles.quickActionIcon}>
-              <Text style={styles.actionIconText}>🔍</Text>
+              <Text style={styles.actionIconText}>🌟</Text>
             </View>
             <Text style={styles.quickActionTitle} numberOfLines={2}>{t('home.lookupVerification')}</Text>
             <Text style={styles.quickActionDescription} numberOfLines={3}>{t('home.lookupVerificationDesc')}</Text>

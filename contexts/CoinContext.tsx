@@ -44,7 +44,13 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
         outfitChangeCount: 0,
       };
     }
-    return usage;
+    // 确保所有字段都存在，处理旧数据没有 outfitChangeCount 的情况
+    return {
+      date: usage.date,
+      verificationCount: usage.verificationCount || 0,
+      imageSourceCount: usage.imageSourceCount || 0,
+      outfitChangeCount: usage.outfitChangeCount || 0,
+    };
   }, []);
 
   const loadData = useCallback(async () => {

@@ -555,8 +555,8 @@ export default function SquareScreen() {
                       >
                         <Heart
                           size={16}
-                          color="#fff"
-                          fill={post.likes.includes(user.userId) ? '#fff' : 'none'}
+                          color={post.likes.includes(user.userId) ? '#EF4444' : '#fff'}
+                          fill={post.likes.includes(user.userId) ? '#EF4444' : 'none'}
                         />
                         <Text style={styles.popupText} numberOfLines={1}>
                           {post.likes.includes(user.userId) ? t('square.unlike') : t('square.like')}
@@ -581,7 +581,7 @@ export default function SquareScreen() {
             <View style={styles.interactionArea}>
               {post.likes.length > 0 && (
                 <View style={styles.likesSection}>
-                  <Heart size={14} color="#576b95" fill="#576b95" />
+                  <Heart size={14} color="#EF4444" fill="#EF4444" />
                   <Text style={styles.likesText} numberOfLines={2}>
                     {getLikedUserNames(post.likes, posts).join(', ')}
                   </Text>
