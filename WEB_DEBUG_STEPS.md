@@ -117,3 +117,4 @@ console.log('已尝试强制启用所有输入框，请再次尝试输入');
 5. ✅ 添加 Web 特定属性（inputMode, autoComplete）
 6. ✅ 创建测试页面 `/test-input`
 
+
