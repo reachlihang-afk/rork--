@@ -147,7 +147,9 @@ export default function OutfitChangeScreen() {
         reader.readAsDataURL(blob);
       });
     } else {
-      const base64String = await FileSystem.readAsStringAsync(uri, FileSystem.EncodingType.Base64);
+      const base64String = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
       return base64String;
     }
   };
