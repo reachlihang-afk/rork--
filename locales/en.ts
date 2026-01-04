@@ -373,5 +373,15 @@ export default {
     downloadSuccess: 'Saved to album',
     downloadFailed: 'Download failed',
     mediaLibraryPermission: 'Media library permission required',
+    templates: {
+      christmas: 'Christmas',
+      bikini: 'Bikini',
+      formal: 'Formal',
+      casual: 'Casual',
+      sport: 'Sportswear',
+      wedding: 'Wedding',
+      traditional: 'Hanfu',
+      superhero: 'Superhero',
+    },
   },
 };

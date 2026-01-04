@@ -364,5 +364,15 @@ export default {
     downloadSuccess: 'アルバムに保存しました',
     downloadFailed: 'ダウンロード失敗',
     mediaLibraryPermission: 'メディアライブラリへのアクセス許可が必要です',
+    templates: {
+      christmas: 'クリスマス服',
+      bikini: 'ビキニ',
+      formal: 'フォーマル',
+      casual: 'カジュアル',
+      sport: 'スポーツウェア',
+      wedding: 'ウェディング',
+      traditional: '漢服',
+      superhero: 'スーパーヒーロー',
+    },
   },
 };

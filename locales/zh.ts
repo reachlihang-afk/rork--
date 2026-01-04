@@ -373,5 +373,15 @@ export default {
     downloadSuccess: '已保存到相册',
     downloadFailed: '下载失败',
     mediaLibraryPermission: '需要相册访问权限',
+    templates: {
+      christmas: '圣诞装',
+      bikini: '比基尼',
+      formal: '正装',
+      casual: '休闲装',
+      sport: '运动装',
+      wedding: '婚纱/礼服',
+      traditional: '汉服',
+      superhero: '超级英雄',
+    },
   },
 };

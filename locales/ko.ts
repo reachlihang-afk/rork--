@@ -364,5 +364,15 @@ export default {
     downloadSuccess: '앨범에 저장되었습니다',
     downloadFailed: '다운로드 실패',
     mediaLibraryPermission: '미디어 라이브러리 액세스 권한이 필요합니다',
+    templates: {
+      christmas: '크리스마스',
+      bikini: '비키니',
+      formal: '정장',
+      casual: '캐주얼',
+      sport: '스포츠웨어',
+      wedding: '웨딩드레스',
+      traditional: '한복',
+      superhero: '슈퍼히어로',
+    },
   },
 };

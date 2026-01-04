@@ -300,7 +300,7 @@ export default function OutfitChangeScreen() {
                 disabled={isGenerating}
               >
                 <Text style={styles.templateIcon}>{template.icon}</Text>
-                <Text style={styles.templateName}>{template.name}</Text>
+                <Text style={styles.templateName}>{t(`outfitChange.templates.${template.id}`)}</Text>
               </TouchableOpacity>
             ))}
           </View>
