@@ -414,7 +414,7 @@
       'god-of-wealth': '財神服',
       'hot-girl': 'ホットガール',
       'meituan-delivery': '美団デリバリー',
-      'nurse': 'ナース',
+      'ski': 'スキー服',
       'flight-attendant': 'フライトアテンダント',
       'outdoor': 'アウトドア',
       'cowboy': 'カウボーイ',

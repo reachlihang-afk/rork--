@@ -414,7 +414,7 @@
       'god-of-wealth': '재신복',
       'hot-girl': '핫걸',
       'meituan-delivery': '메이투안 배달복',
-      'nurse': '간호사',
+      'ski': '스키복',
       'flight-attendant': '승무원',
       'outdoor': '아웃도어',
       'cowboy': '카우보이',

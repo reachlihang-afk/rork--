@@ -63,6 +63,56 @@ function ZoomableImage({ uri, t }: ZoomableImageProps) {
   );
 }
 
+function getTemplateIcon(templateName: string): string {
+  const templateIcons: Record<string, string> = {
+    '正装': '👔',
+    '比基尼': '👙',
+    '一键穿搭': '✨',
+    '运动装': '🏃',
+    '婚纱/礼服': '👰',
+    '汉服': '🏮',
+    '超级英雄': '🦸',
+    '新年装-马年': '🐴',
+    '圣诞装': '🎄',
+    '咖啡师-星巴克': '☕',
+    '老钱风': '💰',
+    '网球装': '🎾',
+    '财神装': '💸',
+    '辣妹装': '🔥',
+    '美团外卖装': '🛵',
+    '滑雪服': '⛷️',
+    '空姐装': '✈️',
+    '户外装': '🏔️',
+    '牛仔装': '🤠',
+  };
+  return templateIcons[templateName] || '👔';
+}
+
+function getTemplateBadgeColor(templateName: string): string {
+  const templateColors: Record<string, string> = {
+    '正装': '#EEF2FF',
+    '比基尼': '#FEF3C7',
+    '一键穿搭': '#F0F9FF',
+    '运动装': '#DCFCE7',
+    '婚纱/礼服': '#FFE4E6',
+    '汉服': '#FEF3C7',
+    '超级英雄': '#DBEAFE',
+    '新年装-马年': '#FEE2E2',
+    '圣诞装': '#DCFCE7',
+    '咖啡师-星巴克': '#FEF3C7',
+    '老钱风': '#FEF9C3',
+    '网球装': '#DCFCE7',
+    '财神装': '#FEF3C7',
+    '辣妹装': '#FECACA',
+    '美团外卖装': '#FEF3C7',
+    '滑雪服': '#E0F2FE',
+    '空姐装': '#E0F2FE',
+    '户外装': '#D1FAE5',
+    '牛仔装': '#E0E7FF',
+  };
+  return templateColors[templateName] || '#EEF2FF';
+}
+
 export default function SquareScreen() {
   const { t } = useTranslation();
   const { posts, likePost, deletePost, addComment, deleteComment, pinComment } = useSquare();
@@ -566,8 +616,9 @@ export default function SquareScreen() {
               </View>
               <View style={styles.templateBadgeRow}>
                 {post.templateName && (
-                  <View style={styles.templateBadge}>
-                    <Text style={styles.templateBadgeText}>👔 {post.templateName}</Text>
+                  <View style={[styles.templateBadge, { backgroundColor: getTemplateBadgeColor(post.templateName) }]}>
+                    <Text style={styles.templateIcon}>{getTemplateIcon(post.templateName)}</Text>
+                    <Text style={styles.templateBadgeText}>{post.templateName}</Text>
                   </View>
                 )}
                 <View style={styles.actionButtonContainer}>
@@ -1614,17 +1665,20 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   templateBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: '#F0F9FF',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#BAE6FD',
+    gap: 4,
+  },
+  templateIcon: {
+    fontSize: 16,
   },
   templateBadgeText: {
     fontSize: 14,
-    color: '#0284C7',
+    color: '#4F46E5',
     fontWeight: '600',
   },
 });

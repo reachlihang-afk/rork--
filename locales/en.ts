@@ -423,7 +423,7 @@
       'god-of-wealth': 'God of Wealth',
       'hot-girl': 'Hot Girl',
       'meituan-delivery': 'Meituan Delivery',
-      'nurse': 'Nurse',
+      'ski': 'Ski',
       'flight-attendant': 'Flight Attendant',
       'outdoor': 'Outdoor',
       'cowboy': 'Cowboy',

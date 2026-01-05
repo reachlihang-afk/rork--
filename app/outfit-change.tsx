@@ -123,11 +123,11 @@ const templates: Template[] = [
     icon: '🛵',
   },
   {
-    id: 'nurse',
-    name: '护士装',
-    nameEn: 'Nurse Outfit',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to nurse uniform - white or pastel medical scrubs, nurse cap, professional healthcare attire',
-    icon: '👩‍⚕️',
+    id: 'ski',
+    name: '滑雪服',
+    nameEn: 'Ski Outfit',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to ski wear - warm ski jacket, ski pants, winter sports clothing with colorful patterns',
+    icon: '⛷️',
   },
   {
     id: 'flight-attendant',

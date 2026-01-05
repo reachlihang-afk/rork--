@@ -423,7 +423,7 @@
       'god-of-wealth': '财神装',
       'hot-girl': '辣妹装',
       'meituan-delivery': '美团外卖装',
-      'nurse': '护士装',
+      'ski': '滑雪服',
       'flight-attendant': '空姐装',
       'outdoor': '户外装',
       'cowboy': '牛仔装',
