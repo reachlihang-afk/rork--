@@ -1,6 +1,7 @@
 import { Platform, Alert } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
 import QRCode from 'qrcode';
 
 export async function generateQRCode(url: string): Promise<string> {
@@ -51,7 +52,22 @@ export async function saveToGallery(uri: string): Promise<boolean> {
       return false;
     }
 
-    await MediaLibrary.saveToLibraryAsync(uri);
+    // 如果是 base64 数据 URL，需要先保存为临时文件
+    let fileUri = uri;
+    if (uri.startsWith('data:')) {
+      console.log('[saveToGallery] Converting base64 to file...');
+      const filename = `download-${Date.now()}.jpg`;
+      fileUri = `${FileSystem.cacheDirectory}${filename}`;
+      
+      const base64Data = uri.split(',')[1];
+      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      console.log('[saveToGallery] File saved to cache:', fileUri);
+    }
+
+    await MediaLibrary.saveToLibraryAsync(fileUri);
+    console.log('[saveToGallery] Image saved to gallery successfully');
     return true;
   } catch (error) {
     console.error('Failed to save to gallery:', error);
