@@ -87,6 +87,69 @@ const templates: Template[] = [
     prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Chinese New Year festive clothing with horse year theme - red and gold colors, traditional patterns with horse motifs',
     icon: '🐴',
   },
+  {
+    id: 'old-money',
+    name: '老钱风',
+    nameEn: 'Old Money Style',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to old money style - classic, timeless, elegant clothing with subtle luxury, neutral colors, cashmere sweaters, tailored pieces',
+    icon: '💰',
+  },
+  {
+    id: 'preppy',
+    name: '学院风',
+    nameEn: 'Preppy Style',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to preppy school style - plaid skirt, blazer, sweater vest, Oxford shirt, or collegiate style clothing',
+    icon: '📚',
+  },
+  {
+    id: 'god-of-wealth',
+    name: '财神装',
+    nameEn: 'God of Wealth',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Chinese God of Wealth costume - traditional red and gold robes with auspicious patterns and wealthy appearance',
+    icon: '💸',
+  },
+  {
+    id: 'hot-girl',
+    name: '辣妹装',
+    nameEn: 'Hot Girl Style',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to hot trendy girl style - crop top, mini skirt, trendy streetwear, bold and fashionable modern clothing',
+    icon: '🔥',
+  },
+  {
+    id: 'office-lady',
+    name: 'OL装',
+    nameEn: 'Office Lady',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to office lady style - professional pencil skirt suit, blouse, elegant and sophisticated workwear for women',
+    icon: '💼',
+  },
+  {
+    id: 'nurse',
+    name: '护士装',
+    nameEn: 'Nurse Outfit',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to nurse uniform - white or pastel medical scrubs, nurse cap, professional healthcare attire',
+    icon: '👩‍⚕️',
+  },
+  {
+    id: 'flight-attendant',
+    name: '空姐装',
+    nameEn: 'Flight Attendant',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to flight attendant uniform - elegant airline uniform with scarf, professional aviation style',
+    icon: '✈️',
+  },
+  {
+    id: 'outdoor',
+    name: '户外装',
+    nameEn: 'Outdoor',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to outdoor adventure clothing - hiking jacket, cargo pants, outdoor sports gear, functional outdoor wear',
+    icon: '🏔️',
+  },
+  {
+    id: 'cowboy',
+    name: '牛仔装',
+    nameEn: 'Cowboy/Western',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to western cowboy style - denim jeans, cowboy boots, plaid shirt, western hat, rodeo style clothing',
+    icon: '🤠',
+  },
 ];
 
 type OutfitMode = 'template' | 'custom';
@@ -108,6 +171,7 @@ export default function OutfitChangeScreen() {
   const [resultHistoryId, setResultHistoryId] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [showAllTemplates, setShowAllTemplates] = useState(false);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -694,7 +758,7 @@ export default function OutfitChangeScreen() {
             <Text style={styles.sectionDesc}>{t('outfitChange.selectTemplateDesc')}</Text>
             
             <View style={styles.templatesGrid}>
-            {templates.map((template) => (
+            {(showAllTemplates ? templates : templates.slice(0, 9)).map((template) => (
               <TouchableOpacity
                 key={template.id}
                 style={[
@@ -709,6 +773,28 @@ export default function OutfitChangeScreen() {
               </TouchableOpacity>
             ))}
           </View>
+          
+          {!showAllTemplates && templates.length > 9 && (
+            <TouchableOpacity 
+              style={styles.showMoreButton}
+              onPress={() => setShowAllTemplates(true)}
+              disabled={isGenerating}
+            >
+              <Text style={styles.showMoreButtonText}>{t('outfitChange.showMore')}</Text>
+              <Text style={styles.showMoreButtonIcon}>▼</Text>
+            </TouchableOpacity>
+          )}
+          
+          {showAllTemplates && (
+            <TouchableOpacity 
+              style={styles.showMoreButton}
+              onPress={() => setShowAllTemplates(false)}
+              disabled={isGenerating}
+            >
+              <Text style={styles.showMoreButtonText}>{t('outfitChange.showLess')}</Text>
+              <Text style={styles.showMoreButtonIcon}>▲</Text>
+            </TouchableOpacity>
+          )}
         </View>
         ) : (
           <View style={styles.section}>
@@ -1005,6 +1091,26 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#0F172A',
     textAlign: 'center',
+  },
+  showMoreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F1F5F9',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginTop: 12,
+    gap: 8,
+  },
+  showMoreButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  showMoreButtonIcon: {
+    fontSize: 12,
+    color: '#64748B',
   },
   resultContainer: {
     borderRadius: 16,
