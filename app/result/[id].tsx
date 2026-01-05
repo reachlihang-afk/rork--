@@ -131,6 +131,7 @@ export default function ResultScreen() {
             try {
               setIsPublishing(true);
               const postId = await publishPost({
+                postType: 'verification',
                 userId: user.userId,
                 userNickname: user.nickname || user.userId,
                 userAvatar: user.avatar,
@@ -265,6 +266,19 @@ export default function ResultScreen() {
             !isViewOnly ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <TouchableOpacity
+                  onPress={handlePublishToSquare}
+                  style={{ padding: 8 }}
+                  hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                  activeOpacity={0.6}
+                  disabled={isPublishing}
+                >
+                  {isPublishing ? (
+                    <ActivityIndicator size="small" color="#0066FF" />
+                  ) : (
+                    <Share2 size={20} color={published ? '#10B981' : '#0066FF'} />
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity
                   onPress={handleSave}
                   style={{ padding: 8 }}
                   hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
@@ -274,16 +288,8 @@ export default function ResultScreen() {
                   {isSharing ? (
                     <ActivityIndicator size="small" color="#0066FF" />
                   ) : (
-                    <Download size={22} color="#0066FF" />
+                    <Download size={20} color="#0066FF" />
                   )}
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleShare}
-                  style={{ padding: 8 }}
-                  hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-                  activeOpacity={0.6}
-                >
-                  <Share2 size={22} color="#0066FF" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleDelete}
@@ -291,7 +297,7 @@ export default function ResultScreen() {
                   hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
                   activeOpacity={0.6}
                 >
-                  <Trash2 size={22} color="#DC2626" />
+                  <Trash2 size={20} color="#EF4444" />
                 </TouchableOpacity>
               </View>
             ) : null
