@@ -357,7 +357,10 @@ export default function HistoryScreen() {
                   </View>
                 </View>
                 <View style={styles.outfitInfo}>
-                  <Text style={styles.outfitTemplate}>{item.templateName}</Text>
+                  <View style={[styles.templateBadge, { backgroundColor: getTemplateBadgeColor(item.templateName) }]}>
+                    <Text style={styles.templateIcon}>{getTemplateIcon(item.templateName)}</Text>
+                    <Text style={styles.outfitTemplate}>{item.templateName}</Text>
+                  </View>
                   <Text style={styles.dateText}>
                     {new Date(item.createdAt).toLocaleString('zh-CN')}
                   </Text>
@@ -475,6 +478,40 @@ function getScoreColor(score: number): string {
     return '#CA8A04';
   }
   return '#15803D';
+}
+
+function getTemplateIcon(templateName: string): string {
+  // 根据模板名称返回对应的图标
+  const templateIcons: Record<string, string> = {
+    '正装': '👔',
+    '比基尼': '👙',
+    '一键穿搭': '✨',
+    '运动装': '🏃',
+    '礼服': '👗',
+    '休闲装': '👕',
+    '校服': '🎓',
+    '泳装': '🏊',
+    '婚纱': '👰',
+    '西装': '🤵',
+  };
+  return templateIcons[templateName] || '👔';
+}
+
+function getTemplateBadgeColor(templateName: string): string {
+  // 根据模板名称返回对应的背景颜色
+  const templateColors: Record<string, string> = {
+    '正装': '#EEF2FF',
+    '比基尼': '#FEF3C7',
+    '一键穿搭': '#F0F9FF',
+    '运动装': '#DCFCE7',
+    '礼服': '#FCE7F3',
+    '休闲装': '#E0E7FF',
+    '校服': '#DDD6FE',
+    '泳装': '#CFFAFE',
+    '婚纱': '#FFE4E6',
+    '西装': '#E0E7FF',
+  };
+  return templateColors[templateName] || '#EEF2FF';
 }
 
 const styles = StyleSheet.create({
@@ -841,11 +878,23 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0',
     paddingTop: 12,
+    alignItems: 'center',
+  },
+  templateBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 4,
+  },
+  templateIcon: {
+    fontSize: 16,
+    marginRight: 4,
   },
   outfitTemplate: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
-    color: '#0F172A',
-    marginBottom: 4,
+    color: '#4F46E5',
   },
 });

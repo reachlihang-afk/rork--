@@ -106,9 +106,12 @@ export default function HomeScreen() {
                   contentFit="cover"
                 />
                 <View style={styles.recentContent}>
-                  <Text style={styles.recentTemplateName}>
-                    {item.templateName}
-                  </Text>
+                  <View style={[styles.templateBadge, { backgroundColor: getTemplateBadgeColor(item.templateName) }]}>
+                    <Text style={styles.templateIcon}>{getTemplateIcon(item.templateName)}</Text>
+                    <Text style={styles.recentTemplateName}>
+                      {item.templateName}
+                    </Text>
+                  </View>
                   <Text style={styles.recentDate}>
                     {formatDateTime(item.createdAt)}
                   </Text>
@@ -151,6 +154,40 @@ function formatScore(score: number): string {
     return score.toString();
   }
   return score.toFixed(1);
+}
+
+function getTemplateIcon(templateName: string): string {
+  // 根据模板名称返回对应的图标
+  const templateIcons: Record<string, string> = {
+    '正装': '👔',
+    '比基尼': '👙',
+    '一键穿搭': '✨',
+    '运动装': '🏃',
+    '礼服': '👗',
+    '休闲装': '👕',
+    '校服': '🎓',
+    '泳装': '🏊',
+    '婚纱': '👰',
+    '西装': '🤵',
+  };
+  return templateIcons[templateName] || '👔';
+}
+
+function getTemplateBadgeColor(templateName: string): string {
+  // 根据模板名称返回对应的背景颜色
+  const templateColors: Record<string, string> = {
+    '正装': '#EEF2FF',
+    '比基尼': '#FEF3C7',
+    '一键穿搭': '#F0F9FF',
+    '运动装': '#DCFCE7',
+    '礼服': '#FCE7F3',
+    '休闲装': '#E0E7FF',
+    '校服': '#DDD6FE',
+    '泳装': '#CFFAFE',
+    '婚纱': '#FFE4E6',
+    '西装': '#E0E7FF',
+  };
+  return templateColors[templateName] || '#EEF2FF';
 }
 
 function formatDateTime(timestamp: number): string {
@@ -419,8 +456,22 @@ const styles = StyleSheet.create({
   },
   recentContent: {
     marginLeft: 12,
+    marginRight: 12,
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  templateBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 4,
+  },
+  templateIcon: {
+    fontSize: 16,
+    marginRight: 4,
   },
   recentScore: {
     fontSize: 22,
@@ -442,10 +493,9 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   recentTemplateName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
-    color: '#0F172A',
-    marginBottom: 4,
+    color: '#4F46E5',
   },
   sectionHeader: {
     flexDirection: 'row',

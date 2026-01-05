@@ -8,26 +8,53 @@ import { useSquare, SquarePost, SquareComment } from '@/contexts/SquareContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { saveToGallery } from '@/utils/share';
 
 
 type ZoomableImageProps = {
   uri: string;
   onClose: () => void;
+  t: any;
 };
 
-function ZoomableImage({ uri }: ZoomableImageProps) {
+function ZoomableImage({ uri, t }: ZoomableImageProps) {
+  const [saving, setSaving] = useState(false);
+
+  const handleLongPress = async () => {
+    if (saving) return;
+    
+    try {
+      setSaving(true);
+      await saveToGallery(uri);
+      Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
+    } catch (error) {
+      console.error('Download failed:', error);
+      Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <View style={[zoomStyles.container, { backgroundColor: 'rgba(0, 0, 0, 0.95)' }]}>
-      <View
+      <TouchableOpacity
         style={{
           width: '100%',
           height: '100%',
           alignItems: 'center',
           justifyContent: 'center',
         }}
+        activeOpacity={1}
+        onLongPress={handleLongPress}
+        delayLongPress={500}
       >
         <ExpoImage source={{ uri }} style={zoomStyles.image} contentFit="contain" />
-      </View>
+        {saving && (
+          <View style={zoomStyles.savingOverlay}>
+            <Text style={zoomStyles.savingText}>{t('common.saving')}...</Text>
+          </View>
+        )}
+      </TouchableOpacity>
     </View>
   );
 }
@@ -784,7 +811,7 @@ export default function SquareScreen() {
                     </View>
                   </View>
 
-                  <ZoomableImage uri={selectedImage.uri} onClose={() => {}} />
+                  <ZoomableImage uri={selectedImage.uri} onClose={() => {}} t={t} />
                 </>
               )}
             </View>
@@ -810,6 +837,19 @@ const zoomStyles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+  },
+  savingOverlay: {
+    position: 'absolute',
+    bottom: 100,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  savingText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 
