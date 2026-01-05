@@ -1,13 +1,65 @@
 import React, { useState } from 'react';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { ArrowLeft, Trash2, Download, Share2 } from 'lucide-react-native';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { ArrowLeft, Trash2, Download, Share2, X } from 'lucide-react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Modal } from 'react-native';
 import { useVerification } from '@/contexts/VerificationContext';
 import { useSquare } from '@/contexts/SquareContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { saveToGallery } from '@/utils/share';
 import { useTranslation } from 'react-i18next';
+
+type ZoomableImageProps = {
+  uri: string;
+  onClose: () => void;
+  t: any;
+};
+
+function ZoomableImage({ uri, t }: ZoomableImageProps) {
+  const [saving, setSaving] = useState(false);
+
+  const handleLongPress = async () => {
+    if (saving) return;
+    
+    try {
+      setSaving(true);
+      const success = await saveToGallery(uri);
+      if (success) {
+        Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
+      } else {
+        Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+      }
+    } catch (error) {
+      console.error('Download failed:', error);
+      Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <View style={[zoomStyles.container, { backgroundColor: 'rgba(0, 0, 0, 0.95)' }]}>
+      <TouchableOpacity
+        style={{
+          width: '100%',
+          height: '100%',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        activeOpacity={1}
+        onLongPress={handleLongPress}
+        delayLongPress={500}
+      >
+        <Image source={{ uri }} style={zoomStyles.image} contentFit="contain" />
+        {saving && (
+          <View style={zoomStyles.savingOverlay}>
+            <Text style={zoomStyles.savingText}>{t('common.saving')}...</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+}
 
 export default function OutfitChangeDetailScreen() {
   const { t } = useTranslation();
@@ -18,6 +70,9 @@ export default function OutfitChangeDetailScreen() {
   const { user } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [imageViewerVisible, setImageViewerVisible] = useState(false);
+  const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
+  const [selectedImageType, setSelectedImageType] = useState<'original' | 'result'>('original');
 
   const outfitItem = outfitChangeHistory.find(item => item.id === id);
 
@@ -85,6 +140,12 @@ export default function OutfitChangeDetailScreen() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleImagePress = (uri: string, type: 'original' | 'result') => {
+    setSelectedImageUri(uri);
+    setSelectedImageType(type);
+    setImageViewerVisible(true);
   };
 
   const handlePublishToSquare = async () => {
@@ -224,11 +285,13 @@ export default function OutfitChangeDetailScreen() {
           <View style={styles.imagesContainer}>
             <View style={styles.imageSection}>
               <Text style={styles.imageLabel}>{t('history.original')}</Text>
-              <Image
-                source={{ uri: outfitItem.originalImageUri }}
-                style={styles.image}
-                contentFit="contain"
-              />
+              <TouchableOpacity onPress={() => handleImagePress(outfitItem.originalImageUri, 'original')} activeOpacity={0.9}>
+                <Image
+                  source={{ uri: outfitItem.originalImageUri }}
+                  style={styles.image}
+                  contentFit="contain"
+                />
+              </TouchableOpacity>
             </View>
 
             <View style={styles.arrowContainer}>
@@ -237,11 +300,13 @@ export default function OutfitChangeDetailScreen() {
 
             <View style={styles.imageSection}>
               <Text style={styles.imageLabel}>{t('history.result')}</Text>
-              <Image
-                source={{ uri: outfitItem.resultImageUri }}
-                style={styles.image}
-                contentFit="contain"
-              />
+              <TouchableOpacity onPress={() => handleImagePress(outfitItem.resultImageUri, 'result')} activeOpacity={0.9}>
+                <Image
+                  source={{ uri: outfitItem.resultImageUri }}
+                  style={styles.image}
+                  contentFit="contain"
+                />
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -280,6 +345,45 @@ export default function OutfitChangeDetailScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <Modal
+        visible={imageViewerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setImageViewerVisible(false);
+          setSelectedImageUri(null);
+        }}
+      >
+        <View style={imageViewerStyles.container}>
+          <TouchableOpacity
+            style={imageViewerStyles.closeButton}
+            onPress={() => {
+              setImageViewerVisible(false);
+              setSelectedImageUri(null);
+            }}
+            activeOpacity={0.8}
+          >
+            <X size={28} color="#fff" strokeWidth={2.5} />
+          </TouchableOpacity>
+
+          <View style={imageViewerStyles.content}>
+            {selectedImageUri && (
+              <>
+                <View style={imageViewerStyles.labelContainer} pointerEvents="none">
+                  <View style={imageViewerStyles.labelBadge}>
+                    <Text style={imageViewerStyles.labelText}>
+                      {selectedImageType === 'original' ? t('history.original') : t('history.result')}
+                    </Text>
+                  </View>
+                </View>
+
+                <ZoomableImage uri={selectedImageUri} onClose={() => {}} t={t} />
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -411,6 +515,81 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: '#64748B',
+  },
+});
+
+const zoomStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  savingOverlay: {
+    position: 'absolute',
+    bottom: 100,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  savingText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+});
+
+const imageViewerStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  labelContainer: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 5,
+  },
+  labelBadge: {
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  labelText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 
