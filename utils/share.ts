@@ -1,7 +1,7 @@
 import { Platform, Alert } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import QRCode from 'qrcode';
 
 export async function generateQRCode(url: string): Promise<string> {

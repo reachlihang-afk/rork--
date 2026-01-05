@@ -25,8 +25,12 @@ function ZoomableImage({ uri, t }: ZoomableImageProps) {
     
     try {
       setSaving(true);
-      await saveToGallery(uri);
-      Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
+      const success = await saveToGallery(uri);
+      if (success) {
+        Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
+      } else {
+        Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+      }
     } catch (error) {
       console.error('Download failed:', error);
       Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
