@@ -545,7 +545,7 @@ export default function ResultScreen() {
       )}
 
       <TouchableOpacity style={styles.bottomBackButton} onPress={() => router.back()}>
-        <ArrowLeft size={24} color="#fff" />
+        <ArrowLeft size={24} color="#fff" strokeWidth={2} />
         <Text style={styles.bottomBackButtonText}>{t('common.back')}</Text>
       </TouchableOpacity>
       </ScrollView>

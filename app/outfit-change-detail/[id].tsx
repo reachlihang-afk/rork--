@@ -243,7 +243,7 @@ export default function OutfitChangeDetailScreen() {
           title: t('history.outfitChangeRecords'),
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
-              <ArrowLeft size={24} color="#1F2937" />
+              <ArrowLeft size={24} color="#0F172A" strokeWidth={2} />
             </TouchableOpacity>
           ),
           headerRight: () => (

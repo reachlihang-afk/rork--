@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system/legacy';
 
-import { Shirt, Download, Share2 } from 'lucide-react-native';
+import { Shirt, Download, Share2, ArrowLeft } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useCoin } from '@/contexts/CoinContext';
 import { useVerification } from '@/contexts/VerificationContext';
@@ -678,6 +678,15 @@ export default function OutfitChangeScreen() {
         options={{
           title: t('outfitChange.title'),
           headerStyle: { backgroundColor: '#fff' },
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ marginLeft: 8 }}
+              activeOpacity={0.6}
+            >
+              <ArrowLeft size={24} color="#0F172A" strokeWidth={2} />
+            </TouchableOpacity>
+          ),
           headerRight: () => (
             <TouchableOpacity 
               style={styles.headerRightContainer}

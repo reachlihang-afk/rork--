@@ -473,7 +473,7 @@ Suggestions: [Specific search suggestions]`,
           hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
           activeOpacity={0.6}
         >
-          <ArrowLeft size={24} color="#0F172A" />
+          <ArrowLeft size={24} color="#0F172A" strokeWidth={2} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('home.findSource')}</Text>
         {analysis && currentRecordId ? (
@@ -627,7 +627,7 @@ Suggestions: [Specific search suggestions]`,
                   style={styles.bottomBackButton}
                   onPress={() => router.back()}
                 >
-                  <ArrowLeft size={20} color="#0066FF" />
+                  <ArrowLeft size={24} color="#0066FF" strokeWidth={2} />
                   <Text style={styles.bottomBackText}>{t('common.back')}</Text>
                 </TouchableOpacity>
               </>

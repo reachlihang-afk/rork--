@@ -49,18 +49,18 @@ export default function RechargeScreen() {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
-          <TouchableOpacity 
-            onPress={() => router.back()} 
-            style={styles.backButton}
-            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-            activeOpacity={0.6}
-          >
-            <ArrowLeft size={24} color="#0F172A" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('recharge.title')}</Text>
-          <View style={styles.placeholder} />
-        </View>
-        <View style={styles.notLoginContainer}>
+        <TouchableOpacity 
+          onPress={() => router.back()} 
+          style={styles.backButton}
+          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+          activeOpacity={0.6}
+        >
+          <ArrowLeft size={24} color="#0F172A" strokeWidth={2} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('recharge.title')}</Text>
+        <View style={styles.placeholder} />
+      </View>
+      <View style={styles.notLoginContainer}>
           <Coins size={64} color="#CBD5E1" />
           <Text style={styles.notLoginTitle}>{t('profile.login')}</Text>
           <Text style={styles.notLoginSubtitle}>{t('profile.loginDesc')}</Text>
@@ -84,7 +84,7 @@ export default function RechargeScreen() {
           hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
           activeOpacity={0.6}
         >
-          <ArrowLeft size={24} color="#0F172A" />
+          <ArrowLeft size={24} color="#0F172A" strokeWidth={2} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('recharge.title')}</Text>
         <View style={styles.placeholder} />
