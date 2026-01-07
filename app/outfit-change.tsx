@@ -35,7 +35,7 @@ const templates: Template[] = [
     id: 'bikini',
     name: '比基尼',
     nameEn: 'Bikini',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to a bikini swimsuit, beach style',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to a bikini swimsuit with diverse and fashionable styles - can be traditional two-piece bikini, one-piece swimsuit, or stylish monokini. Various styles including sporty, elegant, trendy, colorful patterns, solid colors, or prints. Beach and resort style with variety and fashion-forward designs',
     icon: '👙',
   },
   {
@@ -126,7 +126,7 @@ const templates: Template[] = [
     id: 'ski',
     name: '滑雪服',
     nameEn: 'Ski Outfit',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to luxury designer ski wear - sleek modern ski jacket and pants from high-end brands, minimalist stylish design with clean lines, premium quality appearance, paired with fashionable ski goggles',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to luxury designer ski wear - sleek modern ski jacket with ZIPPER FULLY CLOSED and ski pants from high-end brands, minimalist stylish design with clean lines, premium quality appearance. The jacket must be a proper ski jacket (NOT a hiking jacket or outdoor coat), fully zipped up, paired with fashionable ski goggles',
     icon: '⛷️',
   },
   {
