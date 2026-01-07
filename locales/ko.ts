@@ -400,6 +400,7 @@
     showMore: '더 보기',
     showLess: '접기',
     templates: {
+      random: '랜덤 스타일',
       christmas: '크리스마스',
       bikini: '비키니',
       formal: '정장',
@@ -418,6 +419,8 @@
       'flight-attendant': '승무원',
       'outdoor': '아웃도어',
       'cowboy': '카우보이',
+      'wizard': '마법사복',
+      'pirate': '해적복',
     },
   },
 };

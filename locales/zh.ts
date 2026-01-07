@@ -409,6 +409,7 @@
     showMore: '更多模板',
     showLess: '收起',
     templates: {
+      random: '随机装',
       christmas: '圣诞装',
       bikini: '比基尼',
       formal: '正装',
@@ -427,6 +428,8 @@
       'flight-attendant': '空姐装',
       'outdoor': '户外装',
       'cowboy': '牛仔装',
+      'wizard': '魔法师装',
+      'pirate': '海盗装',
     },
   },
 };

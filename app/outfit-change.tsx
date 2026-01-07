@@ -25,11 +25,11 @@ const COMMON_PROMPT_PREFIX = 'IMPORTANT: Keep face, facial expression, hairstyle
 
 const templates: Template[] = [
   {
-    id: 'christmas',
-    name: '圣诞装',
-    nameEn: 'Christmas',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Christmas style clothing - Santa outfit, festive sweater, or holiday themed clothes with red and green colors',
-    icon: '🎄',
+    id: 'random',
+    name: '随机装',
+    nameEn: 'Random Style',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to a random, creative, and fashionable style - surprise me with any trendy, elegant, or unique clothing style',
+    icon: '🎲',
   },
   {
     id: 'bikini',
@@ -56,7 +56,7 @@ const templates: Template[] = [
     id: 'sport',
     name: '运动装',
     nameEn: 'Sportswear',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to athletic sportswear - sports jersey, athletic pants, or gym clothes',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Korean style Adidas Original athletic sportswear - trendy Adidas Original sports clothing with Korean street fashion style, modern and stylish',
     icon: '🏃',
   },
   {
@@ -91,7 +91,7 @@ const templates: Template[] = [
     id: 'old-money',
     name: '老钱风',
     nameEn: 'Old Money Style',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to old money style - classic, timeless, elegant clothing with subtle luxury, neutral colors, cashmere sweaters, tailored pieces',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to old money style - classic, timeless, elegant clothing with subtle luxury, neutral colors, cashmere sweaters, tailored pieces, and a coat casually draped over the shoulders',
     icon: '💰',
   },
   {
@@ -126,7 +126,7 @@ const templates: Template[] = [
     id: 'ski',
     name: '滑雪服',
     nameEn: 'Ski Outfit',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to ski wear - warm ski jacket, ski pants, winter sports clothing with colorful patterns',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to luxury designer ski wear - sleek modern ski jacket and pants from high-end brands, minimalist stylish design with clean lines, premium quality appearance, paired with fashionable ski goggles',
     icon: '⛷️',
   },
   {
@@ -149,6 +149,27 @@ const templates: Template[] = [
     nameEn: 'Cowboy/Western',
     prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to western cowboy style - denim jeans, cowboy boots, plaid shirt, western hat, rodeo style clothing',
     icon: '🤠',
+  },
+  {
+    id: 'wizard',
+    name: '魔法师装',
+    nameEn: 'Wizard',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to magical wizard costume - flowing robes, pointed wizard hat, mystical and magical appearance with arcane style',
+    icon: '🧙',
+  },
+  {
+    id: 'pirate',
+    name: '海盗装',
+    nameEn: 'Pirate',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to pirate costume - classic pirate clothing with tricorn hat, eye patch, pirate coat, adventurous seafarer style',
+    icon: '🏴‍☠️',
+  },
+  {
+    id: 'christmas',
+    name: '圣诞装',
+    nameEn: 'Christmas',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Christmas style clothing - Santa outfit, festive sweater, or holiday themed clothes with red and green colors',
+    icon: '🎄',
   },
 ];
 

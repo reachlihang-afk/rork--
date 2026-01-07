@@ -65,6 +65,7 @@ function ZoomableImage({ uri, t }: ZoomableImageProps) {
 
 function getTemplateIcon(templateName: string): string {
   const templateIcons: Record<string, string> = {
+    '随机装': '🎲',
     '正装': '👔',
     '比基尼': '👙',
     '一键穿搭': '✨',
@@ -84,12 +85,15 @@ function getTemplateIcon(templateName: string): string {
     '空姐装': '✈️',
     '户外装': '🏔️',
     '牛仔装': '🤠',
+    '魔法师装': '🧙',
+    '海盗装': '🏴‍☠️',
   };
   return templateIcons[templateName] || '👔';
 }
 
 function getTemplateBadgeColor(templateName: string): string {
   const templateColors: Record<string, string> = {
+    '随机装': '#F3E8FF',
     '正装': '#EEF2FF',
     '比基尼': '#FEF3C7',
     '一键穿搭': '#F0F9FF',
@@ -109,6 +113,8 @@ function getTemplateBadgeColor(templateName: string): string {
     '空姐装': '#E0F2FE',
     '户外装': '#D1FAE5',
     '牛仔装': '#E0E7FF',
+    '魔法师装': '#DDD6FE',
+    '海盗装': '#374151',
   };
   return templateColors[templateName] || '#EEF2FF';
 }

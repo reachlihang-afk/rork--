@@ -400,6 +400,7 @@
     showMore: 'もっと見る',
     showLess: '閉じる',
     templates: {
+      random: 'ランダムスタイル',
       christmas: 'クリスマス服',
       bikini: 'ビキニ',
       formal: 'フォーマル',
@@ -418,6 +419,8 @@
       'flight-attendant': 'フライトアテンダント',
       'outdoor': 'アウトドア',
       'cowboy': 'カウボーイ',
+      'wizard': '魔法使い服',
+      'pirate': '海賊服',
     },
   },
 };

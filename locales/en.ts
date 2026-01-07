@@ -409,6 +409,7 @@
     showMore: 'More Templates',
     showLess: 'Show Less',
     templates: {
+      random: 'Random Style',
       christmas: 'Christmas',
       bikini: 'Bikini',
       formal: 'Formal',
@@ -427,6 +428,8 @@
       'flight-attendant': 'Flight Attendant',
       'outdoor': 'Outdoor',
       'cowboy': 'Cowboy',
+      'wizard': 'Wizard',
+      'pirate': 'Pirate',
     },
   },
 };
