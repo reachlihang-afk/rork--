@@ -28,7 +28,7 @@ const templates: Template[] = [
     id: 'random',
     name: '随机装',
     nameEn: 'Random Style',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to a random, creative, and fashionable style - surprise me with any trendy, elegant, or unique clothing style',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to a COMPLETELY RANDOM and DIVERSE fashion style with MAXIMUM VARIETY. Each generation must use DIFFERENT clothing types and styles. Examples of variety: elegant evening gown, street punk outfit, vintage retro 80s style, modern minimalist chic, bohemian maxi dress, Korean streetwear, Japanese Harajuku style, preppy school look, gothic dark fashion, Y2K aesthetic, oversized hoodie with cargo pants, professional blazer with trousers, cute kawaii style, edgy leather jacket outfit, romantic cottagecore dress, athletic athleisure, glamorous sequin outfit, casual denim combo, futuristic cyberpunk style, soft pastel coordinated set. Ensure MAXIMUM DIFFERENCE in silhouette, style, color scheme, and fashion genre from typical results. IMPORTANT: Create a COMPLETE OUTFIT SOLUTION with matching accessories, bag/purse, and shoes that perfectly coordinate with the chosen style. The accessories, footwear, and bag should complement and enhance the overall look to create a cohesive, well-styled ensemble. Be creative and unexpected!',
     icon: '🎲',
   },
   {
