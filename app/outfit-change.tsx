@@ -547,6 +547,9 @@ export default function OutfitChangeScreen() {
       
       setResultUri(generatedImageUri);
       
+      // 提示用户图片已生成
+      Alert.alert(t('common.success'), '图片已生成');
+      
       // 使用换装次数（可能消耗免费次数或金币）
       await useOutfitChange();
       
