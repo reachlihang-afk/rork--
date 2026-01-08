@@ -615,8 +615,8 @@ export default function SquareScreen() {
                 </View>
                 <View style={styles.outfitImageWrapper}>
                   <Text style={styles.imageLabel} numberOfLines={1}>{t('history.result')}</Text>
-                  <TouchableOpacity onPress={() => handleImagePress(post.resultImageUri!, 'result', post.id)} activeOpacity={0.9}>
-                    <Image source={{ uri: post.resultImageUri }} style={styles.outfitImageResult} contentFit="cover" />
+                  <TouchableOpacity onPress={() => handleImagePress(post.resultImageUri!, 'verified', post.id)} activeOpacity={0.9}>
+                    <Image source={{ uri: post.resultImageUri }} style={styles.outfitImageResult} />
                   </TouchableOpacity>
                 </View>
               </View>
