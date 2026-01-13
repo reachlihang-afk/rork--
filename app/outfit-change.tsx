@@ -6,12 +6,13 @@ import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system/legacy';
 
-import { Shirt, Download, Share2, ArrowLeft } from 'lucide-react-native';
+import { Shirt, Download, Share2, ArrowLeft, Sparkles } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useCoin } from '@/contexts/CoinContext';
 import { useVerification } from '@/contexts/VerificationContext';
 import { useSquare } from '@/contexts/SquareContext';
 import { useAuth } from '@/contexts/AuthContext';
+import BeautyFilter, { BeautyParams } from '@/components/BeautyFilter';
 
 type Template = {
   id: string;
@@ -193,6 +194,9 @@ export default function OutfitChangeScreen() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [showAllTemplates, setShowAllTemplates] = useState(false);
+  const [showBeautyFilter, setShowBeautyFilter] = useState(false);
+  const [originalImageUri, setOriginalImageUri] = useState<string | null>(null);
+  const [beautyApplied, setBeautyApplied] = useState(false);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -203,8 +207,29 @@ export default function OutfitChangeScreen() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      setImageUri(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      setImageUri(uri);
+      setOriginalImageUri(uri);
       setResultUri(null);
+      setBeautyApplied(false);
+    }
+  };
+
+  const handleBeautyApply = (beautifiedUri: string, params: BeautyParams) => {
+    setImageUri(beautifiedUri);
+    setBeautyApplied(true);
+    setShowBeautyFilter(false);
+    Alert.alert(t('common.success'), t('beauty.beautySuccess'));
+  };
+
+  const handleBeautyClose = () => {
+    setShowBeautyFilter(false);
+  };
+
+  const resetToOriginalImage = () => {
+    if (originalImageUri) {
+      setImageUri(originalImageUri);
+      setBeautyApplied(false);
     }
   };
 
@@ -734,9 +759,25 @@ export default function OutfitChangeScreen() {
           {imageUri ? (
             <View style={styles.imagePreview}>
               <Image source={{ uri: imageUri }} style={styles.previewImage} contentFit="cover" />
-              <TouchableOpacity style={styles.reuploadButton} onPress={pickImage}>
-                <Text style={styles.reuploadText}>{t('outfitChange.reupload')}</Text>
-              </TouchableOpacity>
+              <View style={styles.imageActions}>
+                <TouchableOpacity style={styles.reuploadButton} onPress={pickImage}>
+                  <Text style={styles.reuploadText}>{t('outfitChange.reupload')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.beautyButton, beautyApplied && styles.beautyButtonActive]} 
+                  onPress={() => setShowBeautyFilter(true)}
+                >
+                  <Sparkles size={16} color={beautyApplied ? "#FFFFFF" : "#3B82F6"} strokeWidth={2} />
+                  <Text style={[styles.beautyButtonText, beautyApplied && styles.beautyButtonTextActive]}>
+                    {beautyApplied ? '已美颜' : t('outfitChange.applyBeauty')}
+                  </Text>
+                </TouchableOpacity>
+                {beautyApplied && (
+                  <TouchableOpacity style={styles.resetBeautyButton} onPress={resetToOriginalImage}>
+                    <Text style={styles.resetBeautyText}>恢复原图</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           ) : (
             <View style={styles.uploadButtons}>
@@ -943,6 +984,16 @@ export default function OutfitChangeScreen() {
           )}
         </TouchableOpacity>
       </ScrollView>
+
+      {/* 美颜滤镜 */}
+      {imageUri && showBeautyFilter && (
+        <BeautyFilter
+          visible={showBeautyFilter}
+          imageUri={originalImageUri || imageUri}
+          onClose={handleBeautyClose}
+          onApply={handleBeautyApply}
+        />
+      )}
     </View>
   );
 }
@@ -1083,10 +1134,16 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: '#E2E8F0',
   },
-  reuploadButton: {
+  imageActions: {
     position: 'absolute',
     bottom: 12,
+    left: 12,
     right: 12,
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  reuploadButton: {
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -1094,6 +1151,39 @@ const styles = StyleSheet.create({
   },
   reuploadText: {
     color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  beautyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#3B82F6',
+  },
+  beautyButtonActive: {
+    backgroundColor: '#3B82F6',
+  },
+  beautyButtonText: {
+    color: '#3B82F6',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  beautyButtonTextActive: {
+    color: '#FFFFFF',
+  },
+  resetBeautyButton: {
+    backgroundColor: 'rgba(239, 68, 68, 0.9)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  resetBeautyText: {
+    color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '600',
   },
