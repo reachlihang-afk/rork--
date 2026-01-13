@@ -47,19 +47,24 @@ const SimpleSlider: React.FC<SimpleSliderProps> = ({
     // 计算新值
     const range = maximumValue - minimumValue;
     const newValue = minimumValue + percentage * range;
+    // 即时更新拇指位置，提升滑动跟手性
+    const position = percentage * (containerWidth - 24);
+    thumbPosition.setValue(position);
     
     // 更新值
     if (Math.abs(newValue - lastValue.current) > 0.1) {
       onValueChange(newValue);
       lastValue.current = newValue;
     }
-  }, [containerWidth, minimumValue, maximumValue, onValueChange]);
+  }, [containerWidth, minimumValue, maximumValue, onValueChange, thumbPosition]);
 
   // 创建 PanResponder
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: () => true,
       onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponderCapture: () => true,
       onPanResponderGrant: (evt) => {
         handleTouch(evt.nativeEvent.locationX);
       },
@@ -80,12 +85,15 @@ const SimpleSlider: React.FC<SimpleSliderProps> = ({
   return (
     <View
       style={[styles.container, style]}
-      onLayout={(event) => {
-        const { width } = event.nativeEvent.layout;
-        setContainerWidth(width);
-      }}
     >
-      <View style={styles.trackContainer} {...panResponder.panHandlers}>
+      <View
+        style={styles.trackContainer}
+        {...panResponder.panHandlers}
+        onLayout={(event) => {
+          const { width } = event.nativeEvent.layout;
+          setContainerWidth(width);
+        }}
+      >
         {/* 背景轨道 */}
         <View
           style={[
@@ -125,11 +133,13 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     paddingHorizontal: 12, // 给拇指留出空间
+    width: '100%',
   },
   trackContainer: {
     height: 40,
     justifyContent: 'center',
     position: 'relative',
+    width: '100%',
   },
   track: {
     height: 4,
