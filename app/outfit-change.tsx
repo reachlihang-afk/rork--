@@ -202,13 +202,6 @@ const templates: Template[] = [
     icon: '👔',
   },
   {
-    id: 'fairytale-princess',
-    name: '童话公主装',
-    nameEn: 'Fairytale Princess',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to magical fairytale princess dress - elegant ball gown with sparkles, tiara or crown, royal and enchanting style like Disney princesses, dreamy and magical appearance',
-    icon: '👸',
-  },
-  {
     id: 'starbucks-barista',
     name: '咖啡师-星巴克',
     nameEn: 'Starbucks Barista',
@@ -221,6 +214,13 @@ const templates: Template[] = [
     nameEn: 'Sportswear',
     prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Korean style Adidas Original athletic sportswear - trendy Adidas Original sports clothing with Korean street fashion style, modern and stylish',
     icon: '🏃',
+  },
+  {
+    id: 'fairytale-princess',
+    name: '童话公主装',
+    nameEn: 'Fairytale Princess',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to magical fairytale princess dress - elegant ball gown with sparkles, tiara or crown, royal and enchanting style like Disney princesses, dreamy and magical appearance',
+    icon: '👸',
   },
   {
     id: 'wedding',
