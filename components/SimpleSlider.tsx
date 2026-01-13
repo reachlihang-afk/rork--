@@ -65,6 +65,8 @@ const SimpleSlider: React.FC<SimpleSliderProps> = ({
       onStartShouldSetPanResponderCapture: () => true,
       onMoveShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponderCapture: () => true,
+      onPanResponderTerminationRequest: () => false,
+      onShouldBlockNativeResponder: () => true,
       onPanResponderGrant: (evt) => {
         handleTouch(evt.nativeEvent.locationX);
       },
@@ -85,9 +87,13 @@ const SimpleSlider: React.FC<SimpleSliderProps> = ({
   return (
     <View
       style={[styles.container, style]}
+      collapsable={false}
+      hitSlop={{ left: 12, right: 12, top: 12, bottom: 12 }}
     >
       <View
         style={styles.trackContainer}
+        pointerEvents="box-only"
+        hitSlop={{ left: 12, right: 12, top: 12, bottom: 12 }}
         {...panResponder.panHandlers}
         onLayout={(event) => {
           const { width } = event.nativeEvent.layout;

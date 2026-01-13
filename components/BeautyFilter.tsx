@@ -119,7 +119,11 @@ export default function BeautyFilter({ visible, imageUri, onClose, onApply }: Be
         </View>
 
         {/* 美颜参数控制 */}
-        <ScrollView style={styles.controlsContainer} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={styles.controlsContainer}
+          showsVerticalScrollIndicator={false}
+          scrollEnabled={false} // 禁用滚动，确保滑块手势不被拦截
+        >
           <View style={styles.controls}>
             {/* 磨皮 */}
             <View style={styles.controlItem}>
