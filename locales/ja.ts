@@ -420,9 +420,9 @@
     showLess: '閉じる',
     templates: {
       random: 'ランダムスタイル',
-      fairytalePrincess: 'おとぎ話のプリンセス',
       bikini: 'ビキニ',
       formal: 'フォーマル',
+      'fairytale-princess': 'おとぎ話のプリンセス',
       'starbucks-barista': 'スターバックス・バリスタ',
       sport: 'スポーツウェア',
       wedding: 'ウェディング',

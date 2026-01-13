@@ -429,9 +429,9 @@
     showLess: '收起',
     templates: {
       random: '随机装',
-      fairytalePrincess: '童话公主装',
       bikini: '比基尼',
       formal: '正装',
+      'fairytale-princess': '童话公主装',
       'starbucks-barista': '咖啡师-星巴克',
       sport: '运动装',
       wedding: '婚纱/礼服',

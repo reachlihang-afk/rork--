@@ -420,9 +420,9 @@
     showLess: '접기',
     templates: {
       random: '랜덤 스타일',
-      fairytalePrincess: '동화 공주',
       bikini: '비키니',
       formal: '정장',
+      'fairytale-princess': '동화 공주',
       'starbucks-barista': '스타벅스 바리스타',
       sport: '스포츠웨어',
       wedding: '웨딩드레스',

@@ -429,9 +429,9 @@
     showLess: 'Show Less',
     templates: {
       random: 'Random Style',
-      fairytalePrincess: 'Fairytale Princess',
       bikini: 'Bikini',
       formal: 'Formal',
+      'fairytale-princess': 'Fairytale Princess',
       'starbucks-barista': 'Starbucks Barista',
       sport: 'Sportswear',
       wedding: 'Wedding',
