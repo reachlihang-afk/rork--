@@ -378,7 +378,9 @@
   },
   beauty: {
     title: 'Smart Beauty',
+    smartBeauty: 'Smart Beauty',
     apply: 'Apply',
+    applyBeauty: 'Apply Beauty',
     reset: 'Reset',
     processing: 'Processing...',
     processingFailed: 'Processing failed, please try again',
@@ -387,7 +389,9 @@
     thinFace: 'Slim Face',
     enlargeEyes: 'Enlarge Eyes',
     rosy: 'Rosy',
+    contrast: 'Contrast',
     beautySuccess: 'Beauty applied',
+    adjustHint: 'Adjust parameters and tap "Apply Beauty" to see the effect',
   },
   outfitChange: {
     title: 'Outfit Change',
@@ -425,7 +429,7 @@
     showLess: 'Show Less',
     templates: {
       random: 'Random Style',
-      christmas: 'Christmas',
+      fairytalePrincess: 'Fairytale Princess',
       bikini: 'Bikini',
       formal: 'Formal',
       'starbucks-barista': 'Starbucks Barista',

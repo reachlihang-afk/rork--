@@ -24,12 +24,147 @@ type Template = {
 
 const COMMON_PROMPT_PREFIX = 'IMPORTANT: Keep face, facial expression, hairstyle, pose, and photo framing EXACTLY as in original. Only change clothing in the EXACT visible areas. If only partial clothing is visible, apply only to that partial area. Do NOT extend or complete the image. ';
 
+// 超级随机装模板库 - 100+种独特风格
+const RANDOM_OUTFIT_STYLES = [
+  // 现有模板风格
+  'Bikini swimsuit - traditional two-piece, one-piece, or stylish monokini with beach resort style',
+  'Formal business attire - professional suit and tie or elegant business dress',
+  'Starbucks barista uniform - green apron with logo, black shirt, coffee shop staff style',
+  'Korean Adidas Original sportswear - trendy athletic clothing with street fashion style',
+  'Wedding attire - elegant wedding dress or formal tuxedo',
+  'Traditional Chinese Hanfu - ancient elegant robes with cultural heritage',
+  'Superhero costume - cape and heroic style with bold colors',
+  'Chinese New Year festive clothing - red and gold with auspicious patterns',
+  'Old money style - timeless elegant clothing with coat draped over shoulders',
+  'Tennis outfit - tennis skirt/shorts with polo shirt, athletic sportswear',
+  'Chinese God of Wealth costume - traditional red and gold robes',
+  'Hot trendy girl style - crop top, mini skirt, bold streetwear',
+  'Meituan delivery uniform - yellow and black branded outfit',
+  'Luxury designer ski wear - sleek jacket fully zipped with ski goggles',
+  'Flight attendant uniform - elegant airline uniform with scarf',
+  'Outdoor adventure clothing - hiking jacket, cargo pants, functional gear',
+  'Western cowboy style - denim jeans, boots, plaid shirt, western hat',
+  'Magical wizard costume - flowing robes with pointed hat, mystical style',
+  'Pirate costume - tricorn hat, eye patch, pirate coat, seafarer style',
+  'Fairytale princess dress - magical elegant gown with tiara and royal charm',
+  
+  // 扩展风格库 - 80+种额外风格
+  '1950s vintage pin-up style - high-waisted skirt, polka dots, retro glamour',
+  '1960s mod fashion - geometric patterns, mini dress, go-go boots, bold colors',
+  '1970s disco style - bell bottoms, platform shoes, sequined top, funky patterns',
+  '1980s power suit - shoulder pads, bold colors, executive business style',
+  '1990s grunge aesthetic - flannel shirt, ripped jeans, combat boots, layered look',
+  '2000s Y2K fashion - low-rise jeans, butterfly clips, metallic fabrics, futuristic',
+  'Elegant evening gown - floor-length formal dress with sophisticated design',
+  'Cocktail party dress - chic knee-length dress with stylish accessories',
+  'Bohemian festival outfit - flowing maxi dress, fringe details, flower crown',
+  'Preppy school uniform - pleated skirt, blazer, tie, academic style',
+  'Gothic lolita fashion - Victorian-inspired dress with dark romantic style',
+  'Kawaii Japanese street style - colorful layers, cute accessories, playful fashion',
+  'Harajuku decora fashion - bright colors, multiple accessories, maximalist style',
+  'Korean ulzzang style - trendy oversized clothing, soft colors, stylish casual',
+  'Minimalist Scandinavian fashion - clean lines, neutral tones, simple elegance',
+  'Parisian chic style - striped shirt, beret, elegant trench coat, effortless',
+  'Italian luxury fashion - designer pieces, bold patterns, sophisticated style',
+  'British mod style - tailored pieces, classic patterns, refined look',
+  'American preppy ivy league - cable knit sweater, khakis, loafers, classic',
+  'Streetwear hypebeast - branded hoodies, sneakers, urban fashion, trendy',
+  'Athleisure workout gear - yoga pants, sports bra, stylish athletic wear',
+  'Balletcore aesthetic - tulle skirt, ballet flats, delicate feminine style',
+  'Dark academia - tweed blazer, turtleneck, vintage scholarly aesthetic',
+  'Light academia - cream colors, cardigans, romantic scholarly style',
+  'Cottagecore pastoral - prairie dress, floral patterns, countryside charm',
+  'Fairycore whimsical - ethereal flowing dress, nature-inspired, magical',
+  'Goblincore earthy - oversized layers, mushroom prints, forest aesthetic',
+  'Mermaidcore oceanic - iridescent fabrics, shell accessories, aquatic theme',
+  'Royalcore regal - velvet, gold details, crown, luxurious royal style',
+  'Regencycore historical - empire waist dress, Jane Austen inspired elegance',
+  'Victorian era fashion - corset, bustle skirt, lace details, period costume',
+  'Edwardian style - high collar blouse, long skirt, Gibson girl aesthetic',
+  'Flapper 1920s - fringe dress, headband, art deco glamour',
+  'Rockabilly style - polka dot dress, leather jacket, retro pinup',
+  'Punk rock fashion - leather jacket, studs, ripped clothing, rebellious',
+  'Emo alternative style - black skinny jeans, band tee, layered hair accessories',
+  'Scene kid aesthetic - neon colors, tutus, bold makeup style clothing',
+  'Soft girl aesthetic - pastel colors, oversized sweater, cute skirts',
+  'E-girl style - striped shirt, chain accessories, alternative internet fashion',
+  'VSCO girl outfit - scrunchies, oversized tee, trendy casual beach style',
+  'Baddie aesthetic - bodycon dress, designer accessories, confident style',
+  'Clean girl aesthetic - sleek hair, minimal jewelry, polished simple look',
+  'That girl aesthetic - matching set, organized style, aspirational fashion',
+  'Barbiecore hot pink - all pink outfit, glamorous Barbie-inspired style',
+  'Tomboy athletic - baggy jeans, oversized shirt, sporty comfortable style',
+  'Androgynous fashion - gender-neutral suit, minimalist unisex style',
+  'Cyberpunk futuristic - neon accents, tech-wear, dystopian urban style',
+  'Steampunk Victorian - gears, goggles, brass details, industrial fantasy',
+  'Witchy mystic - flowing dark robes, moon symbols, magical bohemian',
+  'Hippie peace style - tie-dye, bell sleeves, flower power, free spirit',
+  'Safari explorer - khaki utility vest, cargo shorts, adventure ready',
+  'Tropical vacation - bright floral print, beach resort casual style',
+  'Nautical sailor - navy stripes, white pants, maritime classic style',
+  'Equestrian riding - jodhpurs, riding boots, polo style, horse rider',
+  'Figure skating costume - sparkly dress, athletic elegance, ice rink style',
+  'Ballerina performance - classical tutu, pointe shoes, graceful dance attire',
+  'Flamenco dancer - ruffled red dress, Spanish passionate style',
+  'Belly dancer costume - jeweled bra top, flowing pants, Middle Eastern',
+  'Traditional Japanese kimono - elegant silk robe with obi belt, cultural',
+  'Indian sari - draped silk fabric, ornate jewelry, traditional elegance',
+  'Scottish highland - tartan kilt, sporran, bagpiper traditional dress',
+  'German dirndl - traditional Bavarian dress, folk costume, Oktoberfest',
+  'Mexican folklorico - colorful embroidered dress, traditional festive',
+  'Russian kokoshnik - traditional headdress with ornate dress, folk style',
+  'Egyptian pharaoh - gold jewelry, white linen, ancient royal costume',
+  'Greek goddess - flowing white toga, gold accents, classical mythology',
+  'Roman centurion - armor, red cape, ancient military costume',
+  'Medieval knight - armor suit, shield, chivalrous warrior style',
+  'Renaissance faire - corset bodice, full skirt, historical costume',
+  'Samurai warrior - traditional armor, hakama, Japanese martial style',
+  'Geisha traditional - elaborate kimono, white makeup style, cultural',
+  'Flapper jazz age - beaded dress, feather headband, roaring twenties',
+  'Pin-up girl retro - high-waisted shorts, crop top, vintage glamour',
+  'Burlesque performer - corset, feather boa, theatrical glamorous style',
+  'Circus ringmaster - red jacket, top hat, theatrical performer style',
+  'Mime artist - striped shirt, beret, theatrical black and white',
+  'Clown entertainer - colorful baggy outfit, playful costume',
+  'Chef professional - white coat, toque hat, culinary uniform',
+  'Doctor medical - white coat, stethoscope, professional healthcare',
+  'Firefighter uniform - protective gear, reflective stripes, heroic',
+  'Police officer - uniform, badge, law enforcement professional',
+  'Astronaut space suit - NASA style, futuristic space explorer',
+  'Scuba diver - wetsuit, diving gear, underwater explorer',
+  'Beekeeper protective - white suit, veil hat, beekeeping attire',
+  'Construction worker - hard hat, reflective vest, safety gear',
+  'Farmer overall - denim overalls, plaid shirt, agricultural worker',
+  'Gardener casual - apron, gloves, green thumb practical style',
+  'Librarian vintage - cardigan, glasses, books, intellectual style',
+  'Secretary 1960s - pencil skirt, blouse, professional retro office',
+  'Waitress diner - retro uniform, apron, classic restaurant style',
+  'Maid Victorian - black dress, white apron, classic servant costume',
+  'Butler formal - tailcoat, white gloves, sophisticated service attire',
+  'Mechanic work - coveralls, tool belt, automotive repair practical',
+  'Artist painter - paint-splattered smock, beret, creative bohemian',
+  'Photographer vest - utility vest with pockets, professional casual',
+  'DJ performer - headphones, trendy streetwear, music producer style',
+  'Rockstar stage - leather pants, studded jacket, concert performer',
+  'Pop star concert - sparkly costume, bold stage outfit, performer',
+  'Rapper hip-hop - oversized chains, branded clothing, urban style',
+  'Country singer - cowboy hat, boots, Nashville stage style',
+  'Opera singer - elaborate gown, dramatic classical performance attire',
+];
+
+// 随机选择一种风格的函数
+function getRandomOutfitStyle(): string {
+  const randomIndex = Math.floor(Math.random() * RANDOM_OUTFIT_STYLES.length);
+  return RANDOM_OUTFIT_STYLES[randomIndex];
+}
+
 const templates: Template[] = [
   {
     id: 'random',
     name: '随机装',
     nameEn: 'Random Style',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to a COMPLETELY RANDOM and DIVERSE fashion style with MAXIMUM VARIETY. Each generation must use DIFFERENT clothing types and styles. Examples of variety: elegant evening gown, street punk outfit, vintage retro 80s style, modern minimalist chic, bohemian maxi dress, Korean streetwear, Japanese Harajuku style, preppy school look, gothic dark fashion, Y2K aesthetic, oversized hoodie with cargo pants, professional blazer with trousers, cute kawaii style, edgy leather jacket outfit, romantic cottagecore dress, athletic athleisure, glamorous sequin outfit, casual denim combo, futuristic cyberpunk style, soft pastel coordinated set. Ensure MAXIMUM DIFFERENCE in silhouette, style, color scheme, and fashion genre from typical results. IMPORTANT: Create a COMPLETE OUTFIT SOLUTION with matching accessories, bag/purse, and shoes that perfectly coordinate with the chosen style. The accessories, footwear, and bag should complement and enhance the overall look to create a cohesive, well-styled ensemble. Be creative and unexpected!',
+    // 注意：实际的 prompt 会在生成时动态创建
+    prompt: COMMON_PROMPT_PREFIX + 'RANDOM_STYLE_PLACEHOLDER',
     icon: '🎲',
   },
   {
@@ -166,11 +301,11 @@ const templates: Template[] = [
     icon: '🏴‍☠️',
   },
   {
-    id: 'christmas',
-    name: '圣诞装',
-    nameEn: 'Christmas',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Christmas style clothing - Santa outfit, festive sweater, or holiday themed clothes with red and green colors',
-    icon: '🎄',
+    id: 'fairytale-princess',
+    name: '童话公主装',
+    nameEn: 'Fairytale Princess',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to magical fairytale princess dress - elegant ball gown with sparkles, tiara or crown, royal and enchanting style like Disney princesses, dreamy and magical appearance',
+    icon: '👸',
   },
 ];
 
@@ -434,8 +569,16 @@ export default function OutfitChangeScreen() {
       
       let requestBody;
       if (mode === 'template') {
+        // 如果是随机装，每次动态生成一个完全不同的风格
+        let finalPrompt = selectedTemplate!.prompt;
+        if (selectedTemplate!.id === 'random') {
+          const randomStyle = getRandomOutfitStyle();
+          finalPrompt = COMMON_PROMPT_PREFIX + `Change the outfit to: ${randomStyle}. IMPORTANT: Create a COMPLETE OUTFIT SOLUTION with matching accessories, bag/purse, and shoes that perfectly coordinate with this style. The accessories, footwear, and bag should complement and enhance the overall look to create a cohesive, well-styled ensemble. Be creative and ensure the style is distinct and unique!`;
+          console.log('[OutfitChange] Random style selected:', randomStyle);
+        }
+        
         requestBody = {
-          prompt: selectedTemplate!.prompt,
+          prompt: finalPrompt,
           images: [{ type: 'image', image: base64Image }],
           aspectRatio: '3:4',
         };

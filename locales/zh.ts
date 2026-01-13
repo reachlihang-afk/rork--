@@ -378,7 +378,9 @@
   },
   beauty: {
     title: '智能美颜',
+    smartBeauty: '智能美颜',
     apply: '应用美颜',
+    applyBeauty: '应用美颜',
     reset: '重置',
     processing: '美颜处理中...',
     processingFailed: '美颜处理失败，请重试',
@@ -387,7 +389,9 @@
     thinFace: '瘦脸',
     enlargeEyes: '大眼',
     rosy: '红润',
+    contrast: '对比度',
     beautySuccess: '美颜完成',
+    adjustHint: '调整参数，点击"应用美颜"查看效果',
   },
   outfitChange: {
     title: '一键换装',
@@ -425,7 +429,7 @@
     showLess: '收起',
     templates: {
       random: '随机装',
-      christmas: '圣诞装',
+      fairytalePrincess: '童话公主装',
       bikini: '比基尼',
       formal: '正装',
       'starbucks-barista': '咖啡师-星巴克',

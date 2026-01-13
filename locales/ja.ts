@@ -369,7 +369,9 @@
   },
   beauty: {
     title: 'スマート美顔',
+    smartBeauty: 'スマート美顔',
     apply: '適用',
+    applyBeauty: '美顔を適用',
     reset: 'リセット',
     processing: '処理中...',
     processingFailed: '処理に失敗しました。もう一度お試しください',
@@ -378,7 +380,9 @@
     thinFace: '小顔',
     enlargeEyes: 'デカ目',
     rosy: '血色感',
+    contrast: 'コントラスト',
     beautySuccess: '美顔完了',
+    adjustHint: 'パラメータを調整し、「美顔を適用」をタップして効果を確認',
   },
   outfitChange: {
     title: '着せ替え',
@@ -416,7 +420,7 @@
     showLess: '閉じる',
     templates: {
       random: 'ランダムスタイル',
-      christmas: 'クリスマス服',
+      fairytalePrincess: 'おとぎ話のプリンセス',
       bikini: 'ビキニ',
       formal: 'フォーマル',
       'starbucks-barista': 'スターバックス・バリスタ',

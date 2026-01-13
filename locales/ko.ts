@@ -369,7 +369,9 @@
   },
   beauty: {
     title: '스마트 뷰티',
+    smartBeauty: '스마트 뷰티',
     apply: '적용',
+    applyBeauty: '뷰티 적용',
     reset: '초기화',
     processing: '처리 중...',
     processingFailed: '처리 실패, 다시 시도해주세요',
@@ -378,7 +380,9 @@
     thinFace: '갸름하게',
     enlargeEyes: '눈 확대',
     rosy: '생기',
+    contrast: '대비',
     beautySuccess: '뷰티 완료',
+    adjustHint: '파라미터를 조정하고 "뷰티 적용"을 탭하여 효과를 확인하세요',
   },
   outfitChange: {
     title: '의상 체인지',
@@ -416,7 +420,7 @@
     showLess: '접기',
     templates: {
       random: '랜덤 스타일',
-      christmas: '크리스마스',
+      fairytalePrincess: '동화 공주',
       bikini: '비키니',
       formal: '정장',
       'starbucks-barista': '스타벅스 바리스타',
