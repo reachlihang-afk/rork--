@@ -158,6 +158,26 @@ function getRandomOutfitStyle(): string {
   return RANDOM_OUTFIT_STYLES[randomIndex];
 }
 
+// 迪士尼公主装风格库 - 10种经典公主造型
+const DISNEY_PRINCESS_STYLES = [
+  'Cinderella style - iconic blue ball gown with sparkles, glass slippers, elegant updo with tiara, magical fairytale princess look',
+  'Snow White style - classic yellow and blue dress with puffed sleeves, red bow headband, innocent and sweet princess appearance',
+  'Belle (Beauty and the Beast) style - golden yellow ball gown, off-shoulder design, elegant and intelligent princess look with rose details',
+  'Ariel (The Little Mermaid) style - shimmering purple seashell top with flowing turquoise tail-inspired gown, ocean princess aesthetic',
+  'Aurora (Sleeping Beauty) style - romantic pink ball gown with flowing cape, golden tiara, dreamy and graceful princess elegance',
+  'Jasmine (Aladdin) style - turquoise two-piece outfit with gold trim, harem pants, jeweled headband, Arabian princess exotic beauty',
+  'Rapunzel (Tangled) style - purple and pink corset dress with flowing sleeves, flower crown in long golden hair, adventurous princess charm',
+  'Elsa (Frozen) style - ice blue sparkling gown with snowflake patterns, platinum blonde braid, regal ice queen princess majesty',
+  'Moana style - red and cream Polynesian dress with tribal patterns, flower in hair, ocean-inspired island princess warrior look',
+  'Tiana (Princess and the Frog) style - elegant green ball gown with lily pad details, tiara, 1920s-inspired New Orleans princess glamour',
+];
+
+// 随机选择一种迪士尼公主风格
+function getRandomPrincessStyle(): string {
+  const randomIndex = Math.floor(Math.random() * DISNEY_PRINCESS_STYLES.length);
+  return DISNEY_PRINCESS_STYLES[randomIndex];
+}
+
 const templates: Template[] = [
   {
     id: 'random',
@@ -569,12 +589,17 @@ export default function OutfitChangeScreen() {
       
       let requestBody;
       if (mode === 'template') {
-        // 如果是随机装，每次动态生成一个完全不同的风格
+        // 如果是随机装或童话公主装，每次动态生成一个完全不同的风格
         let finalPrompt = selectedTemplate!.prompt;
+        
         if (selectedTemplate!.id === 'random') {
           const randomStyle = getRandomOutfitStyle();
           finalPrompt = COMMON_PROMPT_PREFIX + `Change the outfit to: ${randomStyle}. IMPORTANT: Create a COMPLETE OUTFIT SOLUTION with matching accessories, bag/purse, and shoes that perfectly coordinate with this style. The accessories, footwear, and bag should complement and enhance the overall look to create a cohesive, well-styled ensemble. Be creative and ensure the style is distinct and unique!`;
           console.log('[OutfitChange] Random style selected:', randomStyle);
+        } else if (selectedTemplate!.id === 'fairytale-princess') {
+          const princessStyle = getRandomPrincessStyle();
+          finalPrompt = COMMON_PROMPT_PREFIX + `Change the outfit to magical Disney princess dress: ${princessStyle}. Create an enchanting and authentic princess transformation with all the iconic details. Make it look like a real Disney princess came to life!`;
+          console.log('[OutfitChange] Princess style selected:', princessStyle);
         }
         
         requestBody = {
