@@ -97,7 +97,7 @@ export default function BeautyFilter({ visible, imageUri, onClose, onApply }: Be
                 <Text style={styles.controlLabel}>{t('beauty.smooth')}</Text>
                 <Text style={styles.controlValue}>{Math.round(params.smooth)}</Text>
               </View>
-              <SimpleSimpleSlider
+              <SimpleSlider
                 style={styles.slider}
                 minimumValue={0}
                 maximumValue={100}
