@@ -440,6 +440,9 @@
       'cowboy': '카우보이',
       'wizard': '마법사복',
       'pirate': '해적복',
+      'lolita': '로리타',
+      'visual-kei': '비주얼계',
+      'punk': '펑크',
     },
   },
 };

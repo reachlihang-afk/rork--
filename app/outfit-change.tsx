@@ -23,6 +23,7 @@ type Template = {
 };
 
 const COMMON_PROMPT_PREFIX = 'IMPORTANT: Keep face, facial expression, hairstyle, pose, and photo framing EXACTLY as in original. Only change clothing in the EXACT visible areas. If only partial clothing is visible, apply only to that partial area. Do NOT extend or complete the image. ';
+const TEMPLATE_VARIATION_SUFFIX = ' Within this template, generate varied designs each time: change silhouettes, colors, patterns, fabrics, and accessories to offer multiple distinct looks while staying inside this style category.';
 
 // 超级随机装模板库 - 100+种独特风格
 const RANDOM_OUTFIT_STYLES = [
@@ -47,6 +48,9 @@ const RANDOM_OUTFIT_STYLES = [
   'Magical wizard costume - flowing robes with pointed hat, mystical style',
   'Pirate costume - tricorn hat, eye patch, pirate coat, seafarer style',
   'Fairytale princess dress - magical elegant gown with tiara and royal charm',
+  'Lolita fashion - frilly dresses, lace, bows, petticoats with sweet/classic/goth styles',
+  'Visual kei rock style - dramatic layered outfits, bold makeup-inspired fashion with dark elegant vibe',
+  'Punk style - leather jackets, studs, tartan, ripped details with rebellious attitude',
   
   // 扩展风格库 - 80+种额外风格
   '1950s vintage pin-up style - high-waisted skirt, polka dots, retro glamour',
@@ -198,21 +202,21 @@ const templates: Template[] = [
     id: 'formal',
     name: '正装',
     nameEn: 'Formal',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to formal business attire - suit and tie for men or professional dress for women',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to formal business attire - suit and tie for men or professional dress for women. Provide different cuts (slim/relaxed), colors (navy/charcoal/black), and fabric textures to keep variety.',
     icon: '👔',
   },
   {
     id: 'starbucks-barista',
     name: '咖啡师-星巴克',
     nameEn: 'Starbucks Barista',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Starbucks barista uniform - green apron with Starbucks logo, black shirt, professional coffee shop staff attire',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Starbucks barista uniform - green apron with Starbucks logo, black shirt, professional coffee shop staff attire. Offer seasonal/variant aprons, layered tops, and slight accessory variations while keeping the barista identity.',
     icon: '☕',
   },
   {
     id: 'sport',
     name: '运动装',
     nameEn: 'Sportswear',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Korean style Adidas Original athletic sportswear - trendy Adidas Original sports clothing with Korean street fashion style, modern and stylish',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Korean style Adidas Original athletic sportswear - trendy Adidas Original sports clothing with Korean street fashion style, modern and stylish. Provide varied outfits (tracksuit/hoodie+tapered pants/shorts), different colorways and stripe details.',
     icon: '🏃',
   },
   {
@@ -226,106 +230,127 @@ const templates: Template[] = [
     id: 'wedding',
     name: '婚纱/礼服',
     nameEn: 'Wedding',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to elegant wedding attire - wedding dress for women or formal tuxedo for men',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to elegant wedding attire - wedding dress for women or formal tuxedo for men. Include variations: A-line, mermaid, ball gown, minimalist satin, lace overlays, or tux color accents.',
     icon: '👰',
   },
   {
     id: 'traditional',
     name: '汉服',
     nameEn: 'Hanfu',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to traditional Chinese Hanfu clothing with elegant ancient style',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to traditional Chinese Hanfu clothing with elegant ancient style. Provide varied colors, sleeve shapes, and patterns (floral/cloud motifs) while keeping authentic Hanfu aesthetics.',
     icon: '🏮',
   },
   {
     id: 'superhero',
     name: '超级英雄',
     nameEn: 'Superhero',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to a superhero costume with cape and heroic style',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to a superhero costume with cape and heroic style. Offer variations in suit lines, emblems, cape lengths, and color schemes while keeping heroic look.',
     icon: '🦸',
   },
   {
     id: 'newyear-horse',
     name: '新年装-马年',
     nameEn: 'New Year - Year of Horse',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Chinese New Year festive clothing with horse year theme - red and gold colors, traditional patterns with horse motifs',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Chinese New Year festive clothing with horse year theme - red and gold colors, traditional patterns with horse motifs. Vary embroidery, trims, and accessory details for freshness.',
     icon: '🐴',
   },
   {
     id: 'old-money',
     name: '老钱风',
     nameEn: 'Old Money Style',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to old money style - classic, timeless, elegant clothing with subtle luxury, neutral colors, cashmere sweaters, tailored pieces, and a coat casually draped over the shoulders',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to old money style - classic, timeless, elegant clothing with subtle luxury, neutral colors, cashmere sweaters, tailored pieces, and a coat casually draped over the shoulders. Provide varied pairings (blazer+slacks, trench+knit, pleated skirt+cardigan).',
     icon: '💰',
   },
   {
     id: 'tennis',
     name: '网球装',
     nameEn: 'Tennis Outfit',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to tennis sports attire - tennis skirt or shorts, polo shirt, athletic sportswear for tennis',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to tennis sports attire - tennis skirt or shorts, polo shirt, athletic sportswear for tennis. Offer different skirt/short cuts, collar styles, stripe placements, and color blocking.',
     icon: '🎾',
   },
   {
     id: 'god-of-wealth',
     name: '财神装',
     nameEn: 'God of Wealth',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Chinese God of Wealth costume - traditional red and gold robes with auspicious patterns and wealthy appearance',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Chinese God of Wealth costume - traditional red and gold robes with auspicious patterns and wealthy appearance. Provide varied embroidery, headdress details, and pattern density while keeping the deity theme.',
     icon: '💸',
   },
   {
     id: 'hot-girl',
     name: '辣妹装',
     nameEn: 'Hot Girl Style',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to hot trendy girl style - crop top, mini skirt, trendy streetwear, bold and fashionable modern clothing',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to hot trendy girl style - crop top, mini skirt, trendy streetwear, bold and fashionable modern clothing. Include variations: different crop top cuts, mini skirts/shorts, color pops, and accessories.',
     icon: '🔥',
   },
   {
     id: 'meituan-delivery',
     name: '美团外卖装',
     nameEn: 'Meituan Delivery',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Meituan food delivery uniform - yellow and black delivery outfit, Meituan branded jacket and uniform',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Meituan food delivery uniform - yellow and black delivery outfit, Meituan branded jacket and uniform. Provide variant jacket cuts, reflective stripes placements, and seasonal layering options.',
     icon: '🛵',
   },
   {
     id: 'ski',
     name: '滑雪服',
     nameEn: 'Ski Outfit',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to luxury designer ski wear - sleek modern ski jacket with ZIPPER FULLY CLOSED and ski pants from high-end brands, minimalist stylish design with clean lines, premium quality appearance. The jacket must be a proper ski jacket (NOT a hiking jacket or outdoor coat), fully zipped up, paired with fashionable ski goggles',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to luxury designer ski wear - sleek modern ski jacket with ZIPPER FULLY CLOSED and ski pants from high-end brands, minimalist stylish design with clean lines, premium quality appearance. The jacket must be a proper ski jacket (NOT a hiking jacket or outdoor coat), fully zipped up, paired with fashionable ski goggles. Offer varied colorways and paneling while keeping designer look.',
     icon: '⛷️',
   },
   {
     id: 'flight-attendant',
     name: '空姐装',
     nameEn: 'Flight Attendant',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to flight attendant uniform - elegant airline uniform with scarf, professional aviation style',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to flight attendant uniform - elegant airline uniform with scarf, professional aviation style. Provide airline-inspired variations (color palettes, scarf patterns, skirt vs pants) while keeping professional look.',
     icon: '✈️',
   },
   {
     id: 'outdoor',
     name: '户外装',
     nameEn: 'Outdoor',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to outdoor adventure clothing - hiking jacket, cargo pants, outdoor sports gear, functional outdoor wear',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to outdoor adventure clothing - hiking jacket, cargo pants, outdoor sports gear, functional outdoor wear. Offer varied layerings, pocket layouts, and colorways suited for outdoors.',
     icon: '🏔️',
   },
   {
     id: 'cowboy',
     name: '牛仔装',
     nameEn: 'Cowboy/Western',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to western cowboy style - denim jeans, cowboy boots, plaid shirt, western hat, rodeo style clothing',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to western cowboy style - denim jeans, cowboy boots, plaid shirt, western hat, rodeo style clothing. Provide different washes, plaid patterns, vest vs jacket options, and belt/buckle accents.',
     icon: '🤠',
   },
   {
     id: 'wizard',
     name: '魔法师装',
     nameEn: 'Wizard',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to magical wizard costume - flowing robes, pointed wizard hat, mystical and magical appearance with arcane style',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to magical wizard costume - flowing robes, pointed wizard hat, mystical and magical appearance with arcane style. Offer robe pattern variations, hat shapes, and accessory details (wands, brooches).',
     icon: '🧙',
   },
   {
     id: 'pirate',
     name: '海盗装',
     nameEn: 'Pirate',
-    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to pirate costume - classic pirate clothing with tricorn hat, eye patch, pirate coat, adventurous seafarer style',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to pirate costume - classic pirate clothing with tricorn hat, eye patch, pirate coat, adventurous seafarer style. Provide different coat cuts, sashes, hat decorations, and weathered textures.',
     icon: '🏴‍☠️',
+  },
+  {
+    id: 'lolita',
+    name: '洛丽塔',
+    nameEn: 'Lolita',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Lolita fashion with rich lace, bows, petticoats, and layered skirts. Offer sweet/classic/goth variations, different color palettes, and accessory details (headbows, lace gloves).',
+    icon: '🎀',
+  },
+  {
+    id: 'visual-kei',
+    name: '视觉系',
+    nameEn: 'Visual Kei',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to Visual Kei rock style - dramatic layers, bold contrast, ornate details, dark elegant vibe inspired by J-rock stage fashion. Provide varied layering, accessories, and makeup-inspired styling cues.',
+    icon: '🦇',
+  },
+  {
+    id: 'punk',
+    name: '朋克装',
+    nameEn: 'Punk',
+    prompt: COMMON_PROMPT_PREFIX + 'Change the outfit to punk style - leather jackets, studs, tartan, ripped details, rebellious attitude. Offer varied layers, safety pins, patches, graphic tees, and different color pops.',
+    icon: '🤘',
   },
 ];
 
@@ -600,6 +625,9 @@ export default function OutfitChangeScreen() {
           const princessStyle = getRandomPrincessStyle();
           finalPrompt = COMMON_PROMPT_PREFIX + `Change the outfit to magical Disney princess dress: ${princessStyle}. Create an enchanting and authentic princess transformation with all the iconic details. Make it look like a real Disney princess came to life!`;
           console.log('[OutfitChange] Princess style selected:', princessStyle);
+        } else {
+          // 其他模板统一增加“同类别内多样化”指令
+          finalPrompt = `${selectedTemplate!.prompt} ${TEMPLATE_VARIATION_SUFFIX}`;
         }
         
         requestBody = {

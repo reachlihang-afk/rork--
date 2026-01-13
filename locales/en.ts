@@ -449,6 +449,9 @@
       'cowboy': 'Cowboy',
       'wizard': 'Wizard',
       'pirate': 'Pirate',
+      'lolita': 'Lolita',
+      'visual-kei': 'Visual Kei',
+      'punk': 'Punk',
     },
   },
 };

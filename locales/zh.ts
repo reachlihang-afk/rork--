@@ -449,6 +449,9 @@
       'cowboy': '牛仔装',
       'wizard': '魔法师装',
       'pirate': '海盗装',
+      'lolita': '洛丽塔',
+      'visual-kei': '视觉系',
+      'punk': '朋克装',
     },
   },
 };
