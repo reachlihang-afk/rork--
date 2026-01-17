@@ -246,16 +246,13 @@ export default function OutfitChangeNewScreen() {
   
   const { user, isLoggedIn } = useAuth();
   const { coinBalance, canUseOutfitChange, useOutfitChange } = useCoin();
-  const { addOutfitChangeRecord } = useVerification();
-  const { shareToSquare } = useSquare();
+  const { addOutfitChangeHistory } = useVerification();
 
   // 状态管理
   const [selectedTab, setSelectedTab] = useState<TabType>('template');
   const [userImage, setUserImage] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [customImages, setCustomImages] = useState<string[]>([]);
-  const [keepFaceFeatures, setKeepFaceFeatures] = useState(true);
-  const [beautyFilter, setBeautyFilter] = useState(false);
   const [showAllTemplates, setShowAllTemplates] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   
@@ -470,7 +467,7 @@ export default function OutfitChangeNewScreen() {
       }
     } else {
       const base64String = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
+        encoding: 'base64' as any,
       });
       return base64String;
     }
@@ -739,12 +736,12 @@ FINAL RESULT REQUIREMENTS:
           ? TEMPLATES.find(t => t.id === selectedTemplate)?.name || '自定义'
           : selectedTab === 'custom' ? t('outfitChange.customOutfit') : 'Pro Style';
         
-        const recordId = await addOutfitChangeRecord({
-          originalImageUri: userImage,
-          resultImageUri: generatedImageUri,
-          templateName: templateName,
-          createdAt: Date.now(),
-        });
+        const recordId = await addOutfitChangeHistory(
+          userImage,
+          generatedImageUri,
+          selectedTab === 'template' ? selectedTemplate! : 'custom-outfit',
+          templateName
+        );
         
         // 跳转到结果页
         router.push(`/outfit-change-detail/${recordId}` as any);
@@ -1068,53 +1065,6 @@ FINAL RESULT REQUIREMENTS:
               )}
             </View>
           )}
-        </View>
-
-        {/* 选项区域 */}
-        <View style={[styles.optionsSection, isDark && styles.optionsSectionDark]}>
-          <View style={styles.optionRow}>
-            <View style={styles.optionLeft}>
-              <View style={[styles.optionIcon, isDark && styles.optionIconDark]}>
-                <Text>👤</Text>
-              </View>
-              <View>
-                <Text style={[styles.optionTitle, isDark && styles.textDark]}>
-                  {t('outfitChange.keepFaceFeatures')}
-                </Text>
-                <Text style={styles.optionSubtitle}>
-                  {t('outfitChange.preserveIdentity')}
-                </Text>
-              </View>
-            </View>
-            <Switch
-              value={keepFaceFeatures}
-              onValueChange={setKeepFaceFeatures}
-              trackColor={{ false: '#e5e7eb', true: '#1a1a1a' }}
-              thumbColor="#ffffff"
-            />
-          </View>
-
-          <View style={styles.optionRow}>
-            <View style={styles.optionLeft}>
-              <View style={[styles.optionIcon, isDark && styles.optionIconDark]}>
-                <Sparkles size={20} color={isDark ? '#fff' : '#1a1a1a'} />
-              </View>
-              <View>
-                <Text style={[styles.optionTitle, isDark && styles.textDark]}>
-                  {t('outfitChange.beautyFilter')}
-                </Text>
-                <Text style={styles.optionSubtitle}>
-                  {t('outfitChange.enhanceSkin')}
-                </Text>
-              </View>
-            </View>
-            <Switch
-              value={beautyFilter}
-              onValueChange={setBeautyFilter}
-              trackColor={{ false: '#e5e7eb', true: '#1a1a1a' }}
-              thumbColor="#ffffff"
-            />
-          </View>
         </View>
 
         <View style={{ height: 120 }} />
