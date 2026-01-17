@@ -1,106 +1,41 @@
 import React, { useState } from 'react';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { ArrowLeft, Trash2, Download, Share2, X } from 'lucide-react-native';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Modal } from 'react-native';
+import { ArrowLeft, Share2, Download, MoreHorizontal, Sparkles, RefreshCw } from 'lucide-react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, ActivityIndicator, useColorScheme, Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useVerification } from '@/contexts/VerificationContext';
 import { useSquare } from '@/contexts/SquareContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { saveToGallery } from '@/utils/share';
 import { useTranslation } from 'react-i18next';
 
-type ZoomableImageProps = {
-  uri: string;
-  onClose: () => void;
-  t: any;
-};
-
-function ZoomableImage({ uri, t }: ZoomableImageProps) {
-  const [saving, setSaving] = useState(false);
-
-  const handleDownload = async () => {
-    if (saving) return;
-    
-    try {
-      setSaving(true);
-      const success = await saveToGallery(uri);
-      if (success) {
-        Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
-      } else {
-        Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
-      }
-    } catch (error) {
-      console.error('Download failed:', error);
-      Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <View style={[zoomStyles.container, { backgroundColor: 'rgba(0, 0, 0, 0.95)' }]}>
-      <View
-        style={{
-          width: '100%',
-          height: '100%',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Image source={{ uri }} style={zoomStyles.image} contentFit="contain" />
-        {saving && (
-          <View style={zoomStyles.savingOverlay}>
-            <Text style={zoomStyles.savingText}>{t('common.saving')}...</Text>
-          </View>
-        )}
-      </View>
-      
-      <TouchableOpacity
-        style={zoomStyles.downloadButton}
-        onPress={handleDownload}
-        disabled={saving}
-        activeOpacity={0.8}
-      >
-        <View style={zoomStyles.downloadButtonInner}>
-          <Download size={20} color="#fff" strokeWidth={2.5} />
-          <Text style={zoomStyles.downloadButtonText}>{t('common.save')}</Text>
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
 export default function OutfitChangeDetailScreen() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  
   const { outfitChangeHistory, deleteOutfitChange } = useVerification();
   const { publishPost, posts } = useSquare();
   const { user } = useAuth();
+  
+  const [viewMode, setViewMode] = useState<'original' | 'result'>('result');
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [imageViewerVisible, setImageViewerVisible] = useState(false);
-  const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
-  const [selectedImageType, setSelectedImageType] = useState<'original' | 'result'>('original');
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   const outfitItem = outfitChangeHistory.find(item => item.id === id);
 
   if (!outfitItem) {
     return (
-      <View style={styles.container}>
-        <Stack.Screen
-          options={{
-            headerShown: true,
-            title: t('history.outfitChangeRecords'),
-            headerLeft: () => (
-              <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
-                <ArrowLeft size={24} color="#1F2937" />
-              </TouchableOpacity>
-            ),
-          }}
-        />
+      <View style={[styles.container, isDark && styles.containerDark]}>
+        <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>{t('history.noRecords')}</Text>
+          <Text style={[styles.emptyText, isDark && styles.textDark]}>
+            {t('history.noRecords')}
+          </Text>
         </View>
       </View>
     );
@@ -109,28 +44,6 @@ export default function OutfitChangeDetailScreen() {
   const published = posts.some(
     p => p.postType === 'outfitChange' && p.outfitChangeId === outfitItem.id
   );
-
-  const handleDelete = async () => {
-    Alert.alert(
-      t('history.deleteRecord'),
-      t('history.deleteRecordConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteOutfitChange(id!);
-              router.back();
-            } catch (error) {
-              Alert.alert(t('common.error'), t('errors.uploadError'));
-            }
-          },
-        },
-      ]
-    );
-  };
 
   const handleDownload = async () => {
     if (isSaving) return;
@@ -151,13 +64,7 @@ export default function OutfitChangeDetailScreen() {
     }
   };
 
-  const handleImagePress = (uri: string, type: 'original' | 'result') => {
-    setSelectedImageUri(uri);
-    setSelectedImageType(type);
-    setImageViewerVisible(true);
-  };
-
-  const handlePublishToSquare = async () => {
+  const handleShare = async () => {
     if (!user) {
       Alert.alert(t('common.tip'), t('square.loginRequired'));
       return;
@@ -169,7 +76,7 @@ export default function OutfitChangeDetailScreen() {
         t('square.nicknameRequired'),
         [
           { text: t('common.cancel'), style: 'cancel' },
-          { text: t('profile.editProfile'), onPress: () => router.push('/edit-profile') },
+          { text: t('profile.editProfile'), onPress: () => router.push('/edit-profile' as any) },
         ]
       );
       return;
@@ -178,34 +85,21 @@ export default function OutfitChangeDetailScreen() {
     if (isPublishing) return;
 
     if (published) {
-      const post = posts.find(p => p.outfitChangeId === outfitItem.id);
-      if (post) {
-        router.push({
-          pathname: '/(tabs)/square',
-          params: { highlightPostId: post.id },
-        });
-      } else {
-        router.push('/(tabs)/square');
-      }
-      return;
-    }
-
-    if (outfitItem.allowSquarePublish === false) {
-      Alert.alert(t('common.tip'), t('square.publishDisabledByPrivacy'));
+      Alert.alert(t('common.tip'), t('square.alreadyPublished'));
       return;
     }
 
     Alert.alert(
       t('square.publishToSquare'),
-      t('square.publishSuccessPrompt'),
+      t('square.publishConfirm'),
       [
-        { text: t('common.no'), style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: t('common.yes'),
+          text: t('common.confirm'),
           onPress: async () => {
             try {
               setIsPublishing(true);
-              const postId = await publishPost({
+              await publishPost({
                 postType: 'outfitChange',
                 userId: user.userId,
                 userNickname: user.nickname || user.userId,
@@ -216,22 +110,7 @@ export default function OutfitChangeDetailScreen() {
                 outfitChangeId: outfitItem.id,
               });
               
-              Alert.alert(
-                t('square.publishSuccess'),
-                t('square.publishSuccessPrompt'),
-                [
-                  { text: t('common.no'), style: 'cancel' },
-                  {
-                    text: t('common.yes'),
-                    onPress: () => {
-                      router.push({
-                        pathname: '/(tabs)/square',
-                        params: { highlightPostId: postId },
-                      });
-                    },
-                  },
-                ]
-              );
+              Alert.alert(t('common.success'), t('square.publishSuccess'));
             } catch (error) {
               console.error('Publish failed:', error);
               Alert.alert(t('common.error'), t('square.publishFailed'));
@@ -244,155 +123,238 @@ export default function OutfitChangeDetailScreen() {
     );
   };
 
+  const handleRegenerate = () => {
+    Alert.alert(
+      t('outfitChange.regenerate'),
+      t('outfitChange.regenerateConfirm'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.confirm'),
+          onPress: () => {
+            router.push('/outfit-change' as any);
+          },
+        },
+      ]
+    );
+  };
+
+  const handleMore = () => {
+    Alert.alert(
+      t('common.options'),
+      '',
+      [
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              t('history.deleteRecord'),
+              t('history.deleteRecordConfirm'),
+              [
+                { text: t('common.cancel'), style: 'cancel' },
+                {
+                  text: t('common.delete'),
+                  style: 'destructive',
+                  onPress: async () => {
+                    try {
+                      await deleteOutfitChange(id!);
+                      router.back();
+                    } catch (error) {
+                      Alert.alert(t('common.error'), t('errors.uploadError'));
+                    }
+                  },
+                },
+              ]
+            );
+          },
+        },
+        { text: t('common.cancel'), style: 'cancel' },
+      ]
+    );
+  };
+
+  const displayedImage = viewMode === 'original' 
+    ? outfitItem.originalImageUri 
+    : outfitItem.resultImageUri;
+
   return (
-    <View style={styles.container}>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          title: t('history.outfitChangeRecords'),
-          headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
-              <ArrowLeft size={24} color="#0F172A" strokeWidth={2} />
-            </TouchableOpacity>
-          ),
-          headerRight: () => (
-            <View style={styles.headerRightContainer}>
-              <TouchableOpacity onPress={handlePublishToSquare} style={styles.headerButton} disabled={isPublishing}>
-                {isPublishing ? (
-                  <ActivityIndicator size="small" color="#0066FF" />
-                ) : (
-                  <Share2 size={20} color={published ? '#10B981' : '#0066FF'} />
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleDownload} style={styles.headerButton} disabled={isSaving}>
-                {isSaving ? (
-                  <ActivityIndicator size="small" color="#0066FF" />
-                ) : (
-                  <Download size={20} color="#0066FF" />
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleDelete} style={styles.headerButton}>
-                <Trash2 size={20} color="#EF4444" />
-              </TouchableOpacity>
-            </View>
-          ),
-        }}
-      />
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{t('history.outfitChangeRecords')}</Text>
-          
-          <View style={styles.templateInfo}>
-            <View style={styles.templateBadge}>
-              <Text style={styles.templateBadgeText}>👔 {outfitItem.templateName}</Text>
-            </View>
-            <Text style={styles.dateText}>
-              {new Date(outfitItem.createdAt).toLocaleString()}
-            </Text>
-          </View>
+    <View style={[styles.container, isDark && styles.containerDark]}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
+      {/* Header */}
+      <View style={[styles.header, isDark && styles.headerDark]}>
+        <TouchableOpacity 
+          onPress={() => router.back()}
+          style={styles.headerButton}
+        >
+          <ArrowLeft size={24} color={isDark ? '#fff' : '#1a1a1a'} strokeWidth={2} />
+        </TouchableOpacity>
+        
+        <Text style={[styles.headerTitle, isDark && styles.textDark]}>
+          {t('outfitChange.result').toUpperCase()}
+        </Text>
+        
+        <TouchableOpacity 
+          onPress={handleMore}
+          style={styles.headerButton}
+        >
+          <MoreHorizontal size={24} color={isDark ? '#fff' : '#1a1a1a'} />
+        </TouchableOpacity>
+      </View>
 
-          <View style={styles.imagesContainer}>
-            <View style={styles.imageSection}>
-              <Text style={styles.imageLabel}>{t('history.original')}</Text>
-              <TouchableOpacity onPress={() => handleImagePress(outfitItem.originalImageUri, 'original')} activeOpacity={0.9}>
-                <Image
-                  source={{ uri: outfitItem.originalImageUri }}
-                  style={styles.image}
-                  contentFit="contain"
-                />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.arrowContainer}>
-              <Text style={styles.arrowText}>→</Text>
-            </View>
-
-            <View style={styles.imageSection}>
-              <Text style={styles.imageLabel}>{t('history.result')}</Text>
-              <TouchableOpacity onPress={() => handleImagePress(outfitItem.resultImageUri, 'result')} activeOpacity={0.9}>
-                <Image
-                  source={{ uri: outfitItem.resultImageUri }}
-                  style={styles.image}
-                  contentFit="contain"
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.actionsCard}>
-          <TouchableOpacity
-            style={[styles.actionButton, isSaving && styles.actionButtonDisabled]}
-            onPress={handleDownload}
-            disabled={isSaving}
-          >
-            {isSaving ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Download size={20} color="#fff" />
-            )}
-            <Text style={styles.actionButtonText}>{t('outfitChange.downloadToAlbum')}</Text>
-          </TouchableOpacity>
-
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* View Mode Toggle */}
+        <View style={[styles.toggleContainer, isDark && styles.toggleContainerDark]}>
           <TouchableOpacity
             style={[
-              styles.actionButton,
-              styles.actionButtonSecondary,
-              (isPublishing || published) && styles.actionButtonDisabled,
+              styles.toggleButton,
+              viewMode === 'original' && styles.toggleButtonActive
             ]}
-            onPress={handlePublishToSquare}
-            disabled={isPublishing || published}
+            onPress={() => setViewMode('original')}
+            activeOpacity={0.7}
           >
-            {isPublishing ? (
-              <ActivityIndicator size="small" color="#0066FF" />
-            ) : (
-              <Share2 size={20} color={published ? '#10B981' : '#0066FF'} />
-            )}
-            <Text style={[styles.actionButtonText, styles.actionButtonTextSecondary]}>
-              {published ? t('square.published') : t('square.publishToSquare')}
+            <Text style={[
+              styles.toggleText,
+              viewMode === 'original' && styles.toggleTextActive,
+              isDark && viewMode !== 'original' && styles.toggleTextDark
+            ]}>
+              {t('history.original')}
             </Text>
           </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[
+              styles.toggleButton,
+              viewMode === 'result' && styles.toggleButtonActive
+            ]}
+            onPress={() => setViewMode('result')}
+            activeOpacity={0.7}
+          >
+            <Text style={[
+              styles.toggleText,
+              viewMode === 'result' && styles.toggleTextActive,
+              isDark && viewMode !== 'result' && styles.toggleTextDark
+            ]}>
+              {t('history.result')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Main Image */}
+        <View style={[styles.imageContainer, isDark && styles.imageContainerDark]}>
+          <Image 
+            source={{ uri: displayedImage }}
+            style={styles.mainImage}
+            contentFit="cover"
+          />
+        </View>
+
+        {/* Info Section */}
+        <View style={styles.infoSection}>
+          <View style={styles.infoHeader}>
+            <View>
+              <Text style={[styles.title, isDark && styles.textDark]}>
+                {t('outfitChange.transformationComplete')}
+              </Text>
+              <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
+                {outfitItem.templateName?.toUpperCase()} • {t('outfitChange.smartCasual').toUpperCase()}
+              </Text>
+            </View>
+            
+            <View style={[styles.matchBadge, isDark && styles.matchBadgeDark]}>
+              <Sparkles size={16} color={isDark ? '#fff' : '#1a1a1a'} strokeWidth={2.5} />
+              <Text style={[styles.matchText, isDark && styles.textDark]}>
+                98% {t('outfitChange.match')}
+              </Text>
+            </View>
+          </View>
+
+          {/* Style Tags */}
+          <View style={styles.tagsContainer}>
+            <View style={[styles.tag, isDark && styles.tagDark]}>
+              <Text style={[styles.tagText, isDark && styles.textDark]}>
+                {outfitItem.templateName}
+              </Text>
+            </View>
+          </View>
         </View>
       </ScrollView>
 
-      <Modal
-        visible={imageViewerVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => {
-          setImageViewerVisible(false);
-          setSelectedImageUri(null);
-        }}
-      >
-        <View style={imageViewerStyles.container}>
-          <TouchableOpacity
-            style={imageViewerStyles.closeButton}
-            onPress={() => {
-              setImageViewerVisible(false);
-              setSelectedImageUri(null);
-            }}
-            activeOpacity={0.8}
-          >
-            <X size={28} color="#fff" strokeWidth={2.5} />
-          </TouchableOpacity>
-
-          <View style={imageViewerStyles.content}>
-            {selectedImageUri && (
-              <>
-                <View style={imageViewerStyles.labelContainer} pointerEvents="none">
-                  <View style={imageViewerStyles.labelBadge}>
-                    <Text style={imageViewerStyles.labelText}>
-                      {selectedImageType === 'original' ? t('history.original') : t('history.result')}
-                    </Text>
-                  </View>
-                </View>
-
-                <ZoomableImage uri={selectedImageUri} onClose={() => {}} t={t} />
-              </>
-            )}
-          </View>
+      {/* Fixed Bottom Actions */}
+      <View style={[styles.fixedBottom, isDark && styles.fixedBottomDark]}>
+        <View style={styles.gradientContainer}>
+          <LinearGradient
+            colors={[isDark ? 'rgba(0,0,0,0)' : 'rgba(255,255,255,0)', isDark ? '#000000' : '#ffffff']}
+            style={styles.gradient}
+          />
         </View>
-      </Modal>
+        
+        <View style={styles.actionsContainer}>
+          <View style={styles.primaryActions}>
+            <TouchableOpacity
+              style={[styles.shareButton, isPublishing && styles.buttonDisabled]}
+              onPress={handleShare}
+              disabled={isPublishing}
+              activeOpacity={0.9}
+            >
+              <LinearGradient
+                colors={['#1a1a1a', '#000000']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.buttonGradient}
+              >
+                {isPublishing ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <Share2 size={20} color="#fff" strokeWidth={2.5} />
+                    <Text style={styles.shareButtonText}>{t('common.share')}</Text>
+                  </>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.saveButton, isDark && styles.saveButtonDark, isSaving && styles.buttonDisabled]}
+              onPress={handleDownload}
+              disabled={isSaving}
+              activeOpacity={0.9}
+            >
+              {isSaving ? (
+                <ActivityIndicator size="small" color={isDark ? '#fff' : '#1a1a1a'} />
+              ) : (
+                <>
+                  <Download size={20} color={isDark ? '#fff' : '#1a1a1a'} strokeWidth={2.5} />
+                  <Text style={[styles.saveButtonText, isDark && styles.textDark]}>
+                    {t('common.save')}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={styles.regenerateButton}
+            onPress={handleRegenerate}
+            disabled={isRegenerating}
+            activeOpacity={0.7}
+          >
+            <RefreshCw 
+              size={18} 
+              color={isDark ? '#9ca3af' : '#71717a'} 
+              strokeWidth={2.5} 
+            />
+            <Text style={[styles.regenerateText, isDark && styles.regenerateTextDark]}>
+              {t('outfitChange.regenerateThisLook').toUpperCase()}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 }
@@ -400,122 +362,300 @@ export default function OutfitChangeDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#ffffff',
   },
-  headerButton: {
-    padding: 8,
-    marginHorizontal: 4,
+  containerDark: {
+    backgroundColor: '#000000',
   },
-  headerRightContainer: {
+  
+  // Header
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'ios' ? 60 : 24,
+    paddingBottom: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
   },
+  headerDark: {
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  headerButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    letterSpacing: 2,
+  },
+  
+  // ScrollView
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 200,
   },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 16,
-  },
-  templateInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  templateBadge: {
-    backgroundColor: '#EEF2FF',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  
+  // Toggle
+  toggleContainer: {
+    width: 280,
+    height: 40,
+    backgroundColor: '#f4f4f5',
     borderRadius: 20,
-  },
-  templateBadgeText: {
-    fontSize: 14,
-    color: '#4F46E5',
-    fontWeight: '600',
-  },
-  dateText: {
-    fontSize: 13,
-    color: '#64748B',
-  },
-  imagesContainer: {
+    padding: 4,
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    alignSelf: 'center',
+    marginBottom: 32,
   },
-  imageSection: {
+  toggleContainerDark: {
+    backgroundColor: '#18181b',
+  },
+  toggleButton: {
     flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+    position: 'relative',
   },
-  imageLabel: {
+  toggleButtonActive: {
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  toggleText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748B',
-    marginBottom: 8,
+    color: '#71717a',
   },
-  image: {
-    width: '100%',
-    aspectRatio: 0.75,
-    borderRadius: 12,
-    backgroundColor: '#F3F4F6',
+  toggleTextActive: {
+    color: '#1a1a1a',
+    fontWeight: '700',
   },
-  arrowContainer: {
-    width: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+  toggleTextDark: {
+    color: '#9ca3af',
   },
-  arrowText: {
-    fontSize: 28,
-    color: '#0066FF',
-    fontWeight: 'bold',
-  },
-  actionsCard: {
-    backgroundColor: '#fff',
+  
+  // Main Image
+  imageContainer: {
+    aspectRatio: 3 / 4,
     borderRadius: 16,
-    padding: 16,
+    overflow: 'hidden',
+    marginBottom: 32,
+    backgroundColor: '#f9fafb',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  imageContainerDark: {
+    backgroundColor: '#18181b',
+  },
+  mainImage: {
+    width: '100%',
+    height: '100%',
+  },
+  
+  // Info Section
+  infoSection: {
+    gap: 20,
+  },
+  infoHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#09090b',
+    marginBottom: 4,
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#71717a',
+    letterSpacing: 1,
+  },
+  subtitleDark: {
+    color: '#9ca3af',
+  },
+  matchBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  matchBadgeDark: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  matchText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  
+  // Tags
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  tagDark: {
+    backgroundColor: '#18181b',
+    borderColor: '#3f3f46',
+  },
+  tagText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#09090b',
+  },
+  
+  // Fixed Bottom
+  fixedBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: Platform.OS === 'ios' ? 32 : 20,
+  },
+  fixedBottomDark: {
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  gradientContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 100,
+    zIndex: -1,
+  },
+  gradient: {
+    flex: 1,
+  },
+  actionsContainer: {
     gap: 12,
   },
-  actionButton: {
+  primaryActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  shareButton: {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  buttonGradient: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0066FF',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 12,
     gap: 8,
   },
-  actionButtonSecondary: {
-    backgroundColor: '#EEF2FF',
+  shareButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#ffffff',
+    letterSpacing: 0.5,
   },
-  actionButtonDisabled: {
+  saveButton: {
+    flex: 1,
+    height: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  saveButtonDark: {
+    backgroundColor: '#18181b',
+    borderColor: '#3f3f46',
+  },
+  saveButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#09090b',
+    letterSpacing: 0.5,
+  },
+  buttonDisabled: {
     opacity: 0.5,
   },
-  actionButtonText: {
-    fontSize: 16,
+  regenerateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    height: 40,
+  },
+  regenerateText: {
+    fontSize: 12,
     fontWeight: '600',
-    color: '#fff',
+    color: '#71717a',
+    letterSpacing: 1,
   },
-  actionButtonTextSecondary: {
-    color: '#0066FF',
+  regenerateTextDark: {
+    color: '#9ca3af',
   },
+  
+  // Empty state
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
@@ -523,107 +663,11 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#64748B',
+    color: '#71717a',
+  },
+  
+  // Text colors
+  textDark: {
+    color: '#ffffff',
   },
 });
-
-const zoomStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  savingOverlay: {
-    position: 'absolute',
-    bottom: 100,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  savingText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  downloadButton: {
-    position: 'absolute',
-    bottom: 100,
-    alignSelf: 'center',
-    zIndex: 10,
-  },
-  downloadButtonInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(0, 102, 255, 0.95)',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 28,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  downloadButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
-
-const imageViewerStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    zIndex: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  labelContainer: {
-    position: 'absolute',
-    top: 60,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    zIndex: 5,
-  },
-  labelBadge: {
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  labelText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
-
