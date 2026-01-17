@@ -901,8 +901,7 @@ FINAL RESULT REQUIREMENTS:
                     end={{ x: 1, y: 1 }}
                     style={styles.beautyButtonGradient}
                   >
-                    <Sparkles size={18} color="#fff" />
-                    <Text style={styles.beautyButtonText}>{t('beauty.smartBeauty')}</Text>
+                    <Sparkles size={12} color="#fff" />
                   </LinearGradient>
                 </TouchableOpacity>
                 {/* 删除按钮 */}
@@ -910,13 +909,13 @@ FINAL RESULT REQUIREMENTS:
                   style={styles.removeButton}
                   onPress={() => setUserImage(null)}
                 >
-                  <X size={16} color="#fff" />
+                  <X size={14} color="#fff" />
                 </TouchableOpacity>
               </>
             ) : (
               <View style={styles.uploadPlaceholder}>
                 <View style={styles.cameraIcon}>
-                  <Camera size={32} color="#1a1a1a" strokeWidth={1.5} />
+                  <Camera size={20} color="#1a1a1a" strokeWidth={1.5} />
                 </View>
                 <Text style={styles.uploadTitle}>
                   {t('outfitChange.uploadPhoto')}
@@ -1368,10 +1367,11 @@ const styles = StyleSheet.create({
 
   // 上传区域
   uploadArea: {
-    aspectRatio: 3 / 4,
-    width: '100%',
-    alignSelf: 'center',
-    borderRadius: 24,
+    aspectRatio: 1,
+    width: 160,
+    height: 160,
+    alignSelf: 'flex-start',
+    borderRadius: 16,
     borderWidth: 2,
     borderStyle: 'dashed',
     borderColor: '#d1d5db',
@@ -1387,16 +1387,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: 12,
   },
   cameraIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
@@ -1407,14 +1407,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#1e1e1e',
   },
   uploadTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '600',
     color: '#1a1a1a',
-    marginBottom: 4,
+    marginBottom: 2,
+    textAlign: 'center',
   },
   uploadSubtitle: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: 11,
+    color: '#9ca3af',
     textAlign: 'center',
   },
   uploadedImage: {
@@ -1423,35 +1424,36 @@ const styles = StyleSheet.create({
   },
   beautyButton: {
     position: 'absolute',
-    bottom: 12,
-    left: 12,
-    borderRadius: 20,
+    bottom: 6,
+    left: 6,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
   },
   beautyButtonGradient: {
-    flexDirection: 'row',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    gap: 6,
   },
   beautyButtonText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 10,
     fontWeight: '600',
   },
   removeButton: {
     position: 'absolute',
-    top: 12,
-    right: 12,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    top: 6,
+    right: 6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
