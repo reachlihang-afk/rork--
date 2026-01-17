@@ -17,6 +17,12 @@
   home: {
     title: '百变星君',
     subtitle: '一键换装变明星！',
+    aiPowered: 'AI驱动',
+    oneClickOutfit: '一键换装',
+    transformInstantly: '即刻变身',
+    uploadSelfie: '上传自拍照',
+    takeSelfie: '拍摄自拍',
+    templates: '模板',
     referencePhotos: '参考照片',
     verificationRecords: '验证记录',
     quickStart: '一键开始',

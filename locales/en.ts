@@ -17,6 +17,12 @@
   home: {
     title: 'Style Star',
     subtitle: 'Transform into a star with one click!',
+    aiPowered: 'AI Powered',
+    oneClickOutfit: 'One-click Outfit Swap',
+    transformInstantly: 'Transform your look instantly',
+    uploadSelfie: 'Upload Your Selfie',
+    takeSelfie: 'Take a Selfie',
+    templates: 'Templates',
     referencePhotos: 'Reference Photos',
     verificationRecords: 'Verification Records',
     quickStart: 'Quick Start (2 Steps)',

@@ -17,6 +17,12 @@
   home: {
     title: '스타일 스타',
     subtitle: '한 번의 클릭으로 스타로 변신!',
+    aiPowered: 'AI 기반',
+    oneClickOutfit: '원클릭 의상 체인지',
+    transformInstantly: '즉시 룩 변신',
+    uploadSelfie: '셀카 업로드',
+    takeSelfie: '셀카 촬영',
+    templates: '템플릿',
     referencePhotos: '참조 사진',
     verificationRecords: '검증 기록',
     quickStart: '빠른 시작 (2단계)',

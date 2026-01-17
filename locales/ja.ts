@@ -17,6 +17,12 @@
   home: {
     title: 'スタイルスター',
     subtitle: 'ワンクリックでスターに変身！',
+    aiPowered: 'AI搭載',
+    oneClickOutfit: 'ワンクリック着せ替え',
+    transformInstantly: '瞬時にイメージチェンジ',
+    uploadSelfie: '自撮り写真をアップロード',
+    takeSelfie: '自撮りする',
+    templates: 'テンプレート',
     referencePhotos: '参照写真',
     verificationRecords: '検証記録',
     quickStart: 'クイックスタート（2ステップ）',

@@ -1,56 +1,82 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Sparkles, Camera, Plus, Bell } from 'lucide-react-native';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { Sparkles, Camera } from 'lucide-react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
 import { useVerification } from '@/contexts/VerificationContext';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCoin } from '@/contexts/CoinContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
 
-// 模板数据
-const TEMPLATES = [
-  { id: 'jennie', name: 'Jennie', subtitle: 'K-Pop Style', icon: '💖', badge: 'HOT', imageUri: null },
-  { id: 'princess', name: 'Princess', subtitle: 'Fairytale', icon: '👑', imageUri: null },
-  { id: 'random', name: 'Random', subtitle: 'Surprise Me', icon: '✨', isSpecial: true },
-  { id: 'cyberpunk', name: 'Cyberpunk', subtitle: 'Futuristic', icon: '🤖', imageUri: null },
-  { id: 'sports', name: 'Sports', subtitle: 'Energetic', icon: '🎾', imageUri: null },
-  { id: 'vintage', name: '90s Vintage', subtitle: 'Classic', icon: '🎞️', imageUri: null },
-];
-
-const CATEGORIES = [
-  { id: 'featured', name: 'Featured', active: true },
-  { id: 'trendy', name: 'Trendy 🔥', active: false },
-  { id: 'sports', name: 'Sports 🎾', active: false },
-  { id: 'kpop', name: 'K-Pop 🎤', active: false },
-  { id: 'vintage', name: 'Vintage 🎞️', active: false },
+// 最新的4个模板
+const LATEST_TEMPLATES = [
+  { id: 'jennie', icon: '💖', badge: 'HOT' },
+  { id: 'fairytale-princess', icon: '👸', badge: null },
+  { id: 'random', icon: '✨', isSpecial: true, badge: null },
+  { id: 'starbucks-barista', icon: '☕', badge: null },
 ];
 
 export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
-  const { coinBalance, addCoins } = useCoin();
+  const { coinBalance } = useCoin();
+  const [isTakingPhoto, setIsTakingPhoto] = useState(false);
+
+  // 获取模板的翻译名称和副标题
+  const getTemplateName = (id: string) => {
+    return t(`outfitChange.templates.${id}`, id);
+  };
+
+  // 拍照功能
+  const handleTakePhoto = async () => {
+    if (isTakingPhoto) return;
+    
+    try {
+      setIsTakingPhoto(true);
+      
+      // 请求相机权限
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(t('common.tip'), '需要相机权限才能拍照');
+        return;
+      }
+
+      // 启动相机
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [3, 4],
+        quality: 0.9,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const photoUri = result.assets[0].uri;
+        // 跳转到换装页面并传递照片URI
+        router.push({
+          pathname: '/outfit-change' as any,
+          params: { photoUri }
+        });
+      }
+    } catch (error) {
+      console.error('拍照失败:', error);
+      Alert.alert(t('common.error'), '拍照失败，请重试');
+    } finally {
+      setIsTakingPhoto(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Header - 移除应用名称,只保留右侧功能区 */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Bai Bian Xing Jun</Text>
+        <View style={styles.headerSpacer} />
         <View style={styles.headerRight}>
           <View style={styles.coinContainer}>
             <Text style={styles.coinText}>💎 {coinBalance}</Text>
-            <TouchableOpacity 
-              style={styles.addButton}
-              onPress={() => router.push('/recharge' as any)}
-            >
-              <Plus size={14} color="#fff" strokeWidth={3} />
-            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.notificationButton}>
-            <Bell size={20} color="#64748B" strokeWidth={2} />
-            <View style={styles.notificationDot} />
-          </TouchableOpacity>
         </View>
       </View>
 
@@ -75,10 +101,10 @@ export default function HomeScreen() {
               <View style={styles.heroLeft}>
                 <View style={styles.aiPoweredBadge}>
                   <Sparkles size={14} color="#fff" strokeWidth={2.5} />
-                  <Text style={styles.aiPoweredText}>AI Powered</Text>
+                  <Text style={styles.aiPoweredText}>{t('home.aiPowered')}</Text>
                 </View>
-                <Text style={styles.heroTitle}>One-click{'\n'}Outfit Swap</Text>
-                <Text style={styles.heroSubtitle}>Transform your look instantly.</Text>
+                <Text style={styles.heroTitle}>{t('home.oneClickOutfit')}</Text>
+                <Text style={styles.heroSubtitle}>{t('home.transformInstantly')}</Text>
               </View>
               <View style={styles.heroImageContainer}>
                 <View style={styles.heroImagePlaceholder}>
@@ -86,46 +112,35 @@ export default function HomeScreen() {
                 </View>
               </View>
             </View>
-            <TouchableOpacity style={styles.uploadButton}>
-              <View style={styles.uploadIconContainer}>
+            
+            {/* 拍照按钮 */}
+            <TouchableOpacity 
+              style={styles.cameraButton}
+              onPress={handleTakePhoto}
+              disabled={isTakingPhoto}
+            >
+              <View style={styles.cameraIconContainer}>
                 <Camera size={20} color="#0F172A" strokeWidth={2.5} />
               </View>
-              <Text style={styles.uploadText}>Upload Your Selfie</Text>
+              <Text style={styles.cameraText}>
+                {isTakingPhoto ? t('common.loading') : t('home.takeSelfie')}
+              </Text>
             </TouchableOpacity>
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* Templates Section */}
+        {/* Templates Section - 只显示标题和View All */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Templates</Text>
+            <Text style={styles.sectionTitle}>{t('home.templates')}</Text>
             <TouchableOpacity onPress={() => router.push('/outfit-change' as any)}>
-              <Text style={styles.viewAllLink}>View All</Text>
+              <Text style={styles.viewAllLink}>{t('home.viewAll')}</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Category Pills */}
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoryScroll}
-            contentContainerStyle={styles.categoryContent}
-          >
-            {CATEGORIES.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                style={[styles.categoryPill, category.active && styles.categoryPillActive]}
-              >
-                <Text style={[styles.categoryText, category.active && styles.categoryTextActive]}>
-                  {category.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-
-          {/* Template Grid */}
+          {/* Template Grid - 只显示最新4个模板 */}
           <View style={styles.templateGrid}>
-            {TEMPLATES.map((template) => (
+            {LATEST_TEMPLATES.map((template) => (
               <TouchableOpacity
                 key={template.id}
                 style={[styles.templateCard, template.isSpecial && styles.templateCardSpecial]}
@@ -135,22 +150,14 @@ export default function HomeScreen() {
                 {template.isSpecial ? (
                   <View style={styles.randomTemplate}>
                     <Text style={styles.randomIcon}>🎲</Text>
-                    <Text style={styles.randomLabel}>Try Luck</Text>
+                    <Text style={styles.randomLabel}>{getTemplateName(template.id)}</Text>
                   </View>
                 ) : (
                   <>
                     <View style={styles.templateImageContainer}>
-                      {template.imageUri ? (
-                        <Image
-                          source={{ uri: template.imageUri }}
-                          style={styles.templateImage}
-                          contentFit="cover"
-                        />
-                      ) : (
-                        <View style={styles.templateImagePlaceholder}>
-                          <Text style={styles.templatePlaceholderIcon}>{template.icon}</Text>
-                        </View>
-                      )}
+                      <View style={styles.templateImagePlaceholder}>
+                        <Text style={styles.templatePlaceholderIcon}>{template.icon}</Text>
+                      </View>
                       {template.badge && (
                         <View style={styles.hotBadge}>
                           <Text style={styles.hotBadgeText}>{template.badge}</Text>
@@ -164,8 +171,9 @@ export default function HomeScreen() {
                     <Text style={styles.templateIconText}>{template.icon}</Text>
                   </View>
                   <View style={styles.templateInfo}>
-                    <Text style={styles.templateName}>{template.name}</Text>
-                    <Text style={styles.templateSubtitle}>{template.subtitle}</Text>
+                    <Text style={styles.templateName} numberOfLines={2}>
+                      {getTemplateName(template.id)}
+                    </Text>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -193,16 +201,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9',
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#0F172A',
-    letterSpacing: -0.5,
+  headerSpacer: {
+    flex: 1,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'flex-end',
   },
   coinContainer: {
     flexDirection: 'row',
@@ -211,45 +216,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     borderRadius: 20,
-    paddingLeft: 12,
-    paddingRight: 4,
-    paddingVertical: 4,
-    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   coinText: {
     fontSize: 14,
     fontWeight: '700',
     color: '#475569',
-  },
-  addButton: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#0F172A',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  notificationButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  notificationDot: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#EF4444',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
@@ -338,7 +311,7 @@ const styles = StyleSheet.create({
   heroImagePlaceholderIcon: {
     fontSize: 32,
   },
-  uploadButton: {
+  cameraButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -350,7 +323,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: 12,
   },
-  uploadIconContainer: {
+  cameraIconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -363,7 +336,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  uploadText: {
+  cameraText: {
     fontSize: 14,
     fontWeight: '700',
     color: '#FFFFFF',
@@ -375,7 +348,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 16,
     paddingHorizontal: 4,
   },
   sectionTitle: {
@@ -388,41 +361,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#64748B',
-  },
-  categoryScroll: {
-    marginBottom: 16,
-    marginHorizontal: -20,
-    paddingHorizontal: 20,
-  },
-  categoryContent: {
-    gap: 10,
-    paddingRight: 20,
-  },
-  categoryPill: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  categoryPillActive: {
-    backgroundColor: '#0F172A',
-    borderColor: '#0F172A',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  categoryText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#64748B',
-  },
-  categoryTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '700',
   },
   templateGrid: {
     flexDirection: 'row',
@@ -502,7 +440,6 @@ const styles = StyleSheet.create({
   },
   randomIcon: {
     fontSize: 36,
-    filter: 'grayscale(100%) contrast(125%)',
   },
   randomLabel: {
     fontSize: 12,
@@ -544,12 +481,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#0F172A',
-    lineHeight: 16,
-  },
-  templateSubtitle: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: '#64748B',
-    marginTop: 2,
+    lineHeight: 18,
   },
 });
