@@ -19,12 +19,23 @@ const LATEST_TEMPLATES = [
 export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoggedIn } = useAuth();
   const { coinBalance } = useCoin();
 
   // 获取模板的翻译名称和副标题
   const getTemplateName = (id: string) => {
     return t(`outfitChange.templates.${id}`, id);
+  };
+
+  // 点击金币/钻石的处理
+  const handleCoinClick = () => {
+    if (isLoggedIn) {
+      // 已登录,跳转到充值页面
+      router.push('/recharge' as any);
+    } else {
+      // 未登录,跳转到个人中心(登录页面)
+      router.push('/(tabs)/profile' as any);
+    }
   };
 
   return (
@@ -33,9 +44,13 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View style={styles.headerSpacer} />
         <View style={styles.headerRight}>
-          <View style={styles.coinContainer}>
+          <TouchableOpacity 
+            style={styles.coinContainer}
+            onPress={handleCoinClick}
+            activeOpacity={0.7}
+          >
             <Text style={styles.coinText}>💎 {coinBalance}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
 
