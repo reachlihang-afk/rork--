@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, useColorScheme, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { ArrowLeft, RefreshCw, Lock } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -53,8 +53,6 @@ export default function RechargeScreen() {
   const { t } = useTranslation();
   const { coinBalance, addCoins } = useCoin();
   const { isLoggedIn } = useAuth();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   const handleRecharge = (pkg: RechargePackage) => {
     Alert.alert(
@@ -95,18 +93,18 @@ export default function RechargeScreen() {
 
   if (!isLoggedIn) {
     return (
-      <View style={[styles.container, isDark && styles.containerDark]}>
+      <View style={styles.container}>
         <Stack.Screen options={{ headerShown: false }} />
         
         {/* Header */}
-        <View style={[styles.header, isDark && styles.headerDark]}>
+        <View style={styles.header}>
           <TouchableOpacity 
             onPress={() => router.back()} 
             style={styles.headerButton}
           >
-            <ArrowLeft size={24} color={isDark ? '#fff' : '#1a1a1a'} strokeWidth={2} />
+            <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, isDark && styles.textDark]}>
+          <Text style={styles.headerTitle}>
             {t('recharge.title').toUpperCase()}
           </Text>
           <View style={styles.placeholder} />
@@ -114,10 +112,10 @@ export default function RechargeScreen() {
 
         <View style={styles.notLoginContainer}>
           <Text style={styles.diamondIcon}>💎</Text>
-          <Text style={[styles.notLoginTitle, isDark && styles.textDark]}>
+          <Text style={styles.notLoginTitle}>
             {t('profile.loginRequired')}
           </Text>
-          <Text style={[styles.notLoginSubtitle, isDark && styles.subtitleDark]}>
+          <Text style={styles.notLoginSubtitle}>
             {t('profile.loginDesc')}
           </Text>
           <TouchableOpacity 
@@ -132,18 +130,18 @@ export default function RechargeScreen() {
   }
 
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
       {/* Header */}
-      <View style={[styles.header, isDark && styles.headerDark]}>
+      <View style={styles.header}>
         <TouchableOpacity 
           onPress={() => router.back()} 
           style={styles.headerButton}
         >
-          <ArrowLeft size={24} color={isDark ? '#fff' : '#1a1a1a'} strokeWidth={2} />
+          <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, isDark && styles.textDark]}>
+        <Text style={styles.headerTitle}>
           {t('recharge.title').toUpperCase()}
         </Text>
         <View style={styles.placeholder} />
@@ -156,16 +154,16 @@ export default function RechargeScreen() {
       >
         {/* Current Balance */}
         <View style={styles.balanceSection}>
-          <Text style={[styles.balanceLabel, isDark && styles.subtitleDark]}>
+          <Text style={styles.balanceLabel}>
             {t('recharge.currentBalance').toUpperCase()}
           </Text>
           <View style={styles.balanceRow}>
             <Text style={styles.diamondIcon}>💎</Text>
-            <Text style={[styles.balanceAmount, isDark && styles.textDark]}>
+            <Text style={styles.balanceAmount}>
               {coinBalance}
             </Text>
           </View>
-          <View style={[styles.divider, isDark && styles.dividerDark]} />
+          <View style={styles.divider} />
         </View>
 
         {/* Packages */}
@@ -180,9 +178,7 @@ export default function RechargeScreen() {
                 key={pkg.id}
                 style={[
                   styles.packageCard,
-                  isDark && styles.packageCardDark,
                   isBest && styles.packageCardBest,
-                  isBest && isDark && styles.packageCardBestDark,
                 ]}
                 onPress={() => handleRecharge(pkg)}
                 activeOpacity={0.9}
@@ -198,8 +194,8 @@ export default function RechargeScreen() {
 
                 {/* Best Value Badge */}
                 {isBest && (
-                  <View style={[styles.bestBadge, isDark && styles.bestBadgeDark]}>
-                    <Text style={[styles.badgeTextBest, isDark && styles.badgeTextBestDark]}>
+                  <View style={styles.bestBadge}>
+                    <Text style={styles.badgeTextBest}>
                       {t('recharge.bestValue').toUpperCase()}
                     </Text>
                   </View>
@@ -208,12 +204,12 @@ export default function RechargeScreen() {
                 <View style={[styles.packageContent, isBest && styles.packageContentBest]}>
                   {/* Tier Name & Save Badge */}
                   <View style={styles.packageHeader}>
-                    <Text style={[styles.tierName, isDark && styles.subtitleDark]}>
+                    <Text style={styles.tierName}>
                       {t(`recharge.tier.${pkg.tier}`).toUpperCase()}
                     </Text>
                     {pkg.save && (
-                      <View style={[styles.saveBadge, isDark && styles.saveBadgeDark]}>
-                        <Text style={[styles.saveText, isDark && styles.saveTextDark]}>
+                      <View style={styles.saveBadge}>
+                        <Text style={styles.saveText}>
                           {t('recharge.save', { percent: pkg.save })}
                         </Text>
                       </View>
@@ -223,14 +219,14 @@ export default function RechargeScreen() {
                   {/* Coins Amount */}
                   <View style={[styles.coinsRow, isBest && styles.coinsRowBest]}>
                     <View style={styles.coinsInfo}>
-                      <Text style={[styles.coinsAmount, isDark && styles.textDark, isBest && styles.coinsAmountBest]}>
+                      <Text style={[styles.coinsAmount, isBest && styles.coinsAmountBest]}>
                         {pkg.coins.toLocaleString()}
                       </Text>
-                      <Text style={[styles.coinsLabel, isDark && styles.subtitleDark]}>
+                      <Text style={styles.coinsLabel}>
                         {t('recharge.coins')}
                       </Text>
                       {pkg.bonus && (
-                        <Text style={[styles.bonusText, isDark && styles.bonusTextDark]}>
+                        <Text style={styles.bonusText}>
                           +{pkg.bonus} {t('recharge.bonus')}
                         </Text>
                       )}
@@ -240,7 +236,7 @@ export default function RechargeScreen() {
                     {isLuxury ? (
                       <TouchableOpacity style={styles.luxuryButton} activeOpacity={0.9}>
                         <LinearGradient
-                          colors={isDark ? ['#78716c', '#292524'] : ['#57534e', '#000000']}
+                          colors={['#57534e', '#000000']}
                           start={{ x: 0, y: 0 }}
                           end={{ x: 1, y: 1 }}
                           style={styles.gradientButton}
@@ -255,10 +251,8 @@ export default function RechargeScreen() {
                         style={[
                           styles.priceButton,
                           pkg.tier === 'starter' && styles.priceButtonStarter,
-                          pkg.tier === 'starter' && isDark && styles.priceButtonStarterDark,
                           pkg.tier === 'popular' && styles.priceButtonPopular,
                           pkg.tier === 'best' && styles.priceButtonBest,
-                          pkg.tier === 'best' && isDark && styles.priceButtonBestDark,
                         ]}
                         activeOpacity={0.9}
                       >
@@ -280,8 +274,8 @@ export default function RechargeScreen() {
           onPress={handleRestore}
           activeOpacity={0.7}
         >
-          <RefreshCw size={16} color={isDark ? '#78716c' : '#a8a29e'} strokeWidth={2.5} />
-          <Text style={[styles.restoreText, isDark && styles.restoreTextDark]}>
+          <RefreshCw size={16} color="#a8a29e" strokeWidth={2.5} />
+          <Text style={styles.restoreText}>
             {t('recharge.restorePurchases').toUpperCase()}
           </Text>
         </TouchableOpacity>
@@ -289,15 +283,15 @@ export default function RechargeScreen() {
         {/* Security & Terms */}
         <View style={styles.footerSection}>
           <View style={styles.securityRow}>
-            <Lock size={14} color={isDark ? '#57534e' : '#a8a29e'} />
-            <Text style={[styles.securityText, isDark && styles.securityTextDark]}>
+            <Lock size={14} color="#a8a29e" />
+            <Text style={styles.securityText}>
               {t('recharge.securedBy').toUpperCase()}
             </Text>
           </View>
-          <Text style={[styles.termsText, isDark && styles.termsTextDark]}>
+          <Text style={styles.termsText}>
             {t('recharge.terms')}
           </Text>
-          <Text style={[styles.termsText, isDark && styles.termsTextDark]}>
+          <Text style={styles.termsText}>
             {t('recharge.nonRefundable')}
           </Text>
         </View>
@@ -309,10 +303,7 @@ export default function RechargeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
-  },
-  containerDark: {
-    backgroundColor: '#050505',
+    backgroundColor: '#ffffff',
   },
   
   // Header
@@ -323,10 +314,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 60 : 24,
     paddingBottom: 12,
-    backgroundColor: 'rgba(250, 250, 250, 0.95)',
-  },
-  headerDark: {
-    backgroundColor: 'rgba(5, 5, 5, 0.95)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
   },
   headerButton: {
     width: 40,
@@ -388,9 +378,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     marginTop: 24,
   },
-  dividerDark: {
-    backgroundColor: '#292524',
-  },
   
   // Packages
   packagesContainer: {
@@ -399,32 +386,24 @@ const styles = StyleSheet.create({
   },
   packageCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#e7e5e4',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.02,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 2,
     position: 'relative',
-  },
-  packageCardDark: {
-    backgroundColor: '#1c1917',
-    borderColor: '#292524',
   },
   packageCardBest: {
     borderWidth: 2,
-    borderColor: '#000000',
-    shadowColor: '#104F3B',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  packageCardBestDark: {
-    borderColor: '#ffffff',
-    shadowColor: '#10b981',
+    borderColor: '#1a1a1a',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.1,
+    shadowRadius: 24,
+    elevation: 10,
   },
   popularBadge: {
     position: 'absolute',
@@ -441,7 +420,7 @@ const styles = StyleSheet.create({
     top: -12,
     left: '50%',
     transform: [{ translateX: -50 }],
-    backgroundColor: '#000000',
+    backgroundColor: '#1a1a1a',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -451,9 +430,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 3,
-  },
-  bestBadgeDark: {
-    backgroundColor: '#ffffff',
   },
   badgeText: {
     fontSize: 9,
@@ -467,22 +443,19 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     letterSpacing: 1.5,
   },
-  badgeTextBestDark: {
-    color: '#000000',
-  },
   packageContent: {
-    padding: 20,
-    gap: 8,
+    padding: 24,
+    gap: 12,
   },
   packageContentBest: {
-    paddingTop: 24,
-    paddingBottom: 24,
+    paddingTop: 32,
+    paddingBottom: 32,
   },
   packageHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   tierName: {
     fontSize: 10,
@@ -498,17 +471,10 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
   },
-  saveBadgeDark: {
-    backgroundColor: 'rgba(16, 79, 59, 0.3)',
-    borderColor: '#065f46',
-  },
   saveText: {
     fontSize: 9,
     fontWeight: '700',
     color: '#104F3B',
-  },
-  saveTextDark: {
-    color: '#34d399',
   },
   coinsRow: {
     flexDirection: 'row',
@@ -522,84 +488,61 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   coinsAmount: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: '800',
     color: '#1a1a1a',
-    lineHeight: 24,
+    lineHeight: 30,
   },
   coinsAmountBest: {
-    fontSize: 30,
+    fontSize: 36,
   },
   coinsLabel: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#78716c',
     marginTop: 2,
   },
   bonusText: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '700',
     color: '#B89B5E',
-    marginTop: 4,
-  },
-  bonusTextDark: {
-    color: '#D4B572',
+    marginTop: 6,
   },
   
   // Price Buttons
   priceButton: {
     paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#f3f4f6',
   },
   priceButtonStarter: {
-    backgroundColor: '#A1A6AD',
-  },
-  priceButtonStarterDark: {
-    backgroundColor: '#57534e',
+    backgroundColor: '#f3f4f6',
   },
   priceButtonPopular: {
     backgroundColor: '#B89B5E',
   },
   priceButtonBest: {
-    backgroundColor: '#104F3B',
+    backgroundColor: '#1a1a1a',
     paddingHorizontal: 32,
-    shadowColor: '#104F3B',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
-  priceButtonBestDark: {
-    backgroundColor: '#059669',
   },
   priceText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#1a1a1a',
     letterSpacing: 0.5,
   },
   luxuryButton: {
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
   gradientButton: {
     paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    paddingVertical: 14,
   },
   priceTextLuxury: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '800',
     color: '#ffffff',
     letterSpacing: 0.5,
   },
@@ -614,7 +557,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 32,
     marginHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 12,
+    backgroundColor: '#f9fafb',
   },
   restoreText: {
     fontSize: 11,
@@ -622,41 +566,33 @@ const styles = StyleSheet.create({
     color: '#a8a29e',
     letterSpacing: 1.5,
   },
-  restoreTextDark: {
-    color: '#78716c',
-  },
   
   // Footer
   footerSection: {
     alignItems: 'center',
     paddingHorizontal: 32,
-    paddingTop: 16,
-    paddingBottom: 24,
+    paddingTop: 32,
+    paddingBottom: 40,
   },
   securityRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   securityText: {
     fontSize: 9,
-    fontWeight: '600',
-    color: '#78716c',
+    fontWeight: '700',
+    color: '#a8a29e',
     letterSpacing: 1.5,
   },
-  securityTextDark: {
-    color: '#57534e',
-  },
   termsText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '500',
     color: '#d6d3d1',
     textAlign: 'center',
-    lineHeight: 14,
-  },
-  termsTextDark: {
-    color: '#44403c',
+    lineHeight: 16,
+    maxWidth: 240,
   },
   
   // Not Login
@@ -679,23 +615,20 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     textAlign: 'center',
   },
-  subtitleDark: {
-    color: '#78716c',
-  },
   loginButton: {
-    backgroundColor: '#000000',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: '#1a1a1a',
+    paddingHorizontal: 40,
+    paddingVertical: 18,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   loginButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
-  },
-  
-  // Text colors
-  textDark: {
     color: '#ffffff',
   },
 });

@@ -9,7 +9,6 @@ import {
   ScrollView, 
   TouchableOpacity, 
   Alert, 
-  useColorScheme,
   Platform 
 } from 'react-native';
 import { useVerification } from '@/contexts/VerificationContext';
@@ -25,8 +24,6 @@ interface GroupedHistory {
 export default function HistoryScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   
   const { outfitChangeHistory, deleteOutfitChange } = useVerification();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -121,24 +118,21 @@ export default function HistoryScreen() {
   const renderHistoryItem = (item: any) => (
     <View 
       key={item.id}
-      style={[
-        styles.historyCard,
-        isDark && styles.historyCardDark
-      ]}
+      style={styles.historyCard}
     >
       {/* Header */}
       <View style={styles.cardHeader}>
         <View style={styles.cardHeaderLeft}>
-          <Text style={[styles.cardTitle, isDark && styles.textDark]}>
+          <Text style={styles.cardTitle}>
             {item.templateName}
           </Text>
-          <Text style={[styles.cardTime, isDark && styles.subtitleDark]}>
+          <Text style={styles.cardTime}>
             {formatTime(item.createdAt)}
           </Text>
         </View>
         {isNew(item.createdAt) && (
-          <View style={[styles.newBadge, isDark && styles.newBadgeDark]}>
-            <Text style={[styles.newBadgeText, isDark && styles.newBadgeTextDark]}>
+          <View style={styles.newBadge}>
+            <Text style={styles.newBadgeText}>
               {t('history.new').toUpperCase()}
             </Text>
           </View>
@@ -153,7 +147,7 @@ export default function HistoryScreen() {
       >
         {/* Original Image */}
         <View style={styles.imageWrapper}>
-          <View style={[styles.imageContainer, isDark && styles.imageContainerDark]}>
+          <View style={styles.imageContainer}>
             <Image 
               source={{ uri: item.originalImageUri }}
               style={styles.image}
@@ -171,14 +165,14 @@ export default function HistoryScreen() {
         <View style={styles.arrowContainer}>
           <ArrowRight 
             size={14} 
-            color={isDark ? '#52525b' : '#d1d5db'} 
+            color="#d1d5db" 
             strokeWidth={2.5}
           />
         </View>
 
         {/* Result Image */}
         <View style={styles.imageWrapper}>
-          <View style={[styles.imageContainer, isDark && styles.imageContainerDark]}>
+          <View style={styles.imageContainer}>
             <Image 
               source={{ uri: item.resultImageUri }}
               style={styles.image}
@@ -203,7 +197,7 @@ export default function HistoryScreen() {
           >
             <Download 
               size={22} 
-              color={isDark ? '#d4d4d8' : '#111827'} 
+              color="#111827" 
               strokeWidth={2}
             />
           </TouchableOpacity>
@@ -214,7 +208,7 @@ export default function HistoryScreen() {
           >
             <Share2 
               size={22} 
-              color={isDark ? '#d4d4d8' : '#111827'} 
+              color="#111827" 
               strokeWidth={2}
             />
           </TouchableOpacity>
@@ -239,11 +233,11 @@ export default function HistoryScreen() {
 
     return (
       <View style={styles.section}>
-        <View style={[styles.sectionHeader, isDark && styles.sectionHeaderDark]}>
-          <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>
             {title.toUpperCase()}
           </Text>
-          <Text style={[styles.sectionCount, isDark && styles.subtitleDark]}>
+          <Text style={styles.sectionCount}>
             {count} {t('history.transformations').toUpperCase()}
           </Text>
         </View>
@@ -257,13 +251,13 @@ export default function HistoryScreen() {
 
   if (outfitChangeHistory.length === 0) {
     return (
-      <View style={[styles.container, isDark && styles.containerDark]}>
+      <View style={styles.container}>
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>🕐</Text>
-          <Text style={[styles.emptyTitle, isDark && styles.textDark]}>
+          <Text style={styles.emptyTitle}>
             {t('history.noOutfitChangeHistory')}
           </Text>
-          <Text style={[styles.emptyText, isDark && styles.subtitleDark]}>
+          <Text style={styles.emptyText}>
             {t('history.noOutfitChangeHistoryDesc')}
           </Text>
         </View>
@@ -272,7 +266,7 @@ export default function HistoryScreen() {
   }
 
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
+    <View style={styles.container}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -289,10 +283,7 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafafa',
-  },
-  containerDark: {
-    backgroundColor: '#000000',
+    backgroundColor: '#ffffff',
   },
   
   // ScrollView
@@ -309,6 +300,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 40,
+    marginTop: 100,
   },
   emptyIcon: {
     fontSize: 64,
@@ -329,7 +321,7 @@ const styles = StyleSheet.create({
   
   // Section
   section: {
-    marginTop: 16,
+    marginTop: 0,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -337,22 +329,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: 'rgba(250, 250, 250, 0.95)',
+    backgroundColor: '#f9fafb',
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
-  },
-  sectionHeaderDark: {
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
-    borderBottomColor: '#27272a',
   },
   sectionTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#000000',
+    color: '#4b5563',
     letterSpacing: 1.5,
-  },
-  sectionTitleDark: {
-    color: '#ffffff',
   },
   sectionCount: {
     fontSize: 10,
@@ -361,35 +346,16 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   sectionContent: {
-    paddingHorizontal: Platform.OS === 'web' ? 16 : 0,
-    paddingVertical: Platform.OS === 'web' ? 16 : 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   
   // History Card
   historyCard: {
     backgroundColor: '#ffffff',
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
-    ...Platform.select({
-      web: {
-        borderRadius: 12,
-        borderWidth: 1,
-        marginBottom: 8,
-        overflow: 'hidden',
-      },
-      default: {
-        borderRadius: 0,
-      },
-    }),
-  },
-  historyCardDark: {
-    backgroundColor: '#1a1a1a',
-    borderBottomColor: '#27272a',
-    ...Platform.select({
-      web: {
-        borderColor: '#27272a',
-      },
-    }),
   },
   
   // Card Header
@@ -398,31 +364,27 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 12,
+    marginBottom: 12,
   },
   cardHeaderLeft: {
     flex: 1,
   },
   cardTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#000000',
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#111827',
     marginBottom: 2,
   },
   cardTime: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '500',
     color: '#9ca3af',
   },
   newBadge: {
-    backgroundColor: '#000000',
+    backgroundColor: '#1a1a1a',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,
-  },
-  newBadgeDark: {
-    backgroundColor: '#ffffff',
   },
   newBadgeText: {
     fontSize: 10,
@@ -430,30 +392,34 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     letterSpacing: 0.5,
   },
-  newBadgeTextDark: {
-    color: '#000000',
-  },
   
   // Images Container
   imagesContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 8,
+    gap: 12,
   },
   imageWrapper: {
     flex: 1,
   },
   imageContainer: {
     aspectRatio: 3 / 4,
-    borderRadius: 4,
+    borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f3f4f6',
     position: 'relative',
-  },
-  imageContainerDark: {
-    backgroundColor: '#27272a',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   image: {
     width: '100%',
@@ -463,27 +429,29 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     left: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: 6,
   },
   imageLabelResult: {
     left: 'auto',
     right: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: 'rgba(26, 26, 26, 0.9)',
   },
   imageLabelText: {
     fontSize: 9,
-    fontWeight: '500',
-    color: '#ffffff',
-    letterSpacing: 1,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    letterSpacing: 0.5,
   },
   arrowContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: -4,
-    zIndex: 10,
   },
   
   // Actions
@@ -491,26 +459,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    marginTop: 4,
+    paddingHorizontal: 12,
+    marginTop: 16,
   },
   actionsLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingLeft: 8,
+    gap: 8,
   },
   actionButton: {
-    padding: 8,
-    borderRadius: 8,
-  },
-  
-  // Text colors
-  textDark: {
-    color: '#ffffff',
-  },
-  subtitleDark: {
-    color: '#71717a',
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#f9fafb',
   },
 });

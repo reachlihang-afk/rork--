@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { ArrowLeft, Share2, Download, MoreHorizontal, Sparkles, RefreshCw } from 'lucide-react-native';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, ActivityIndicator, useColorScheme, Platform } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useVerification } from '@/contexts/VerificationContext';
 import { useSquare } from '@/contexts/SquareContext';
@@ -14,8 +14,6 @@ export default function OutfitChangeDetailScreen() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   
   const { outfitChangeHistory, deleteOutfitChange } = useVerification();
   const { publishPost, posts } = useSquare();
@@ -30,10 +28,10 @@ export default function OutfitChangeDetailScreen() {
 
   if (!outfitItem) {
     return (
-      <View style={[styles.container, isDark && styles.containerDark]}>
+      <View style={styles.container}>
         <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyText, isDark && styles.textDark]}>
+          <Text style={styles.emptyText}>
             {t('history.noRecords')}
           </Text>
         </View>
@@ -179,19 +177,19 @@ export default function OutfitChangeDetailScreen() {
     : outfitItem.resultImageUri;
 
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
       {/* Header */}
-      <View style={[styles.header, isDark && styles.headerDark]}>
+      <View style={styles.header}>
         <TouchableOpacity 
           onPress={() => router.back()}
           style={styles.headerButton}
         >
-          <ArrowLeft size={24} color={isDark ? '#fff' : '#1a1a1a'} strokeWidth={2} />
+          <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2} />
         </TouchableOpacity>
         
-        <Text style={[styles.headerTitle, isDark && styles.textDark]}>
+        <Text style={styles.headerTitle}>
           {t('outfitChange.result').toUpperCase()}
         </Text>
         
@@ -199,7 +197,7 @@ export default function OutfitChangeDetailScreen() {
           onPress={handleMore}
           style={styles.headerButton}
         >
-          <MoreHorizontal size={24} color={isDark ? '#fff' : '#1a1a1a'} />
+          <MoreHorizontal size={24} color="#1a1a1a" />
         </TouchableOpacity>
       </View>
 
@@ -209,7 +207,7 @@ export default function OutfitChangeDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* View Mode Toggle */}
-        <View style={[styles.toggleContainer, isDark && styles.toggleContainerDark]}>
+        <View style={styles.toggleContainer}>
           <TouchableOpacity
             style={[
               styles.toggleButton,
@@ -220,8 +218,7 @@ export default function OutfitChangeDetailScreen() {
           >
             <Text style={[
               styles.toggleText,
-              viewMode === 'original' && styles.toggleTextActive,
-              isDark && viewMode !== 'original' && styles.toggleTextDark
+              viewMode === 'original' && styles.toggleTextActive
             ]}>
               {t('history.original')}
             </Text>
@@ -237,8 +234,7 @@ export default function OutfitChangeDetailScreen() {
           >
             <Text style={[
               styles.toggleText,
-              viewMode === 'result' && styles.toggleTextActive,
-              isDark && viewMode !== 'result' && styles.toggleTextDark
+              viewMode === 'result' && styles.toggleTextActive
             ]}>
               {t('history.result')}
             </Text>
@@ -246,7 +242,7 @@ export default function OutfitChangeDetailScreen() {
         </View>
 
         {/* Main Image */}
-        <View style={[styles.imageContainer, isDark && styles.imageContainerDark]}>
+        <View style={styles.imageContainer}>
           <Image 
             source={{ uri: displayedImage }}
             style={styles.mainImage}
@@ -258,17 +254,17 @@ export default function OutfitChangeDetailScreen() {
         <View style={styles.infoSection}>
           <View style={styles.infoHeader}>
             <View>
-              <Text style={[styles.title, isDark && styles.textDark]}>
+              <Text style={styles.title}>
                 {t('outfitChange.transformationComplete')}
               </Text>
-              <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
+              <Text style={styles.subtitle}>
                 {outfitItem.templateName?.toUpperCase()} • {t('outfitChange.smartCasual').toUpperCase()}
               </Text>
             </View>
             
-            <View style={[styles.matchBadge, isDark && styles.matchBadgeDark]}>
-              <Sparkles size={16} color={isDark ? '#fff' : '#1a1a1a'} strokeWidth={2.5} />
-              <Text style={[styles.matchText, isDark && styles.textDark]}>
+            <View style={styles.matchBadge}>
+              <Sparkles size={16} color="#1a1a1a" strokeWidth={2.5} />
+              <Text style={styles.matchText}>
                 98% {t('outfitChange.match')}
               </Text>
             </View>
@@ -276,8 +272,8 @@ export default function OutfitChangeDetailScreen() {
 
           {/* Style Tags */}
           <View style={styles.tagsContainer}>
-            <View style={[styles.tag, isDark && styles.tagDark]}>
-              <Text style={[styles.tagText, isDark && styles.textDark]}>
+            <View style={styles.tag}>
+              <Text style={styles.tagText}>
                 {outfitItem.templateName}
               </Text>
             </View>
@@ -286,10 +282,10 @@ export default function OutfitChangeDetailScreen() {
       </ScrollView>
 
       {/* Fixed Bottom Actions */}
-      <View style={[styles.fixedBottom, isDark && styles.fixedBottomDark]}>
+      <View style={styles.fixedBottom}>
         <View style={styles.gradientContainer}>
           <LinearGradient
-            colors={[isDark ? 'rgba(0,0,0,0)' : 'rgba(255,255,255,0)', isDark ? '#000000' : '#ffffff']}
+            colors={['rgba(255,255,255,0)', '#ffffff']}
             style={styles.gradient}
           />
         </View>
@@ -320,17 +316,17 @@ export default function OutfitChangeDetailScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.saveButton, isDark && styles.saveButtonDark, isSaving && styles.buttonDisabled]}
+              style={[styles.saveButton, isSaving && styles.buttonDisabled]}
               onPress={handleDownload}
               disabled={isSaving}
               activeOpacity={0.9}
             >
               {isSaving ? (
-                <ActivityIndicator size="small" color={isDark ? '#fff' : '#1a1a1a'} />
+                <ActivityIndicator size="small" color="#1a1a1a" />
               ) : (
                 <>
-                  <Download size={20} color={isDark ? '#fff' : '#1a1a1a'} strokeWidth={2.5} />
-                  <Text style={[styles.saveButtonText, isDark && styles.textDark]}>
+                  <Download size={20} color="#1a1a1a" strokeWidth={2.5} />
+                  <Text style={styles.saveButtonText}>
                     {t('common.save')}
                   </Text>
                 </>
@@ -346,10 +342,10 @@ export default function OutfitChangeDetailScreen() {
           >
             <RefreshCw 
               size={18} 
-              color={isDark ? '#9ca3af' : '#71717a'} 
+              color="#71717a" 
               strokeWidth={2.5} 
             />
-            <Text style={[styles.regenerateText, isDark && styles.regenerateTextDark]}>
+            <Text style={styles.regenerateText}>
               {t('outfitChange.regenerateThisLook').toUpperCase()}
             </Text>
           </TouchableOpacity>
@@ -364,9 +360,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
-  containerDark: {
-    backgroundColor: '#000000',
-  },
   
   // Header
   header: {
@@ -379,10 +372,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
-  },
-  headerDark: {
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
   headerButton: {
     width: 40,
@@ -419,9 +408,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 32,
   },
-  toggleContainerDark: {
-    backgroundColor: '#18181b',
-  },
   toggleButton: {
     flex: 1,
     alignItems: 'center',
@@ -446,9 +432,6 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
     fontWeight: '700',
   },
-  toggleTextDark: {
-    color: '#9ca3af',
-  },
   
   // Main Image
   imageContainer: {
@@ -462,9 +445,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
-  },
-  imageContainerDark: {
-    backgroundColor: '#18181b',
   },
   mainImage: {
     width: '100%',
@@ -493,9 +473,6 @@ const styles = StyleSheet.create({
     color: '#71717a',
     letterSpacing: 1,
   },
-  subtitleDark: {
-    color: '#9ca3af',
-  },
   matchBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -506,10 +483,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-  },
-  matchBadgeDark: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   matchText: {
     fontSize: 12,
@@ -539,10 +512,6 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
-  tagDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#3f3f46',
-  },
   tagText: {
     fontSize: 12,
     fontWeight: '600',
@@ -561,10 +530,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: Platform.OS === 'ios' ? 32 : 20,
-  },
-  fixedBottomDark: {
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
-    borderTopColor: 'rgba(255, 255, 255, 0.05)',
   },
   gradientContainer: {
     position: 'absolute',
@@ -625,10 +590,6 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
-  saveButtonDark: {
-    backgroundColor: '#18181b',
-    borderColor: '#3f3f46',
-  },
   saveButtonText: {
     fontSize: 14,
     fontWeight: '700',
@@ -651,9 +612,6 @@ const styles = StyleSheet.create({
     color: '#71717a',
     letterSpacing: 1,
   },
-  regenerateTextDark: {
-    color: '#9ca3af',
-  },
   
   // Empty state
   emptyContainer: {
@@ -664,10 +622,5 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: '#71717a',
-  },
-  
-  // Text colors
-  textDark: {
-    color: '#ffffff',
   },
 });

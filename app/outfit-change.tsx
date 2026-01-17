@@ -11,7 +11,6 @@ import {
   Switch,
   Alert,
   ActivityIndicator,
-  useColorScheme,
   Platform 
 } from 'react-native';
 import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
@@ -240,8 +239,6 @@ function getRandomJennieScene(): string {
 export default function OutfitChangeNewScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const params = useLocalSearchParams();
   
   const { user, isLoggedIn } = useAuth();
@@ -784,14 +781,14 @@ FINAL RESULT REQUIREMENTS:
   const displayedTemplates = showAllTemplates ? TEMPLATES : TEMPLATES.slice(0, 9);
 
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
+    <View style={styles.container}>
       <Stack.Screen 
         options={{
           headerShown: true,
           title: t('outfitChange.outfitSwap'),
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
-              <ArrowLeft size={24} color={isDark ? '#fff' : '#1a1a1a'} />
+              <ArrowLeft size={24} color="#1a1a1a" />
             </TouchableOpacity>
           ),
         }}
@@ -805,14 +802,14 @@ FINAL RESULT REQUIREMENTS:
         {/* 步骤1: 上传照片 */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, isDark && styles.textDark]}>
+            <Text style={styles.sectionTitle}>
               {t('outfitChange.whoIsSwapping')}
             </Text>
             <Text style={styles.stepLabel}>{t('outfitChange.step1')}</Text>
           </View>
 
           <TouchableOpacity
-            style={[styles.uploadArea, isDark && styles.uploadAreaDark]}
+            style={styles.uploadArea}
             onPress={handleUploadPhoto}
             onLongPress={handleTakePhoto}
             activeOpacity={0.7}
@@ -829,10 +826,10 @@ FINAL RESULT REQUIREMENTS:
               </>
             ) : (
               <View style={styles.uploadPlaceholder}>
-                <View style={[styles.cameraIcon, isDark && styles.cameraIconDark]}>
-                  <Camera size={32} color={isDark ? '#fff' : '#1a1a1a'} strokeWidth={1.5} />
+                <View style={styles.cameraIcon}>
+                  <Camera size={32} color="#1a1a1a" strokeWidth={1.5} />
                 </View>
-                <Text style={[styles.uploadTitle, isDark && styles.textDark]}>
+                <Text style={styles.uploadTitle}>
                   {t('outfitChange.uploadPhoto')}
                 </Text>
                 <Text style={styles.uploadSubtitle}>
@@ -853,14 +850,14 @@ FINAL RESULT REQUIREMENTS:
         {/* 步骤2: 选择风格 */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, isDark && styles.textDark]}>
+            <Text style={styles.sectionTitle}>
               {t('outfitChange.selectStyle')}
             </Text>
             <Text style={styles.stepLabel}>{t('outfitChange.step2')}</Text>
           </View>
 
           {/* Tab选择器 */}
-          <View style={[styles.tabContainer, isDark && styles.tabContainerDark]}>
+          <View style={styles.tabContainer}>
             <TouchableOpacity
               style={[styles.tab, selectedTab === 'template' && styles.tabActive]}
               onPress={() => setSelectedTab('template')}
@@ -902,12 +899,12 @@ FINAL RESULT REQUIREMENTS:
           {selectedTab === 'template' && (
             <View style={styles.tabContent}>
               <View style={styles.trendingHeader}>
-                <Text style={[styles.trendingTitle, isDark && styles.textDark]}>
+                <Text style={styles.trendingTitle}>
                   {t('outfitChange.trendingStyles')}
                 </Text>
-                <View style={[styles.freeAttemptsTag, isDark && styles.freeAttemptsTagDark]}>
-                  <Sparkles size={14} color={isDark ? '#fff' : '#1a1a1a'} />
-                  <Text style={[styles.freeAttemptsText, isDark && styles.textDark]}>
+                <View style={styles.freeAttemptsTag}>
+                  <Sparkles size={14} color="#1a1a1a" />
+                  <Text style={styles.freeAttemptsText}>
                     {t('outfitChange.freeAttempts')}: {coinBalance}/5
                   </Text>
                 </View>
@@ -920,7 +917,6 @@ FINAL RESULT REQUIREMENTS:
                     key={template.id}
                     style={[
                       styles.templateCard,
-                      isDark && styles.templateCardDark,
                       selectedTemplate === template.id && styles.templateCardSelected
                     ]}
                     onPress={() => setSelectedTemplate(template.id)}
@@ -936,7 +932,6 @@ FINAL RESULT REQUIREMENTS:
                     </View>
                     <Text style={[
                       styles.templateName, 
-                      isDark && styles.textDark,
                       selectedTemplate === template.id && styles.templateNameSelected
                     ]} numberOfLines={2}>
                       {template.name}
@@ -951,7 +946,7 @@ FINAL RESULT REQUIREMENTS:
                   style={styles.moreButton}
                   onPress={() => setShowAllTemplates(!showAllTemplates)}
                 >
-                  <Text style={[styles.moreButtonText, isDark && styles.textDark]}>
+                  <Text style={styles.moreButtonText}>
                     {showAllTemplates ? t('outfitChange.showLess') : t('outfitChange.moreTemplates')}
                   </Text>
                 </TouchableOpacity>
@@ -962,14 +957,14 @@ FINAL RESULT REQUIREMENTS:
           {/* Custom Outfit内容 */}
           {selectedTab === 'custom' && (
             <View style={styles.tabContent}>
-              <Text style={[styles.customTitle, isDark && styles.textDark]}>
+              <Text style={styles.customTitle}>
                 {t('outfitChange.referenceClothing')}
               </Text>
               
               <View style={styles.customUploadRow}>
                 {/* 已上传的图片 */}
                 {customImages.map((uri, index) => (
-                  <View key={index} style={[styles.customUploadCard, isDark && styles.customUploadCardDark]}>
+                  <View key={index} style={styles.customUploadCard}>
                     <Image source={{ uri }} style={styles.customUploadedImage} contentFit="cover" />
                     <TouchableOpacity
                       style={styles.customRemoveButton}
@@ -986,7 +981,7 @@ FINAL RESULT REQUIREMENTS:
                 {/* 添加按钮 */}
                 {customImages.length < 2 && (
                   <TouchableOpacity 
-                    style={[styles.customUploadCard, isDark && styles.customUploadCardDark]}
+                    style={styles.customUploadCard}
                     onPress={handleAddCustomImage}
                   >
                     <Camera size={24} color="#9ca3af" />
@@ -1003,8 +998,8 @@ FINAL RESULT REQUIREMENTS:
                 )}
               </View>
 
-              <View style={[styles.uploadHintBox, isDark && styles.uploadHintBoxDark]}>
-                <Text style={[styles.uploadHintText, isDark && styles.uploadHintTextDark]}>
+              <View style={styles.uploadHintBox}>
+                <Text style={styles.uploadHintText}>
                   ℹ️ {t('outfitChange.uploadHint')}
                 </Text>
               </View>
@@ -1017,9 +1012,9 @@ FINAL RESULT REQUIREMENTS:
               {selectedLookPrompt ? (
                 // 已选择Look
                 <View style={styles.selectedLookContainer}>
-                  <View style={[styles.selectedLookCard, isDark && styles.selectedLookCardDark]}>
+                  <View style={styles.selectedLookCard}>
                     <View style={styles.selectedLookHeader}>
-                      <Text style={[styles.selectedLookTitle, isDark && styles.textDark]}>
+                      <Text style={styles.selectedLookTitle}>
                         ✨ 已选择造型
                       </Text>
                       <TouchableOpacity
@@ -1039,13 +1034,13 @@ FINAL RESULT REQUIREMENTS:
               ) : (
                 // 未选择Look,显示达人列表
                 <>
-                  <Text style={[styles.proTitle, isDark && styles.textDark]}>
+                  <Text style={styles.proTitle}>
                     {t('outfitChange.selectInfluencer')}
                   </Text>
                   
                   {/* Jennie示例卡片 */}
                   <TouchableOpacity
-                    style={[styles.influencerCard, isDark && styles.influencerCardDark]}
+                    style={styles.influencerCard}
                     onPress={() => router.push('/influencer-collection/jennie' as any)}
                   >
                     <View style={styles.influencerAvatar}>
@@ -1055,18 +1050,18 @@ FINAL RESULT REQUIREMENTS:
                       </View>
                     </View>
                     <View style={styles.influencerInfo}>
-                      <Text style={[styles.influencerName, isDark && styles.textDark]}>
+                      <Text style={styles.influencerName}>
                         Jennie Kim
                       </Text>
                       <Text style={styles.influencerDesc}>
                         Chanel Muse & K-Pop Icon
                       </Text>
                       <View style={styles.influencerTags}>
-                        <View style={[styles.tag, isDark && styles.tagDark]}>
-                          <Text style={[styles.tagText, isDark && styles.textDark]}>24 LOOKS</Text>
+                        <View style={styles.tag}>
+                          <Text style={styles.tagText}>24 LOOKS</Text>
                         </View>
-                        <View style={[styles.tag, isDark && styles.tagDark]}>
-                          <Text style={[styles.tagText, isDark && styles.textDark]}>K-POP</Text>
+                        <View style={styles.tag}>
+                          <Text style={styles.tagText}>K-POP</Text>
                         </View>
                       </View>
                     </View>
@@ -1083,14 +1078,14 @@ FINAL RESULT REQUIREMENTS:
         {generatedResult && (
           <View style={styles.resultSection}>
             <View style={styles.resultHeader}>
-              <Text style={[styles.resultTitle, isDark && styles.textDark]}>
+              <Text style={styles.resultTitle}>
                 ✨ {t('outfitChange.transformationComplete')}
               </Text>
               <TouchableOpacity 
                 style={styles.closeResultButton}
                 onPress={() => setGeneratedResult(null)}
               >
-                <X size={20} color={isDark ? '#9ca3af' : '#6b7280'} />
+                <X size={20} color="#6b7280" />
               </TouchableOpacity>
             </View>
             
@@ -1102,7 +1097,7 @@ FINAL RESULT REQUIREMENTS:
                   style={styles.resultImage} 
                   contentFit="cover" 
                 />
-                <View style={[styles.resultLabel, isDark && styles.resultLabelDark]}>
+                <View style={styles.resultLabel}>
                   <Text style={styles.resultLabelText}>{t('history.original')}</Text>
                 </View>
               </View>
@@ -1119,13 +1114,13 @@ FINAL RESULT REQUIREMENTS:
                   style={styles.resultImage} 
                   contentFit="cover" 
                 />
-                <View style={[styles.resultLabel, styles.resultLabelResult, isDark && styles.resultLabelDark]}>
+                <View style={[styles.resultLabel, styles.resultLabelResult]}>
                   <Text style={[styles.resultLabelText, styles.resultLabelTextResult]}>{t('history.result')}</Text>
                 </View>
               </View>
             </View>
 
-            <Text style={[styles.resultTemplateName, isDark && styles.textDark]}>
+            <Text style={styles.resultTemplateName}>
               {generatedResult.templateName}
             </Text>
           </View>
@@ -1138,7 +1133,7 @@ FINAL RESULT REQUIREMENTS:
       <View style={styles.fixedBottom}>
         <View style={styles.gradientContainer}>
           <LinearGradient
-            colors={['rgba(255,255,255,0)', isDark ? '#121212' : '#ffffff']}
+            colors={['rgba(255,255,255,0)', '#ffffff']}
             style={styles.gradient}
           />
         </View>
@@ -1179,10 +1174,7 @@ FINAL RESULT REQUIREMENTS:
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5', // 浅灰色背景，更接近设计图
-  },
-  containerDark: {
-    backgroundColor: '#121212',
+    backgroundColor: '#ffffff',
   },
   scrollView: {
     flex: 1,
@@ -1517,17 +1509,10 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: '#3b82f6',
   },
-  uploadHintBoxDark: {
-    backgroundColor: '#1e293b',
-    borderLeftColor: '#60a5fa',
-  },
   uploadHintText: {
     fontSize: 12,
     color: '#1e40af',
     lineHeight: 18,
-  },
-  uploadHintTextDark: {
-    color: '#93c5fd',
   },
 
   // Pro Style
@@ -1550,10 +1535,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
     marginBottom: 16,
-  },
-  influencerCardDark: {
-    backgroundColor: '#1e1e1e',
-    borderColor: 'rgba(255,255,255,0.05)',
   },
   influencerAvatar: {
     width: 64,
@@ -1607,9 +1588,6 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     backgroundColor: '#f3f4f6',
     borderRadius: 6,
-  },
-  tagDark: {
-    backgroundColor: '#2a2a2a',
   },
   tagText: {
     fontSize: 10,
@@ -1682,9 +1660,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 8,
   },
-  resultLabelDark: {
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  },
   resultLabelResult: {
     backgroundColor: 'rgba(26, 26, 26, 0.95)',
   },
@@ -1729,10 +1704,6 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#3b82f6',
   },
-  selectedLookCardDark: {
-    backgroundColor: '#1e293b',
-    borderLeftColor: '#60a5fa',
-  },
   selectedLookHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1764,10 +1735,6 @@ const styles = StyleSheet.create({
     borderColor: '#f3f4f6',
     marginBottom: 24,
   },
-  optionsSectionDark: {
-    backgroundColor: '#1e1e1e',
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
   optionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1788,9 +1755,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  optionIconDark: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
   },
   optionTitle: {
     fontSize: 14,

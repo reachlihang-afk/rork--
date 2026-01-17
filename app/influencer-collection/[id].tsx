@@ -9,8 +9,7 @@ import {
   TouchableOpacity, 
   ScrollView, 
   Platform,
-  Alert,
-  useColorScheme 
+  Alert
 } from 'react-native';
 import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
@@ -203,8 +202,6 @@ const INFLUENCERS: { [key: string]: InfluencerData } = {
 export default function InfluencerCollectionScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   const params = useLocalSearchParams();
   
   const influencerId = typeof params.id === 'string' ? params.id : 'jennie';
@@ -239,19 +236,19 @@ export default function InfluencerCollectionScreen() {
   };
 
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
+    <View style={styles.container}>
       <Stack.Screen 
         options={{
           headerShown: true,
           title: `${influencer.name} Collection`,
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
-              <ArrowLeft size={24} color={isDark ? '#fff' : '#1a1a1a'} />
+              <ArrowLeft size={24} color="#1a1a1a" />
             </TouchableOpacity>
           ),
           headerRight: () => (
             <TouchableOpacity>
-              <MoreVertical size={24} color={isDark ? '#fff' : '#1a1a1a'} />
+              <MoreVertical size={24} color="#1a1a1a" />
             </TouchableOpacity>
           ),
         }}
@@ -265,7 +262,7 @@ export default function InfluencerCollectionScreen() {
         {/* 达人简介 */}
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
-            <View style={[styles.avatar, isDark && styles.avatarDark]}>
+            <View style={styles.avatar}>
               <Text style={styles.avatarText}>{influencer.avatar}</Text>
             </View>
             {influencer.verified && (
@@ -276,15 +273,15 @@ export default function InfluencerCollectionScreen() {
           </View>
           
           <View style={styles.profileInfo}>
-            <Text style={[styles.profileName, isDark && styles.textDark]}>
+            <Text style={styles.profileName}>
               {influencer.name}
             </Text>
             <Text style={styles.profileDesc}>
               {influencer.description}
             </Text>
             <View style={styles.statsRow}>
-              <View style={[styles.statBox, isDark && styles.statBoxDark]}>
-                <Text style={[styles.statNumber, isDark && styles.textDark]}>
+              <View style={styles.statBox}>
+                <Text style={styles.statNumber}>
                   {influencer.totalLooks}
                 </Text>
                 <Text style={styles.statLabel}>
@@ -296,7 +293,7 @@ export default function InfluencerCollectionScreen() {
         </View>
 
         {/* 视图模式切换 */}
-        <View style={[styles.viewModeContainer, isDark && styles.viewModeContainerDark]}>
+        <View style={styles.viewModeContainer}>
           <TouchableOpacity
             style={[
               styles.viewModeButton,
@@ -351,7 +348,7 @@ export default function InfluencerCollectionScreen() {
               activeOpacity={0.9}
             >
               {/* 占位图 */}
-              <View style={[styles.lookImagePlaceholder, isDark && styles.lookImagePlaceholderDark]}>
+              <View style={styles.lookImagePlaceholder}>
                 <Text style={styles.lookImageEmoji}>📸</Text>
                 <Text style={styles.lookImageText}>Look {look.id}</Text>
               </View>
@@ -368,8 +365,8 @@ export default function InfluencerCollectionScreen() {
               {/* 标签 */}
               <View style={styles.lookTags}>
                 {look.tags.slice(0, 2).map((tag, index) => (
-                  <View key={index} style={[styles.lookTag, isDark && styles.lookTagDark]}>
-                    <Text style={[styles.lookTagText, isDark && styles.textDark]}>
+                  <View key={index} style={styles.lookTag}>
+                    <Text style={styles.lookTagText}>
                       {tag}
                     </Text>
                   </View>
@@ -386,7 +383,7 @@ export default function InfluencerCollectionScreen() {
       <View style={styles.fixedBottom}>
         <View style={styles.gradientContainer}>
           <LinearGradient
-            colors={['rgba(255,255,255,0)', isDark ? '#121212' : '#ffffff']}
+            colors={['rgba(255,255,255,0)', '#ffffff']}
             style={styles.gradient}
           />
         </View>
@@ -424,17 +421,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
-  containerDark: {
-    backgroundColor: '#121212',
-  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: 20,
-  },
-  textDark: {
-    color: '#f0f0f0',
   },
 
   // 简介区域
@@ -456,9 +447,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  avatarDark: {
-    backgroundColor: '#1e1e1e',
   },
   avatarText: {
     fontSize: 40,
@@ -507,9 +495,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6',
     borderRadius: 12,
   },
-  statBoxDark: {
-    backgroundColor: '#1e1e1e',
-  },
   statNumber: {
     fontSize: 18,
     fontWeight: '800',
@@ -530,9 +515,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 4,
     marginBottom: 20,
-  },
-  viewModeContainerDark: {
-    backgroundColor: '#1e1e1e',
   },
   viewModeButton: {
     flex: 1,
@@ -585,9 +567,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  lookImagePlaceholderDark: {
-    backgroundColor: '#1e1e1e',
-  },
   lookImageEmoji: {
     fontSize: 40,
     marginBottom: 8,
@@ -634,9 +613,6 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 6,
-  },
-  lookTagDark: {
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   lookTagText: {
     fontSize: 10,
