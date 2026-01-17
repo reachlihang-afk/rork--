@@ -414,6 +414,7 @@ export default {
     costPerGeneration: '생성당 {{cost}} 코인 소비',
     generate: '생성 시작',
     generating: '생성 중',
+    outfitComplete: '의상 변경 완료',
     selectImage: '사진을 업로드하세요',
     selectOutfitImages: '최소 1개의 의상 아이템을 추가하세요',
     selectImageAndTemplate: '사진을 업로드하고 템플릿을 선택하세요',

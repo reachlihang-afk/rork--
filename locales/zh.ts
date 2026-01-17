@@ -485,6 +485,7 @@ export default {
     selectInfluencer: '选择达人',
     result: '结果',
     transformationComplete: '转换完成',
+    outfitComplete: '换装完成',
     smartCasual: '智能休闲',
     match: '匹配',
     regenerate: '重新生成',

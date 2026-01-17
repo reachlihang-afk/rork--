@@ -475,6 +475,7 @@ export default {
     costPerGeneration: '{{cost}} coins/use',
     generate: 'Generate',
     generating: 'Generating',
+    outfitComplete: 'Outfit Complete',
     selectImage: 'Upload photo first',
     selectOutfitImages: 'Add outfit item',
     selectImageAndTemplate: 'Upload photo & select template',

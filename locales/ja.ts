@@ -414,6 +414,7 @@ export default {
     costPerGeneration: '生成ごとに {{cost}} コイン消費',
     generate: '生成開始',
     generating: '生成中',
+    outfitComplete: '着替え完了',
     selectImage: '写真をアップロードしてください',
     selectOutfitImages: '服装アイテムを1枚以上追加してください',
     selectImageAndTemplate: '写真をアップロードしてテンプレートを選択してください',

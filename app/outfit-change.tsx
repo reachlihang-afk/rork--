@@ -875,6 +875,9 @@ FINAL RESULT REQUIREMENTS:
       });
       setIsPublished(false); // 重置发布状态
       
+      // 提示换装完成
+      Alert.alert('✨', t('outfitChange.outfitComplete'));
+      
       // 保存到历史记录（失败不影响当前展示）
       try {
         // 在原生平台上，将结果保存到本地文件，避免AsyncStorage存储过大的base64导致失败
