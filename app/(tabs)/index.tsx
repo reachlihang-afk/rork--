@@ -279,6 +279,8 @@ const styles = StyleSheet.create({
   },
   heroImagePlaceholderIcon: {
     fontSize: 32,
+    textAlign: 'center',
+    lineHeight: 40,
   },
   
   // 开始按钮

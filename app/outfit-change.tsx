@@ -1,7 +1,7 @@
 // outfit-change-new.tsx - 完整版
 // 新UI设计 + 完整功能集成
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -246,6 +246,11 @@ export default function OutfitChangeNewScreen() {
   const { currentLanguage } = useLanguage();
   const params = useLocalSearchParams();
   
+  // 根据语言获取模板名称
+  const getTemplateName = (template: { name: string; nameEn: string }) => {
+    return currentLanguage === 'zh' ? template.name : template.nameEn;
+  };
+  
   const { user, isLoggedIn } = useAuth();
   const { coinBalance, canUseOutfitChange, useOutfitChange } = useCoin();
   const { addOutfitChangeHistory } = useVerification();
@@ -260,6 +265,42 @@ export default function OutfitChangeNewScreen() {
   const [generatedResult, setGeneratedResult] = useState<{ original: string; result: string; templateName: string } | null>(null);
   const [showLargeImage, setShowLargeImage] = useState(false);
   const [largeImageType, setLargeImageType] = useState<'original' | 'result'>('result');
+  
+  // 生成计时器
+  const [generatingTime, setGeneratingTime] = useState(0);
+  const generatingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  
+  // 生成计时器效果
+  useEffect(() => {
+    if (isGenerating) {
+      setGeneratingTime(0);
+      generatingTimerRef.current = setInterval(() => {
+        setGeneratingTime(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (generatingTimerRef.current) {
+        clearInterval(generatingTimerRef.current);
+        generatingTimerRef.current = null;
+      }
+      setGeneratingTime(0);
+    }
+    
+    return () => {
+      if (generatingTimerRef.current) {
+        clearInterval(generatingTimerRef.current);
+      }
+    };
+  }, [isGenerating]);
+  
+  // 格式化时间
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins > 0) {
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${secs}s`;
+  };
   
   // Pro Style相关状态
   const [selectedInfluencerId, setSelectedInfluencerId] = useState<string | null>(null);
@@ -1005,7 +1046,7 @@ FINAL RESULT REQUIREMENTS:
                       styles.templateName, 
                       selectedTemplate === template.id && styles.templateNameSelected
                     ]} numberOfLines={2}>
-                      {template.name}
+                      {getTemplateName(template)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -1306,7 +1347,7 @@ FINAL RESULT REQUIREMENTS:
               <>
                 <ActivityIndicator size="small" color="#fff" />
                 <Text style={styles.generateButtonText}>
-                  {t('outfitChange.generating')}
+                  {t('outfitChange.generating')} {formatTime(generatingTime)}
                 </Text>
               </>
             ) : (
