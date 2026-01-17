@@ -27,6 +27,7 @@ import { useVerification } from '@/contexts/VerificationContext';
 import { useSquare } from '@/contexts/SquareContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAlert } from '@/contexts/AlertContext';
 import { saveToGallery } from '@/utils/share';
 
 type TabType = 'template' | 'custom' | 'pro';
@@ -255,6 +256,7 @@ export default function OutfitChangeNewScreen() {
   const { coinBalance, canUseOutfitChange, useOutfitChange } = useCoin();
   const { addOutfitChangeHistory } = useVerification();
   const { publishPost } = useSquare();
+  const { showAlert } = useAlert();
 
   // 状态管理
   const [selectedTab, setSelectedTab] = useState<TabType>('template');
@@ -343,10 +345,18 @@ export default function OutfitChangeNewScreen() {
       });
 
       setIsPublished(true);
-      Alert.alert(t('common.success'), t('square.publishSuccessPrompt'));
+      showAlert({
+        type: 'success',
+        title: t('common.success'),
+        message: t('square.publishSuccessPrompt')
+      });
     } catch (error) {
       console.error('Publish to square failed:', error);
-      Alert.alert(t('common.error'), t('square.publishFailed'));
+      showAlert({
+        type: 'error',
+        title: t('common.error'),
+        message: t('square.publishFailed')
+      });
     } finally {
       setIsPublishing(false);
     }
@@ -357,13 +367,25 @@ export default function OutfitChangeNewScreen() {
     try {
       const success = await saveToGallery(uri);
       if (success) {
-        Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
+        showAlert({
+          type: 'success',
+          title: t('common.success'),
+          message: t('outfitChange.downloadSuccess')
+        });
       } else {
-        Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+        showAlert({
+          type: 'error',
+          title: t('common.error'),
+          message: t('outfitChange.downloadFailed')
+        });
       }
     } catch (error) {
       console.error('Save to gallery failed:', error);
-      Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+      showAlert({
+        type: 'error',
+        title: t('common.error'),
+        message: t('outfitChange.downloadFailed')
+      });
     }
   };
 
@@ -663,22 +685,34 @@ FINAL RESULT REQUIREMENTS:
   const handleGenerate = async () => {
     // 验证
     if (!userImage) {
-      Alert.alert(t('common.tip'), t('outfitChange.selectImage'));
+      showAlert({
+        type: 'info',
+        message: t('outfitChange.selectImage')
+      });
       return;
     }
 
     if (selectedTab === 'template' && !selectedTemplate) {
-      Alert.alert(t('common.tip'), t('outfitChange.selectImageAndTemplate'));
+      showAlert({
+        type: 'info',
+        message: t('outfitChange.selectImageAndTemplate')
+      });
       return;
     }
 
     if (selectedTab === 'custom' && customImages.length === 0) {
-      Alert.alert(t('common.tip'), t('outfitChange.selectOutfitImages'));
+      showAlert({
+        type: 'info',
+        message: t('outfitChange.selectOutfitImages')
+      });
       return;
     }
 
     if (selectedTab === 'pro' && !selectedLookPrompt) {
-      Alert.alert(t('common.tip'), '请先从达人页面选择一个造型');
+      showAlert({
+        type: 'info',
+        message: '请先从达人页面选择一个造型'
+      });
       return;
     }
 
@@ -876,7 +910,10 @@ FINAL RESULT REQUIREMENTS:
       setIsPublished(false); // 重置发布状态
       
       // 提示换装完成
-      Alert.alert('✨', t('outfitChange.outfitComplete'));
+      showAlert({
+        type: 'success',
+        message: t('outfitChange.outfitComplete')
+      });
       
       // 保存到历史记录（失败不影响当前展示）
       try {

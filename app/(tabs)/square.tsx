@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSquare, SquarePost, SquareComment } from '@/contexts/SquareContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAlert } from '@/contexts/AlertContext';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { saveToGallery } from '@/utils/share';
@@ -19,6 +20,7 @@ type ZoomableImageProps = {
 
 function ZoomableImage({ uri, t }: ZoomableImageProps) {
   const [saving, setSaving] = useState(false);
+  const { showAlert } = useAlert();
 
   const handleDownload = async () => {
     if (saving) return;
@@ -27,13 +29,25 @@ function ZoomableImage({ uri, t }: ZoomableImageProps) {
       setSaving(true);
       const success = await saveToGallery(uri);
       if (success) {
-        Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
+        showAlert({
+          type: 'success',
+          title: t('common.success'),
+          message: t('outfitChange.downloadSuccess')
+        });
       } else {
-        Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+        showAlert({
+          type: 'error',
+          title: t('common.error'),
+          message: t('outfitChange.downloadFailed')
+        });
       }
     } catch (error) {
       console.error('Download failed:', error);
-      Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+      showAlert({
+        type: 'error',
+        title: t('common.error'),
+        message: t('outfitChange.downloadFailed')
+      });
     } finally {
       setSaving(false);
     }
@@ -134,6 +148,7 @@ export default function SquareScreen() {
   const { t } = useTranslation();
   const { posts, likePost, deletePost, addComment, deleteComment, pinComment } = useSquare();
   const { user } = useAuth();
+  const { showAlert } = useAlert();
   const { highlightPostId } = useLocalSearchParams<{ highlightPostId?: string }>();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -184,47 +199,51 @@ export default function SquareScreen() {
 
   const handleLike = useCallback(async (postId: string) => {
     if (!user) {
-      Alert.alert(t('common.tip'), t('square.loginRequired'));
+      showAlert({
+        type: 'info',
+        message: t('square.loginRequired')
+      });
       return;
     }
     await likePost(postId, user.userId);
-  }, [user, t, likePost]);
+  }, [user, t, likePost, showAlert]);
 
   const handleDelete = useCallback((postId: string) => {
-    Alert.alert(
-      t('common.tip'),
-      t('square.confirmDelete'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: async () => {
-            await deletePost(postId);
-          },
-        },
-      ]
-    );
-  }, [t, deletePost]);
+    showAlert({
+      type: 'confirm',
+      title: t('common.tip'),
+      message: t('square.confirmDelete'),
+      confirmText: t('common.delete'),
+      onConfirm: async () => {
+        await deletePost(postId);
+      }
+    });
+  }, [t, deletePost, showAlert]);
 
   const handleOpenComments = useCallback((postId: string, replyToComment?: { commentId: string; userId: string; nickname: string }) => {
     if (!user) {
-      Alert.alert(t('common.tip'), t('square.loginRequired'));
+      showAlert({
+        type: 'info',
+        message: t('square.loginRequired')
+      });
       return;
     }
     setActivePopup(null);
     setCommentingPost(postId);
     setReplyTo(replyToComment || null);
     setTimeout(() => inputRef.current?.focus(), 100);
-  }, [user, t]);
+  }, [user, t, showAlert]);
 
   const handleTogglePopup = useCallback((postId: string) => {
     if (!user) {
-      Alert.alert(t('common.tip'), t('square.loginRequired'));
+      showAlert({
+        type: 'info',
+        message: t('square.loginRequired')
+      });
       return;
     }
     setActivePopup(activePopup === postId ? null : postId);
-  }, [user, t, activePopup]);
+  }, [user, t, activePopup, showAlert]);
 
   const handleLikeFromPopup = useCallback((postId: string) => {
     handleLike(postId);
@@ -319,48 +338,42 @@ export default function SquareScreen() {
     
     if (isPostOwner) {
       const isPinned = post?.pinnedCommentId === comment.id;
-      const buttons = [
-        {
-          text: isPinned ? t('square.unpinComment') : t('square.pinComment'),
-          onPress: async () => {
-            await pinComment(postId, comment.id);
-          },
-        },
-        {
-          text: t('common.delete'),
-          style: 'destructive' as const,
-          onPress: async () => {
-            await deleteComment(postId, comment.id);
-          },
-        },
-        { text: t('common.cancel'), style: 'cancel' as const },
-      ];
       
-      Alert.alert(t('common.tip'), t('square.manageComment'), buttons);
+      showAlert({
+        type: 'confirm',
+        title: t('common.tip'),
+        message: t('square.manageComment'),
+        confirmText: isPinned ? t('square.unpinComment') : t('square.pinComment'),
+        onConfirm: async () => {
+          await pinComment(postId, comment.id);
+        },
+        cancelText: t('common.delete'),
+        onCancel: async () => {
+          await deleteComment(postId, comment.id);
+        }
+      });
     } else if (isCommentOwner) {
-      Alert.alert(
-        t('common.tip'),
-        t('square.deleteCommentConfirm'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          {
-            text: t('common.delete'),
-            style: 'destructive',
-            onPress: async () => {
-              await deleteComment(postId, comment.id);
-            },
-          },
-        ]
-      );
+      showAlert({
+        type: 'confirm',
+        title: t('common.tip'),
+        message: t('square.deleteCommentConfirm'),
+        confirmText: t('common.delete'),
+        onConfirm: async () => {
+          await deleteComment(postId, comment.id);
+        }
+      });
     } else {
       const nickname = comment.userNickname || comment.userId.slice(-4);
       if (!nickname) {
-        Alert.alert(t('common.tip'), t('square.cannotReply'));
+        showAlert({
+          type: 'info',
+          message: t('square.cannotReply')
+        });
         return;
       }
       handleOpenComments(postId, { commentId: comment.id, userId: comment.userId, nickname });
     }
-  }, [user, t, posts, deleteComment, pinComment, handleOpenComments]);
+  }, [user, t, posts, deleteComment, pinComment, handleOpenComments, showAlert]);
 
 
 

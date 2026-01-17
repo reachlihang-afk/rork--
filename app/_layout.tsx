@@ -11,6 +11,7 @@ import { CoinProvider } from "@/contexts/CoinContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SquareProvider } from "@/contexts/SquareContext";
 import { FriendsContext } from "@/contexts/FriendsContext";
+import { AlertProvider } from "@/contexts/AlertContext";
 
 // Import CSS for web platform
 if (Platform.OS === 'web') {
@@ -93,9 +94,11 @@ export default function RootLayout() {
             <CoinProvider>
               <VerificationProvider>
                 <SquareProvider>
-                  <GestureHandlerRootView style={{ flex: 1 }}>
-                    <RootLayoutNav />
-                  </GestureHandlerRootView>
+                  <AlertProvider>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                      <RootLayoutNav />
+                    </GestureHandlerRootView>
+                  </AlertProvider>
                 </SquareProvider>
               </VerificationProvider>
             </CoinProvider>

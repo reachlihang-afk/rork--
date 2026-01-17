@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useCoin } from '@/contexts/CoinContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { useAlert } from '@/contexts/AlertContext';
 
 interface RechargePackage {
   id: string;
@@ -53,42 +54,38 @@ export default function RechargeScreen() {
   const { t } = useTranslation();
   const { coinBalance, addCoins } = useCoin();
   const { isLoggedIn } = useAuth();
+  const { showAlert } = useAlert();
 
   const handleRecharge = (pkg: RechargePackage) => {
-    Alert.alert(
-      t('common.confirm'),
-      t('recharge.confirmPurchase', { coins: pkg.coins, price: pkg.price }),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.confirm'),
-          onPress: async () => {
-            await addCoins(pkg.coins);
-            Alert.alert(
-              t('common.success'), 
-              t('recharge.purchaseSuccess', { coins: pkg.coins }),
-              [{ text: t('common.ok'), onPress: () => router.back() }]
-            );
-          },
-        },
-      ]
-    );
+    showAlert({
+      type: 'confirm',
+      title: t('common.confirm'),
+      message: t('recharge.confirmPurchase', { coins: pkg.coins, price: pkg.price }),
+      onConfirm: async () => {
+        await addCoins(pkg.coins);
+        showAlert({
+          type: 'success',
+          title: t('common.success'),
+          message: t('recharge.purchaseSuccess', { coins: pkg.coins }),
+          onConfirm: () => router.back()
+        });
+      }
+    });
   };
 
   const handleRestore = () => {
-    Alert.alert(
-      t('recharge.restorePurchases'),
-      t('recharge.restoreMessage'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.confirm'),
-          onPress: () => {
-            Alert.alert(t('common.success'), t('recharge.restoreSuccess'));
-          },
-        },
-      ]
-    );
+    showAlert({
+      type: 'confirm',
+      title: t('recharge.restorePurchases'),
+      message: t('recharge.restoreMessage'),
+      onConfirm: () => {
+        showAlert({
+          type: 'success',
+          title: t('common.success'),
+          message: t('recharge.restoreSuccess')
+        });
+      }
+    });
   };
 
   if (!isLoggedIn) {

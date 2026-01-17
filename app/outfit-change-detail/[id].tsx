@@ -9,11 +9,13 @@ import { useSquare } from '@/contexts/SquareContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { saveToGallery } from '@/utils/share';
 import { useTranslation } from 'react-i18next';
+import { useAlert } from '@/contexts/AlertContext';
 
 export default function OutfitChangeDetailScreen() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { showAlert } = useAlert();
   
   const { outfitChangeHistory, deleteOutfitChange } = useVerification();
   const { publishPost, posts } = useSquare();
@@ -50,13 +52,25 @@ export default function OutfitChangeDetailScreen() {
       setIsSaving(true);
       const success = await saveToGallery(outfitItem.resultImageUri);
       if (success) {
-        Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
+        showAlert({
+          type: 'success',
+          title: t('common.success'),
+          message: t('outfitChange.downloadSuccess')
+        });
       } else {
-        Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+        showAlert({
+          type: 'error',
+          title: t('common.error'),
+          message: t('outfitChange.downloadFailed')
+        });
       }
     } catch (error) {
       console.error('Download failed:', error);
-      Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+      showAlert({
+        type: 'error',
+        title: t('common.error'),
+        message: t('outfitChange.downloadFailed')
+      });
     } finally {
       setIsSaving(false);
     }
@@ -64,61 +78,67 @@ export default function OutfitChangeDetailScreen() {
 
   const handleShare = async () => {
     if (!user) {
-      Alert.alert(t('common.tip'), t('square.loginRequired'));
+      showAlert({
+        type: 'info',
+        message: t('square.loginRequired')
+      });
       return;
     }
 
     if (!user.nickname) {
-      Alert.alert(
-        t('common.tip'),
-        t('square.nicknameRequired'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('profile.editProfile'), onPress: () => router.push('/edit-profile' as any) },
-        ]
-      );
+      showAlert({
+        type: 'confirm',
+        title: t('common.tip'),
+        message: t('square.nicknameRequired'),
+        confirmText: t('profile.editProfile'),
+        onConfirm: () => router.push('/edit-profile' as any)
+      });
       return;
     }
 
     if (isPublishing) return;
 
     if (published) {
-      Alert.alert(t('common.tip'), t('square.alreadyPublished'));
+      showAlert({
+        type: 'info',
+        message: t('square.alreadyPublished')
+      });
       return;
     }
 
-    Alert.alert(
-      t('square.publishToSquare'),
-      t('square.publishConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.confirm'),
-          onPress: async () => {
-            try {
-              setIsPublishing(true);
-              await publishPost({
-                postType: 'outfitChange',
-                userId: user.userId,
-                userNickname: user.nickname || user.userId,
-                userAvatar: user.avatar,
-                originalImageUri: outfitItem.originalImageUri,
-                resultImageUri: outfitItem.resultImageUri,
-                templateName: outfitItem.templateName,
-                outfitChangeId: outfitItem.id,
-              });
-              
-              Alert.alert(t('common.success'), t('square.publishSuccess'));
-            } catch (error) {
-              console.error('Publish failed:', error);
-              Alert.alert(t('common.error'), t('square.publishFailed'));
-            } finally {
-              setIsPublishing(false);
-            }
-          },
-        },
-      ]
-    );
+    showAlert({
+      type: 'confirm',
+      title: t('square.publishToSquare'),
+      message: t('square.publishConfirm'),
+      onConfirm: async () => {
+        try {
+          setIsPublishing(true);
+          await publishPost({
+            postType: 'outfitChange',
+            userId: user.userId,
+            userNickname: user.nickname || user.userId,
+            userAvatar: user.avatar,
+            originalImageUri: outfitItem.originalImageUri,
+            resultImageUri: outfitItem.resultImageUri,
+            templateName: outfitItem.templateName,
+            outfitChangeId: outfitItem.id,
+          });
+          
+          showAlert({
+            type: 'success',
+            message: t('square.publishSuccess')
+          });
+        } catch (error) {
+          console.error('Publish failed:', error);
+          showAlert({
+            type: 'error',
+            message: t('square.publishFailed')
+          });
+        } finally {
+          setIsPublishing(false);
+        }
+      }
+    });
   };
 
   const handleRegenerate = () => {

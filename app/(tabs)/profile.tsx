@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCoin } from '@/contexts/CoinContext';
 import { useLanguage, Language, languageNames } from '@/contexts/LanguageContext';
 import { useFriends } from '@/contexts/FriendsContext';
+import { useAlert } from '@/contexts/AlertContext';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
@@ -14,6 +15,7 @@ export default function ProfileScreen() {
   const { coinBalance, getRemainingFreeCounts } = useCoin();
   const { currentLanguage, changeLanguage } = useLanguage();
   const { pendingRequestsCount, privacySettings, updatePrivacySettings } = useFriends();
+  const { showAlert } = useAlert();
   const [phone, setPhone] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
@@ -32,7 +34,10 @@ export default function ProfileScreen() {
 
   const handleSendCode = async () => {
     if (!phone || phone.length !== 11) {
-      Alert.alert(t('common.tip'), t('profile.invalidPhone'));
+      showAlert({
+        type: 'info',
+        message: t('profile.invalidPhone')
+      });
       return;
     }
 
@@ -49,29 +54,45 @@ export default function ProfileScreen() {
       });
     }, 1000);
 
-    Alert.alert(t('profile.codeSent'), t('profile.demoCode'));
+    showAlert({
+      type: 'success',
+      title: t('profile.codeSent'),
+      message: t('profile.demoCode')
+    });
   };
 
   const handleLogin = useCallback(async () => {
     if (!phone || !verificationCode) {
-      Alert.alert(t('common.tip'), t('profile.invalidCode'));
+      showAlert({
+        type: 'info',
+        message: t('profile.invalidCode')
+      });
       return;
     }
 
     if (verificationCode !== '123456') {
-      Alert.alert(t('common.error'), t('profile.wrongCode'));
+      showAlert({
+        type: 'error',
+        message: t('profile.wrongCode')
+      });
       return;
     }
 
     setIsSubmitting(true);
     try {
       await login(phone);
-      Alert.alert(t('common.success'), t('profile.loginSuccess'));
+      showAlert({
+        type: 'success',
+        message: t('profile.loginSuccess')
+      });
       setPhone('');
       setVerificationCode('');
       setCodeSent(false);
     } catch {
-      Alert.alert(t('common.error'), t('profile.loginFailed'));
+      showAlert({
+        type: 'error',
+        message: t('profile.loginFailed')
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -101,21 +122,19 @@ export default function ProfileScreen() {
   }, [verificationCode, phone, isSubmitting, handleLogin]);
 
   const handleLogout = () => {
-    Alert.alert(
-      t('profile.logout'),
-      t('profile.logoutConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('profile.logout'),
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            Alert.alert(t('common.tip'), t('profile.logoutSuccess'));
-          },
-        },
-      ]
-    );
+    showAlert({
+      type: 'confirm',
+      title: t('profile.logout'),
+      message: t('profile.logoutConfirm'),
+      confirmText: t('profile.logout'),
+      onConfirm: async () => {
+        await logout();
+        showAlert({
+          type: 'success',
+          message: t('profile.logoutSuccess')
+        });
+      }
+    });
   };
 
   if (isLoading) {

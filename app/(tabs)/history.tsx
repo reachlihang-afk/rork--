@@ -14,6 +14,7 @@ import {
 import { useVerification } from '@/contexts/VerificationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { useAlert } from '@/contexts/AlertContext';
 import { saveToGallery } from '@/utils/share';
 
 interface GroupedHistory {
@@ -26,6 +27,7 @@ export default function HistoryScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { isLoggedIn } = useAuth();
+  const { showAlert } = useAlert();
   
   const { outfitChangeHistory, deleteOutfitChange } = useVerification();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -68,13 +70,25 @@ export default function HistoryScreen() {
       setDownloadingId(itemId);
       const success = await saveToGallery(resultImageUri);
       if (success) {
-        Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
+        showAlert({
+          type: 'success',
+          title: t('common.success'),
+          message: t('outfitChange.downloadSuccess')
+        });
       } else {
-        Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+        showAlert({
+          type: 'error',
+          title: t('common.error'),
+          message: t('outfitChange.downloadFailed')
+        });
       }
     } catch (error) {
       console.error('Download failed:', error);
-      Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+      showAlert({
+        type: 'error',
+        title: t('common.error'),
+        message: t('outfitChange.downloadFailed')
+      });
     } finally {
       setDownloadingId(null);
     }
@@ -86,20 +100,15 @@ export default function HistoryScreen() {
   };
 
   const handleDelete = (itemId: string) => {
-    Alert.alert(
-      t('history.deleteRecord'),
-      t('history.deleteRecordConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: async () => {
-            await deleteOutfitChange(itemId);
-          },
-        },
-      ]
-    );
+    showAlert({
+      type: 'confirm',
+      title: t('history.deleteRecord'),
+      message: t('history.deleteRecordConfirm'),
+      confirmText: t('common.delete'),
+      onConfirm: async () => {
+        await deleteOutfitChange(itemId);
+      }
+    });
   };
 
   const isNew = (timestamp: number) => {
