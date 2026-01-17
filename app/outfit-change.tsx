@@ -689,21 +689,34 @@ export default function OutfitChangeScreen() {
         } else if (selectedTemplate!.id === 'jennie') {
           const jennieScene = getRandomJennieScene();
           // Jennie同款：完整场景重现，不使用COMMON_PROMPT_PREFIX
-          finalPrompt = `Transform this person into a Jennie from BLACKPINK style photoshoot scene. 
+          finalPrompt = `Transform this person into a Jennie from BLACKPINK inspired photoshoot. Use the reference style images to recreate the iconic Jennie aesthetic.
 
-CRITICAL REQUIREMENTS:
-1. FACE & IDENTITY: Preserve the person's facial features and face structure exactly, but apply Jennie's makeup style (cat-eye liner, soft pink lips, glowing skin)
-2. BODY PROPORTIONS: Maintain the person's exact body shape and proportions
-3. POSE & GESTURE: Transform to match the pose described in the scene
-4. OUTFIT: Complete outfit transformation matching the scene description
-5. BACKGROUND & SETTING: Replace background with the described scene environment
-6. LIGHTING & ATMOSPHERE: Match the lighting and mood of the scene
-7. PHOTOGRAPHY STYLE: Professional K-pop idol photography quality
+WHAT TO KEEP FROM THE ORIGINAL PERSON:
+1. FACE IDENTITY: Keep the person's exact facial features, face structure, eye shape, nose, mouth shape, facial bone structure - this person's face MUST remain 100% recognizable
+2. BODY SHAPE: Keep the person's exact body proportions, height, build, and figure
+
+WHAT TO TRANSFORM TO JENNIE STYLE (based on reference images):
+1. FACIAL EXPRESSION: Transform to Jennie's signature expressions - confident, cool, slightly mysterious gaze, subtle smile or pout
+2. MAKEUP STYLE: Apply Jennie's iconic makeup - cat-eye liner, soft pink/nude lips, glowing dewy skin, subtle contour, natural yet glamorous
+3. HAIRSTYLE: Transform to Jennie's hairstyle shown in the reference style
+4. POSE & GESTURE: Transform to match the confident, fashionable pose from the scene description
+5. OUTFIT: Complete wardrobe transformation to Jennie's signature style from the scene
+6. ACCESSORIES: Add all accessories, jewelry, bags shown in the scene description
+7. BACKGROUND: Replace with the complete scene environment described
+8. LIGHTING & ATMOSPHERE: Match the professional K-pop idol photography lighting
+9. PHOTOGRAPHY STYLE: Professional fashion photography quality with natural depth
+10. NO WATERMARKS: Generate a completely clean image without any watermarks, text overlays, logos, "小红书" (Xiaohongshu/RED) marks, or any branding elements
 
 SCENE TO RECREATE:
 ${jennieScene}
 
-Make this look like a professional photoshoot where this person was styled and photographed exactly like Jennie in this specific scene. The result should appear as if they were actually at this location, wearing these clothes, in this pose. Ensure photo-realistic quality, natural lighting that matches the scene, and authentic K-pop idol photography aesthetics. The person should look like themselves but styled as Jennie would be in this exact scenario.`;
+FINAL RESULT REQUIREMENTS:
+- The person's face should be instantly recognizable as the original person
+- The body proportions should match the original person exactly  
+- Everything else (expression, styling, pose, clothes, background) should look like a professional Jennie-inspired photoshoot
+- The image should feel like this person was professionally styled and photographed in Jennie's iconic fashion aesthetic
+- Photo-realistic quality with natural lighting and authentic K-pop idol photography feel
+- Completely clean output with NO watermarks, text, or logos of any kind`;
           console.log('[OutfitChange] Jennie scene selected:', jennieScene);
         } else if (selectedTemplate!.id === 'fairytale-princess') {
           const princessStyle = getRandomPrincessStyle();
