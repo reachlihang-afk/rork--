@@ -182,38 +182,61 @@ function getRandomPrincessStyle(): string {
   return DISNEY_PRINCESS_STYLES[randomIndex];
 }
 
-// Jennie穿搭风格库 - 20+种经典造型
-const JENNIE_OUTFIT_STYLES = [
-  'Jennie Chanel style - luxury Chanel tweed jacket with mini skirt, pearl accessories, elegant high fashion look with sophisticated French luxury vibes',
-  'Jennie airport fashion - oversized blazer, crop top, high-waisted jeans, designer sunglasses, effortlessly chic street style',
-  'Jennie stage performance - crystal embellished bodysuit with high boots, bold and glamorous concert outfit with sexy confident energy',
-  'Jennie Coachella style - colorful bohemian crop top with denim shorts, festival-ready look with playful accessories and braided hair',
-  'Jennie pink princess - all pink outfit with oversized pink blazer, pink mini dress, girly yet edgy Barbie-inspired aesthetic',
-  'Jennie leather look - black leather jacket with leather pants or skirt, rock chic style with bold attitude and fierce energy',
-  'Jennie preppy style - pleated mini skirt with cardigan or knit top, school girl inspired look with youthful charm',
-  'Jennie tennis outfit - white tennis dress or tennis skirt with polo top, sporty yet fashionable athletic look',
-  'Jennie designer suit - tailored oversized designer suit with crop top or bralette underneath, powerful boss lady style',
-  'Jennie vintage 90s - vintage inspired crop top with low-rise jeans, retro 90s Y2K aesthetic with nostalgic vibes',
-  'Jennie casual street - oversized hoodie or sweatshirt with bike shorts, comfortable yet stylish everyday street style',
-  'Jennie red carpet - elegant evening gown with sparkles or satin finish, glamorous Hollywood star look',
-  'Jennie denim style - denim jacket with denim skirt or jeans, all-denim Canadian tuxedo look with cool factor',
-  'Jennie black & white - classic black and white color blocking outfit, timeless monochrome elegance',
-  'Jennie crop top queen - various styles of crop tops with high-waisted bottoms, showing off her famous abs and confident style',
-  'Jennie Celine fashion - minimalist Celine designer pieces, sophisticated modern luxury style',
-  'Jennie edgy grunge - ripped jeans with band tees or graphic tops, rebellious grunge aesthetic with chains and boots',
-  'Jennie feminine floral - floral mini dress or floral top with skirt, romantic feminine style with delicate patterns',
-  'Jennie athleisure - designer sports bra with matching leggings or track pants, high-end athletic wear style',
-  'Jennie blazer power - oversized blazer as dress or with shorts underneath, powerful fashion-forward statement look',
-  'Jennie summer vacation - breezy summer dress or romper, vacation-ready look with sun hat and sunglasses',
-  'Jennie winter chic - luxury fur coat or long wool coat with designer boots, elegant winter fashion',
-  'Jennie party outfit - sparkly mini dress or sequin top with leather pants, ready for nightclub glamour',
-  'Jennie Korean street fashion - trendy Korean street style with layered pieces, oversized fits, and unique accessories',
+// Jennie完整场景库 - 24种经典街拍/舞台场景（姿态+服饰+背景完整重现）
+const JENNIE_SCENE_STYLES = [
+  'Jennie Chanel airport scene: Incheon Airport departure hall with bright terminal lighting and glass windows, confident walking pose pulling designer luggage, luxury Chanel tweed jacket with mini skirt and pearl accessories, oversized sunglasses, candid paparazzi-style street photography with natural motion blur',
+  
+  'Jennie casual airport fashion: Modern airport terminal background with travelers and flight boards, relaxed leaning pose against glass wall, oversized blazer over crop top with high-waisted jeans, designer bag and sunglasses, effortless chic candid photography',
+  
+  'Jennie concert stage performance: Large concert stage with dramatic purple and pink lighting, dynamic performance pose with microphone in hand, crystal embellished bodysuit with thigh-high boots, confident stage presence, professional concert photography with smoke effects',
+  
+  'Jennie Coachella festival moment: Outdoor music festival with desert landscape and sunset sky, casual standing pose with arms raised, colorful bohemian crop top with denim shorts and flower crown, festival wristbands, warm golden hour photography',
+  
+  'Jennie pink Paris street: Parisian street with Haussmann buildings and cafe terraces, elegant walking pose on cobblestone, all-pink outfit with oversized blazer and mini dress, pastel aesthetic, soft European street photography',
+  
+  'Jennie leather night Seoul: Neon-lit Seoul street (Gangnam) at night with Korean signs glowing, confident standing pose against brick wall, black leather jacket with leather pants or skirt, urban night photography with vibrant city lights',
+  
+  'Jennie preppy campus look: Modern university campus with contemporary architecture, sitting casually on concrete steps, pleated mini skirt with cardigan and white sneakers, youthful student vibe, bright daylight photography',
+  
+  'Jennie tennis club elegance: Luxury tennis court with net and green surface, athletic pose holding tennis racket, white tennis dress or skirt with polo shirt, sporty yet fashionable, bright outdoor natural lighting',
+  
+  'Jennie CEO office power: Modern glass office building lobby with marble floors, powerful standing pose in front of windows, tailored oversized designer suit with crop top underneath, boss energy, professional architectural photography',
+  
+  'Jennie 90s retro cafe: Vintage themed cafe interior with neon signs and retro decor, casual sitting pose at small round table, vintage crop top with low-rise jeans, Y2K aesthetic, warm cozy indoor lighting with film grain',
+  
+  'Jennie Seoul street casual: Busy Gangnam street with Korean shops and pedestrians, candid walking pose with coffee cup, oversized hoodie with bike shorts and chunky sneakers, everyday K-pop star off-duty style, natural street photography',
+  
+  'Jennie red carpet glamour: Luxury event venue with red carpet and step-and-repeat backdrop, elegant standing pose for cameras, sparkling evening gown with jewelry, Hollywood premiere atmosphere, professional event photography with flashes',
+  
+  'Jennie denim downtown: Urban downtown area with modern high-rise buildings, leaning casually against luxury car, denim-on-denim look with jacket and jeans, cool street style, golden hour warm lighting',
+  
+  'Jennie minimal studio: Clean white photography studio with professional lighting equipment visible, high fashion editorial pose, classic black and white color-blocked outfit, timeless minimalist aesthetic, professional studio lighting setup',
+  
+  'Jennie poolside luxury: Infinity pool at luxury hotel with ocean view, confident standing pose by pool edge, designer crop top with high-waisted bottoms and sunglasses, summer vacation glamour, bright tropical sunlight',
+  
+  'Jennie Celine boutique: High-end Celine store interior with modern minimalist design, elegant shopping pose holding designer bag, sophisticated Celine pieces in neutral tones, luxury retail atmosphere, soft boutique lighting',
+  
+  'Jennie grunge warehouse: Urban warehouse with graffiti walls and industrial elements, rebellious leaning pose with attitude, ripped jeans with band tee and leather jacket with chains, underground music scene vibe, moody dramatic lighting',
+  
+  'Jennie garden photoshoot: Lush flower garden with blooming roses and greenery, graceful standing pose among flowers, romantic floral mini dress, feminine spring aesthetic, soft natural diffused sunlight',
+  
+  'Jennie gym athleisure: Modern luxury gym with mirrors and equipment, workout pose mid-exercise, designer sports bra with matching leggings, high-end athletic brand styling, bright gym fluorescent lighting',
+  
+  'Jennie runway power: Fashion show runway with audience and cameras, confident runway walk pose mid-stride, oversized blazer worn as dress with belt, powerful fashion statement, dramatic runway spotlights',
+  
+  'Jennie tropical beach: White sand beach with turquoise water and palm trees, relaxed beach pose with wind in hair, breezy summer dress with straw sun hat, vacation paradise vibes, warm sunset golden hour',
+  
+  'Jennie winter Seoul: Snowy Seoul street with Christmas lights and winter decorations, elegant walking pose in snow, luxury fur coat or long wool coat with designer boots and scarf, winter wonderland scene, soft snow-reflected lighting',
+  
+  'Jennie nightclub party: Upscale nightclub interior with colorful disco lights and DJ booth, dancing pose with energy, sparkly sequin mini dress or metallic top with leather pants, glamorous nightlife, dynamic colored club lighting',
+  
+  'Jennie K-fashion street: Trendy Seoul Garosu-gil street with boutiques and cafes, confident walking pose, layered Korean street fashion with oversized pieces and unique accessories, K-pop idol off-duty style, vibrant urban street photography',
 ];
 
-// 随机选择一种Jennie穿搭风格
-function getRandomJennieStyle(): string {
-  const randomIndex = Math.floor(Math.random() * JENNIE_OUTFIT_STYLES.length);
-  return JENNIE_OUTFIT_STYLES[randomIndex];
+// 随机选择一种Jennie完整场景
+function getRandomJennieScene(): string {
+  const randomIndex = Math.floor(Math.random() * JENNIE_SCENE_STYLES.length);
+  return JENNIE_SCENE_STYLES[randomIndex];
 }
 
 const templates: Template[] = [
@@ -664,9 +687,24 @@ export default function OutfitChangeScreen() {
           finalPrompt = COMMON_PROMPT_PREFIX + `Change the outfit to: ${randomStyle}. IMPORTANT: Create a COMPLETE OUTFIT SOLUTION with matching accessories, bag/purse, and shoes that perfectly coordinate with this style. The accessories, footwear, and bag should complement and enhance the overall look to create a cohesive, well-styled ensemble. Be creative and ensure the style is distinct and unique!`;
           console.log('[OutfitChange] Random style selected:', randomStyle);
         } else if (selectedTemplate!.id === 'jennie') {
-          const jennieStyle = getRandomJennieStyle();
-          finalPrompt = COMMON_PROMPT_PREFIX + `Transform into Jennie from BLACKPINK fashion style: ${jennieStyle}. IMPORTANT: Recreate Jennie's iconic fashion sense with authentic details - capture her signature style elements, proportions, and overall vibe. Create a COMPLETE OUTFIT with matching accessories, bag, and shoes that Jennie would actually wear. Make it look like a real Jennie outfit transformation with her characteristic confidence and fashion-forward aesthetic!`;
-          console.log('[OutfitChange] Jennie style selected:', jennieStyle);
+          const jennieScene = getRandomJennieScene();
+          // Jennie同款：完整场景重现，不使用COMMON_PROMPT_PREFIX
+          finalPrompt = `Transform this person into a Jennie from BLACKPINK style photoshoot scene. 
+
+CRITICAL REQUIREMENTS:
+1. FACE & IDENTITY: Preserve the person's facial features and face structure exactly, but apply Jennie's makeup style (cat-eye liner, soft pink lips, glowing skin)
+2. BODY PROPORTIONS: Maintain the person's exact body shape and proportions
+3. POSE & GESTURE: Transform to match the pose described in the scene
+4. OUTFIT: Complete outfit transformation matching the scene description
+5. BACKGROUND & SETTING: Replace background with the described scene environment
+6. LIGHTING & ATMOSPHERE: Match the lighting and mood of the scene
+7. PHOTOGRAPHY STYLE: Professional K-pop idol photography quality
+
+SCENE TO RECREATE:
+${jennieScene}
+
+Make this look like a professional photoshoot where this person was styled and photographed exactly like Jennie in this specific scene. The result should appear as if they were actually at this location, wearing these clothes, in this pose. Ensure photo-realistic quality, natural lighting that matches the scene, and authentic K-pop idol photography aesthetics. The person should look like themselves but styled as Jennie would be in this exact scenario.`;
+          console.log('[OutfitChange] Jennie scene selected:', jennieScene);
         } else if (selectedTemplate!.id === 'fairytale-princess') {
           const princessStyle = getRandomPrincessStyle();
           finalPrompt = COMMON_PROMPT_PREFIX + `Change the outfit to magical Disney princess dress: ${princessStyle}. Create an enchanting and authentic princess transformation with all the iconic details. Make it look like a real Disney princess came to life!`;
