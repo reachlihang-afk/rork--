@@ -9,10 +9,8 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { referencePhotos, verificationHistory, outfitChangeHistory } = useVerification();
+  const { outfitChangeHistory } = useVerification();
   const { user } = useAuth();
-
-  const hasReferencePhotos = referencePhotos.length > 0;
 
   return (
     <View style={styles.container}>
@@ -30,11 +28,9 @@ export default function HomeScreen() {
           )}
         </View>
 
-
-
         <View style={styles.quickActions}>
           <TouchableOpacity 
-            style={styles.quickActionCard}
+            style={[styles.quickActionCard, styles.quickActionCardFull]}
             onPress={() => router.push('/outfit-change' as any)}
           >
             <View style={styles.quickActionIcon}>
@@ -42,45 +38,6 @@ export default function HomeScreen() {
             </View>
             <Text style={styles.quickActionTitle} numberOfLines={2}>{t('home.outfitChange')}</Text>
             <Text style={styles.quickActionDescription} numberOfLines={3}>{t('home.outfitChangeDesc')}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.quickActionCard}
-            onPress={() => {
-              if (hasReferencePhotos) {
-                router.push('/verify-photo' as any);
-              } else {
-                router.push('/upload-reference' as any);
-              }
-            }}
-          >
-            <View style={styles.quickActionIcon}>
-              <Text style={styles.actionIconText}>💖</Text>
-            </View>
-            <Text style={styles.quickActionTitle} numberOfLines={2}>{t('home.photoVerification')}</Text>
-            <Text style={styles.quickActionDescription} numberOfLines={3}>{t('home.photoVerificationDesc')}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.quickActionCard}
-            onPress={() => router.push('/image-source' as any)}
-          >
-            <View style={styles.quickActionIcon}>
-              <Text style={styles.actionIconText}>🔮</Text>
-            </View>
-            <Text style={styles.quickActionTitle} numberOfLines={2}>{t('home.findSource')}</Text>
-            <Text style={styles.quickActionDescription} numberOfLines={3}>{t('home.findSourceDesc')}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.quickActionCard}
-            onPress={() => router.push('/lookup-verification' as any)}
-          >
-            <View style={styles.quickActionIcon}>
-              <Text style={styles.actionIconText}>🌟</Text>
-            </View>
-            <Text style={styles.quickActionTitle} numberOfLines={2}>{t('home.lookupVerification')}</Text>
-            <Text style={styles.quickActionDescription} numberOfLines={3}>{t('home.lookupVerificationDesc')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -322,6 +279,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(0, 102, 255, 0.08)',
+  },
+  quickActionCardFull: {
+    width: '100%',
   },
   quickActionIcon: {
     width: 64,

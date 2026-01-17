@@ -28,39 +28,6 @@ function RootLayoutNav() {
     <Stack screenOptions={{ headerBackTitle: "" }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen 
-        name="upload-reference" 
-        options={{ 
-          title: "参考照片",
-          headerStyle: { backgroundColor: '#fff' },
-        }} 
-      />
-      <Stack.Screen 
-        name="verify-photo" 
-        options={{ 
-          title: "验证照片",
-          headerStyle: { backgroundColor: '#fff' },
-        }} 
-      />
-      <Stack.Screen 
-        name="result/[id]" 
-        options={{ 
-          title: "验证结果",
-          headerShown: false,
-        }} 
-      />
-      <Stack.Screen 
-        name="image-source" 
-        options={{ 
-          headerShown: false,
-        }} 
-      />
-      <Stack.Screen 
-        name="image-source-result/[id]" 
-        options={{ 
-          headerShown: false,
-        }} 
-      />
-      <Stack.Screen 
         name="recharge" 
         options={{ 
           headerShown: false,
@@ -109,13 +76,6 @@ function RootLayoutNav() {
           headerBackTitleVisible: false,
         }} 
       />
-      <Stack.Screen 
-        name="lookup-verification" 
-        options={{ 
-          headerShown: false,
-        }} 
-      />
-
     </Stack>
   );
 }

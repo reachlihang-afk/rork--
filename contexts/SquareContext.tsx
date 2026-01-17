@@ -13,22 +13,7 @@ export interface SquarePost {
   userId: string;
   userNickname: string;
   userAvatar?: string;
-  postType: 'verification' | 'imageSource' | 'outfitChange';
-  verificationResultId?: string;
-  credibilityScore?: number;
-  verdict?: 'authentic' | 'slightly-edited' | 'heavily-edited' | 'suspicious';
-  referencePhotoUri?: string;
-  editedPhotoUri?: string;
-  photoSource?: 'camera' | 'library';
-  // 找出处相关字段
-  imageSourceId?: string;
-  imageUri?: string;
-  keywords?: string[];
-  entityInfo?: {
-    type: 'person' | 'animal' | 'plant' | 'other';
-    name?: string;
-    introduction?: string;
-  };
+  postType: 'outfitChange';
   // 换装相关字段
   outfitChangeId?: string;
   originalImageUri?: string;
@@ -93,20 +78,7 @@ export const [SquareProvider, useSquare] = createContextHook(() => {
       userId: String(raw.userId ?? ''),
       userNickname: String(raw.userNickname ?? ''),
       userAvatar: raw.userAvatar ? String(raw.userAvatar) : undefined,
-      postType: raw.postType || 'verification',
-      verificationResultId: raw.verificationResultId ? String(raw.verificationResultId) : undefined,
-      credibilityScore: typeof raw.credibilityScore === 'number' ? raw.credibilityScore : undefined,
-      verdict: raw.verdict as SquarePost['verdict'],
-      referencePhotoUri: raw.referencePhotoUri ? String(raw.referencePhotoUri) : undefined,
-      editedPhotoUri: raw.editedPhotoUri ? String(raw.editedPhotoUri) : undefined,
-      photoSource:
-        raw.photoSource === 'camera' || raw.photoSource === 'library'
-          ? (raw.photoSource as 'camera' | 'library')
-          : undefined,
-      imageSourceId: raw.imageSourceId ? String(raw.imageSourceId) : undefined,
-      imageUri: raw.imageUri ? String(raw.imageUri) : undefined,
-      keywords: Array.isArray(raw.keywords) ? raw.keywords : undefined,
-      entityInfo: raw.entityInfo,
+      postType: 'outfitChange',
       outfitChangeId: raw.outfitChangeId ? String(raw.outfitChangeId) : undefined,
       originalImageUri: raw.originalImageUri ? String(raw.originalImageUri) : undefined,
       resultImageUri: raw.resultImageUri ? String(raw.resultImageUri) : undefined,
