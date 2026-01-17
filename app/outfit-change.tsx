@@ -182,63 +182,6 @@ function getRandomPrincessStyle(): string {
   return DISNEY_PRINCESS_STYLES[randomIndex];
 }
 
-// Jennie完整场景库 - 24种经典街拍/舞台场景（姿态+服饰+背景完整重现）
-const JENNIE_SCENE_STYLES = [
-  'Jennie Chanel airport scene: Incheon Airport departure hall with bright terminal lighting and glass windows, confident walking pose pulling designer luggage, luxury Chanel tweed jacket with mini skirt and pearl accessories, oversized sunglasses, candid paparazzi-style street photography with natural motion blur',
-  
-  'Jennie casual airport fashion: Modern airport terminal background with travelers and flight boards, relaxed leaning pose against glass wall, oversized blazer over crop top with high-waisted jeans, designer bag and sunglasses, effortless chic candid photography',
-  
-  'Jennie concert stage performance: Large concert stage with dramatic purple and pink lighting, dynamic performance pose with microphone in hand, crystal embellished bodysuit with thigh-high boots, confident stage presence, professional concert photography with smoke effects',
-  
-  'Jennie Coachella festival moment: Outdoor music festival with desert landscape and sunset sky, casual standing pose with arms raised, colorful bohemian crop top with denim shorts and flower crown, festival wristbands, warm golden hour photography',
-  
-  'Jennie pink Paris street: Parisian street with Haussmann buildings and cafe terraces, elegant walking pose on cobblestone, all-pink outfit with oversized blazer and mini dress, pastel aesthetic, soft European street photography',
-  
-  'Jennie leather night Seoul: Neon-lit Seoul street (Gangnam) at night with Korean signs glowing, confident standing pose against brick wall, black leather jacket with leather pants or skirt, urban night photography with vibrant city lights',
-  
-  'Jennie preppy campus look: Modern university campus with contemporary architecture, sitting casually on concrete steps, pleated mini skirt with cardigan and white sneakers, youthful student vibe, bright daylight photography',
-  
-  'Jennie tennis club elegance: Luxury tennis court with net and green surface, athletic pose holding tennis racket, white tennis dress or skirt with polo shirt, sporty yet fashionable, bright outdoor natural lighting',
-  
-  'Jennie CEO office power: Modern glass office building lobby with marble floors, powerful standing pose in front of windows, tailored oversized designer suit with crop top underneath, boss energy, professional architectural photography',
-  
-  'Jennie 90s retro cafe: Vintage themed cafe interior with neon signs and retro decor, casual sitting pose at small round table, vintage crop top with low-rise jeans, Y2K aesthetic, warm cozy indoor lighting with film grain',
-  
-  'Jennie Seoul street casual: Busy Gangnam street with Korean shops and pedestrians, candid walking pose with coffee cup, oversized hoodie with bike shorts and chunky sneakers, everyday K-pop star off-duty style, natural street photography',
-  
-  'Jennie red carpet glamour: Luxury event venue with red carpet and step-and-repeat backdrop, elegant standing pose for cameras, sparkling evening gown with jewelry, Hollywood premiere atmosphere, professional event photography with flashes',
-  
-  'Jennie denim downtown: Urban downtown area with modern high-rise buildings, leaning casually against luxury car, denim-on-denim look with jacket and jeans, cool street style, golden hour warm lighting',
-  
-  'Jennie minimal studio: Clean white photography studio with professional lighting equipment visible, high fashion editorial pose, classic black and white color-blocked outfit, timeless minimalist aesthetic, professional studio lighting setup',
-  
-  'Jennie poolside luxury: Infinity pool at luxury hotel with ocean view, confident standing pose by pool edge, designer crop top with high-waisted bottoms and sunglasses, summer vacation glamour, bright tropical sunlight',
-  
-  'Jennie Celine boutique: High-end Celine store interior with modern minimalist design, elegant shopping pose holding designer bag, sophisticated Celine pieces in neutral tones, luxury retail atmosphere, soft boutique lighting',
-  
-  'Jennie grunge warehouse: Urban warehouse with graffiti walls and industrial elements, rebellious leaning pose with attitude, ripped jeans with band tee and leather jacket with chains, underground music scene vibe, moody dramatic lighting',
-  
-  'Jennie garden photoshoot: Lush flower garden with blooming roses and greenery, graceful standing pose among flowers, romantic floral mini dress, feminine spring aesthetic, soft natural diffused sunlight',
-  
-  'Jennie gym athleisure: Modern luxury gym with mirrors and equipment, workout pose mid-exercise, designer sports bra with matching leggings, high-end athletic brand styling, bright gym fluorescent lighting',
-  
-  'Jennie runway power: Fashion show runway with audience and cameras, confident runway walk pose mid-stride, oversized blazer worn as dress with belt, powerful fashion statement, dramatic runway spotlights',
-  
-  'Jennie tropical beach: White sand beach with turquoise water and palm trees, relaxed beach pose with wind in hair, breezy summer dress with straw sun hat, vacation paradise vibes, warm sunset golden hour',
-  
-  'Jennie winter Seoul: Snowy Seoul street with Christmas lights and winter decorations, elegant walking pose in snow, luxury fur coat or long wool coat with designer boots and scarf, winter wonderland scene, soft snow-reflected lighting',
-  
-  'Jennie nightclub party: Upscale nightclub interior with colorful disco lights and DJ booth, dancing pose with energy, sparkly sequin mini dress or metallic top with leather pants, glamorous nightlife, dynamic colored club lighting',
-  
-  'Jennie K-fashion street: Trendy Seoul Garosu-gil street with boutiques and cafes, confident walking pose, layered Korean street fashion with oversized pieces and unique accessories, K-pop idol off-duty style, vibrant urban street photography',
-];
-
-// 随机选择一种Jennie完整场景
-function getRandomJennieScene(): string {
-  const randomIndex = Math.floor(Math.random() * JENNIE_SCENE_STYLES.length);
-  return JENNIE_SCENE_STYLES[randomIndex];
-}
-
 const templates: Template[] = [
   {
     id: 'random',
@@ -252,8 +195,7 @@ const templates: Template[] = [
     id: 'jennie',
     name: 'Jennie同款',
     nameEn: 'Jennie Style',
-    // 注意：实际的 prompt 会在生成时动态创建
-    prompt: COMMON_PROMPT_PREFIX + 'JENNIE_STYLE_PLACEHOLDER',
+    prompt: 'Jennie风格自动参考内置图片',
     icon: '💖',
   },
   {
@@ -420,6 +362,21 @@ const templates: Template[] = [
 ];
 
 type OutfitMode = 'template' | 'custom';
+
+// Jennie参考图片路径 - 从assets文件夹自动加载
+const JENNIE_REFERENCE_IMAGES = [
+  require('@/assets/images/jennie/jennie_1.jpg'),
+  require('@/assets/images/jennie/jennie_2.jpg'),
+  require('@/assets/images/jennie/jennie_3.jpg'),
+  require('@/assets/images/jennie/jennie_4.jpg'),
+  require('@/assets/images/jennie/jennie_5.jpg'),
+  require('@/assets/images/jennie/jennie_6.jpg'),
+  require('@/assets/images/jennie/jennie_7.jpg'),
+  require('@/assets/images/jennie/jennie_8.jpg'),
+  require('@/assets/images/jennie/jennie_9.jpg'),
+  require('@/assets/images/jennie/jennie_10.jpg'),
+  // 可以继续添加更多图片
+];
 
 export default function OutfitChangeScreen() {
   const { t } = useTranslation();
@@ -687,37 +644,78 @@ export default function OutfitChangeScreen() {
           finalPrompt = COMMON_PROMPT_PREFIX + `Change the outfit to: ${randomStyle}. IMPORTANT: Create a COMPLETE OUTFIT SOLUTION with matching accessories, bag/purse, and shoes that perfectly coordinate with this style. The accessories, footwear, and bag should complement and enhance the overall look to create a cohesive, well-styled ensemble. Be creative and ensure the style is distinct and unique!`;
           console.log('[OutfitChange] Random style selected:', randomStyle);
         } else if (selectedTemplate!.id === 'jennie') {
-          const jennieScene = getRandomJennieScene();
-          // Jennie同款：完整场景重现，不使用COMMON_PROMPT_PREFIX
-          finalPrompt = `Transform this person into a Jennie from BLACKPINK inspired photoshoot. Use the reference style images to recreate the iconic Jennie aesthetic.
+          // Jennie模板:自动使用内置的参考图片
+          console.log('[OutfitChange] Jennie template selected, loading reference images...');
+          
+          try {
+            // 随机选择1-2张Jennie参考图片
+            const numImages = Math.floor(Math.random() * 2) + 1; // 1或2张
+            const shuffled = [...JENNIE_REFERENCE_IMAGES].sort(() => 0.5 - Math.random());
+            const selectedReferenceImages = shuffled.slice(0, numImages);
+            
+            console.log(`[OutfitChange] Selected ${numImages} Jennie reference images`);
+            
+            // 转换参考图片为base64
+            const referenceBase64Images = await Promise.all(
+              selectedReferenceImages.map(async (imageSource, index) => {
+                console.log(`[OutfitChange] Converting Jennie reference image ${index + 1}/${numImages}`);
+                // 对于require导入的图片,需要使用Image.resolveAssetSource获取URI
+                const resolvedSource = typeof imageSource === 'number' 
+                  ? require('react-native').Image.resolveAssetSource(imageSource).uri
+                  : imageSource;
+                const base64 = await convertToBase64(resolvedSource, true, false);
+                console.log(`[OutfitChange] Jennie reference image ${index + 1} converted, size:`, base64.length);
+                return base64;
+              })
+            );
+            
+            // Jennie专用prompt
+            finalPrompt = `Transform this person into a Jennie from BLACKPINK inspired photoshoot by learning from the provided reference style images.
 
-WHAT TO KEEP FROM THE ORIGINAL PERSON:
-1. FACE IDENTITY: Keep the person's exact facial features, face structure, eye shape, nose, mouth shape, facial bone structure - this person's face MUST remain 100% recognizable
+WHAT TO KEEP FROM THE ORIGINAL PERSON (100% UNCHANGED):
+1. FACE IDENTITY: Keep the person's exact facial features, face structure, eye shape, nose, mouth shape, facial bone structure - this person's face MUST remain completely recognizable
 2. BODY SHAPE: Keep the person's exact body proportions, height, build, and figure
 
-WHAT TO TRANSFORM TO JENNIE STYLE (based on reference images):
-1. FACIAL EXPRESSION: Transform to Jennie's signature expressions - confident, cool, slightly mysterious gaze, subtle smile or pout
-2. MAKEUP STYLE: Apply Jennie's iconic makeup - cat-eye liner, soft pink/nude lips, glowing dewy skin, subtle contour, natural yet glamorous
-3. HAIRSTYLE: Transform to Jennie's hairstyle shown in the reference style
-4. POSE & GESTURE: Transform to match the confident, fashionable pose from the scene description
-5. OUTFIT: Complete wardrobe transformation to Jennie's signature style from the scene
-6. ACCESSORIES: Add all accessories, jewelry, bags shown in the scene description
-7. BACKGROUND: Replace with the complete scene environment described
-8. LIGHTING & ATMOSPHERE: Match the professional K-pop idol photography lighting
-9. PHOTOGRAPHY STYLE: Professional fashion photography quality with natural depth
+WHAT TO TRANSFORM BY LEARNING FROM REFERENCE IMAGES:
+Study the reference style images carefully and recreate ALL the following elements from them:
+1. FACIAL EXPRESSION: Learn and apply the expression from reference images - confident gaze, subtle smile, cool mysterious look, or any expression shown
+2. MAKEUP STYLE: Learn and apply the makeup from reference images - eye makeup, lip color, skin finish, contouring
+3. HAIRSTYLE: Learn and replicate the hairstyle from reference images - hair color, style, length, accessories
+4. POSE & GESTURE: Learn and recreate the exact pose, body positioning, hand gestures from reference images
+5. OUTFIT: Learn and replicate the complete outfit from reference images - tops, bottoms, dresses, all clothing items
+6. ACCESSORIES: Learn and add all accessories from reference images - jewelry, bags, sunglasses, hats, belts
+7. BACKGROUND SCENE: Learn and recreate the background environment from reference images - location, setting, props
+8. LIGHTING & MOOD: Learn and match the lighting style and atmosphere from reference images
+9. PHOTOGRAPHY STYLE: Learn and apply the photography style from reference images - angles, composition, depth
 10. NO WATERMARKS: Generate a completely clean image without any watermarks, text overlays, logos, "小红书" (Xiaohongshu/RED) marks, or any branding elements
 
-SCENE TO RECREATE:
-${jennieScene}
-
-FINAL RESULT REQUIREMENTS:
-- The person's face should be instantly recognizable as the original person
-- The body proportions should match the original person exactly  
-- Everything else (expression, styling, pose, clothes, background) should look like a professional Jennie-inspired photoshoot
-- The image should feel like this person was professionally styled and photographed in Jennie's iconic fashion aesthetic
-- Photo-realistic quality with natural lighting and authentic K-pop idol photography feel
-- Completely clean output with NO watermarks, text, or logos of any kind`;
-          console.log('[OutfitChange] Jennie scene selected:', jennieScene);
+IMPORTANT INSTRUCTIONS:
+- Randomly select ONE of the reference style images as your primary inspiration
+- Study that reference image in detail and recreate its complete scene, style, and atmosphere
+- The result should look like this person was professionally styled and photographed in that exact same scene
+- Keep the person's face and body proportions identical to the original
+- Transform everything else (expression, makeup, hair, pose, clothes, accessories, background) to match the selected reference image
+- Generate a photo-realistic result with professional K-pop idol photography quality
+- Output must be completely clean with NO watermarks, text, or logos`;
+            
+            // 构建请求体,包含用户照片和Jennie参考图片
+            requestBody = {
+              prompt: finalPrompt,
+              images: [
+                { type: 'image', image: base64Image },
+                ...referenceBase64Images.map(img => ({ type: 'reference', image: img }))
+              ],
+              aspectRatio: '3:4',
+            };
+            console.log('[OutfitChange] Jennie mode request body prepared with', requestBody.images.length, 'images');
+          } catch (jennieError) {
+            console.error('[OutfitChange] Error loading Jennie reference images:', jennieError);
+            clearInterval(timer);
+            setIsGenerating(false);
+            setGeneratingTime(0);
+            Alert.alert(t('common.error'), 'Jennie参考图片加载失败,请确保图片已正确放置在assets/images/jennie/文件夹中');
+            return;
+          }
         } else if (selectedTemplate!.id === 'fairytale-princess') {
           const princessStyle = getRandomPrincessStyle();
           finalPrompt = COMMON_PROMPT_PREFIX + `Change the outfit to magical Disney princess dress: ${princessStyle}. Create an enchanting and authentic princess transformation with all the iconic details. Make it look like a real Disney princess came to life!`;
@@ -789,7 +787,9 @@ FINAL RESULT REQUIREMENTS:
    - Do NOT change facial expression
    - Do NOT adjust pose or body position  
    - Do NOT extend or complete the image
-   - ONLY replace visible clothing textures/colors in existing areas`;
+   - ONLY replace visible clothing textures/colors in existing areas
+
+8. NO WATERMARKS: Generate a completely clean image without any watermarks, text overlays, logos, "小红书" marks, or branding`;
           
           requestBody = {
             prompt: prompt,
