@@ -1,4 +1,4 @@
-﻿export default {
+export default {
   common: {
     back: '戻る',
     confirm: '確認',

@@ -1,4 +1,4 @@
-﻿export default {
+export default {
   common: {
     back: 'Back',
     confirm: 'Confirm',
