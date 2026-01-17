@@ -254,6 +254,7 @@ export default function OutfitChangeNewScreen() {
   const { user, isLoggedIn } = useAuth();
   const { coinBalance, canUseOutfitChange, useOutfitChange } = useCoin();
   const { addOutfitChangeHistory } = useVerification();
+  const { publishPost } = useSquare();
 
   // 状态管理
   const [selectedTab, setSelectedTab] = useState<TabType>('template');
@@ -305,6 +306,10 @@ export default function OutfitChangeNewScreen() {
   // Pro Style相关状态
   const [selectedInfluencerId, setSelectedInfluencerId] = useState<string | null>(null);
   const [selectedLookPrompt, setSelectedLookPrompt] = useState<string | null>(null);
+  
+  // 发布到广场状态
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
 
   const getWritableDirectory = () => {
     const fsAny = FileSystem as unknown as {
@@ -312,6 +317,39 @@ export default function OutfitChangeNewScreen() {
       cacheDirectory?: string | null;
     };
     return fsAny.documentDirectory ?? fsAny.cacheDirectory ?? '';
+  };
+
+  // 发布到广场
+  const handlePublishToSquare = async () => {
+    if (!generatedResult || !user) {
+      if (!user) {
+        Alert.alert(t('common.tip'), t('square.loginRequired'));
+      }
+      return;
+    }
+
+    setIsPublishing(true);
+    try {
+      await publishPost({
+        userId: user.userId,
+        userNickname: user.nickname || user.userId,
+        userAvatar: user.avatar,
+        postType: 'outfitChange',
+        outfitChangeId: `outfit_${Date.now()}`,
+        originalImageUri: generatedResult.original,
+        resultImageUri: generatedResult.result,
+        templateName: generatedResult.templateName,
+        pinnedCommentId: undefined,
+      });
+
+      setIsPublished(true);
+      Alert.alert(t('common.success'), t('square.publishSuccessPrompt'));
+    } catch (error) {
+      console.error('Publish to square failed:', error);
+      Alert.alert(t('common.error'), t('square.publishFailed'));
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   // 保存到相册
@@ -835,9 +873,7 @@ FINAL RESULT REQUIREMENTS:
         result: generatedImageUri,
         templateName
       });
-
-      // 提示用户图片已生成
-      Alert.alert(t('common.success'), t('outfitChange.transformationComplete'));
+      setIsPublished(false); // 重置发布状态
       
       // 保存到历史记录（失败不影响当前展示）
       try {
@@ -1255,6 +1291,36 @@ FINAL RESULT REQUIREMENTS:
             <Text style={styles.resultTemplateName}>
               {generatedResult.templateName}
             </Text>
+            
+            {/* 操作按钮 */}
+            <View style={styles.resultActions}>
+              <TouchableOpacity 
+                style={styles.resultActionButton}
+                onPress={() => handleSaveToGallery(generatedResult.result)}
+              >
+                <Download size={20} color="#1a1a1a" />
+                <Text style={styles.resultActionText}>{t('common.save')}</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[
+                  styles.resultActionButton, 
+                  styles.resultActionButtonPrimary,
+                  isPublished && styles.resultActionButtonDisabled
+                ]}
+                onPress={handlePublishToSquare}
+                disabled={isPublishing || isPublished}
+              >
+                {isPublishing ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Share2 size={20} color="#fff" />
+                )}
+                <Text style={[styles.resultActionText, styles.resultActionTextPrimary]}>
+                  {isPublished ? t('square.published') : t('square.publishToSquare')}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -1889,6 +1955,40 @@ const styles = StyleSheet.create({
     color: '#4b5563',
     textAlign: 'center',
     marginTop: 8,
+  },
+  resultActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 16,
+  },
+  resultActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    backgroundColor: '#f3f4f6',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  resultActionButtonPrimary: {
+    backgroundColor: '#1a1a1a',
+    borderColor: '#1a1a1a',
+  },
+  resultActionButtonDisabled: {
+    backgroundColor: '#9ca3af',
+    borderColor: '#9ca3af',
+  },
+  resultActionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  resultActionTextPrimary: {
+    color: '#ffffff',
   },
 
   selectedLookContainer: {
