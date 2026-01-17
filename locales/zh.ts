@@ -425,7 +425,7 @@ export default {
   },
   outfitChange: {
     title: '一键换装',
-    outfitSwap: 'Outfit Swap',
+    outfitSwap: '一键换装',
     whoIsSwapping: '上传照片',
     step1: '步骤 1',
     step2: '步骤 2',

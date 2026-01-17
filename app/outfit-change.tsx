@@ -11,19 +11,23 @@ import {
   Switch,
   Alert,
   ActivityIndicator,
-  Platform 
+  Platform,
+  Modal
 } from 'react-native';
 import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
-import { Camera, Sparkles, Lock, X, ArrowLeft } from 'lucide-react-native';
+import * as Sharing from 'expo-sharing';
+import { Camera, Sparkles, Lock, X, ArrowLeft, Download, Share2 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useCoin } from '@/contexts/CoinContext';
 import { useVerification } from '@/contexts/VerificationContext';
 import { useSquare } from '@/contexts/SquareContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { saveToGallery } from '@/utils/share';
 
 type TabType = 'template' | 'custom' | 'pro';
 
@@ -239,6 +243,7 @@ function getRandomJennieScene(): string {
 export default function OutfitChangeNewScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { currentLanguage } = useLanguage();
   const params = useLocalSearchParams();
   
   const { user, isLoggedIn } = useAuth();
@@ -253,10 +258,49 @@ export default function OutfitChangeNewScreen() {
   const [showAllTemplates, setShowAllTemplates] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedResult, setGeneratedResult] = useState<{ original: string; result: string; templateName: string } | null>(null);
+  const [showLargeImage, setShowLargeImage] = useState(false);
   
   // Pro Style相关状态
   const [selectedInfluencerId, setSelectedInfluencerId] = useState<string | null>(null);
   const [selectedLookPrompt, setSelectedLookPrompt] = useState<string | null>(null);
+
+  // 保存到相册
+  const handleSaveToGallery = async (uri: string) => {
+    try {
+      const success = await saveToGallery(uri);
+      if (success) {
+        Alert.alert(t('common.success'), t('outfitChange.downloadSuccess'));
+      } else {
+        Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+      }
+    } catch (error) {
+      console.error('Save to gallery failed:', error);
+      Alert.alert(t('common.error'), t('outfitChange.downloadFailed'));
+    }
+  };
+
+  // 分享图片
+  const handleShare = async (uri: string) => {
+    try {
+      let localUri = uri;
+      if (uri.startsWith('data:')) {
+        const base64Data = uri.split(',')[1];
+        const filename = `${FileSystem.cacheDirectory}temp_share_${Date.now()}.jpg`;
+        await FileSystem.writeAsStringAsync(filename, base64Data, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        localUri = filename;
+      }
+      
+      if (!(await Sharing.isAvailableAsync())) {
+        Alert.alert(t('common.tip'), '分享功能在当前设备上不可用');
+        return;
+      }
+      await Sharing.shareAsync(localUri);
+    } catch (error) {
+      console.error('Share failed:', error);
+    }
+  };
 
   // 从首页传来的照片URI
   useEffect(() => {
@@ -354,6 +398,7 @@ export default function OutfitChangeNewScreen() {
   const handleRemoveCustomImage = (index: number) => {
     setCustomImages(customImages.filter((_, i) => i !== index));
   };
+
 
   // Web平台图片压缩函数
   const compressImageWeb = async (blob: Blob, maxWidth: number = 800, quality: number = 0.7): Promise<Blob> => {
@@ -720,45 +765,52 @@ FINAL RESULT REQUIREMENTS:
         throw new Error('生成失败: 服务器返回数据格式错误');
       }
 
-      const generatedImageUri = `data:${data.image.mimeType};base64,${data.image.base64Data}`;
+      const generatedImageBase64 = data.image.base64Data;
+      const generatedImageUri = `data:${data.image.mimeType};base64,${generatedImageBase64}`;
       
       // 使用换装次数（可能消耗免费次数或金币）
       await useOutfitChange();
+
+      const templateName = selectedTab === 'template' 
+        ? TEMPLATES.find(t => t.id === selectedTemplate)?.name || '自定义'
+        : selectedTab === 'custom' ? t('outfitChange.customOutfit') : 'Pro Style';
+
+      // 显示结果在页面上（不跳转）
+      setGeneratedResult({
+        original: userImage,
+        result: generatedImageUri,
+        templateName
+      });
+
+      // 提示用户图片已生成
+      Alert.alert(t('common.success'), t('outfitChange.transformationComplete'));
       
-      // 保存到历史记录
+      // 保存到历史记录（失败不影响当前展示）
       try {
-        const templateName = selectedTab === 'template' 
-          ? TEMPLATES.find(t => t.id === selectedTemplate)?.name || '自定义'
-          : selectedTab === 'custom' ? t('outfitChange.customOutfit') : 'Pro Style';
+        // 在原生平台上，将结果保存到本地文件，避免AsyncStorage存储过大的base64导致失败
+        let savedResultUri = generatedImageUri;
+        if (Platform.OS !== 'web') {
+          try {
+            const filename = `outfit_result_${Date.now()}.jpg`;
+            const filepath = `${FileSystem.documentDirectory}${filename}`;
+            await FileSystem.writeAsStringAsync(filepath, generatedImageBase64, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+            savedResultUri = filepath;
+            console.log('[OutfitChange] Saved result to local file:', filepath);
+          } catch (fileError) {
+            console.warn('[OutfitChange] Failed to save result to file, falling back to base64:', fileError);
+          }
+        }
         
         await addOutfitChangeHistory(
           userImage,
-          generatedImageUri,
+          savedResultUri,
           selectedTab === 'template' ? selectedTemplate! : 'custom-outfit',
           templateName
         );
-        
-        // 显示结果在页面上（不跳转）
-        setGeneratedResult({
-          original: userImage,
-          result: generatedImageUri,
-          templateName
-        });
-        
-        // 提示用户图片已生成
-        Alert.alert(t('common.success'), '图片已生成，请查看结果');
-        
       } catch (historyError) {
         console.error('Failed to save to history:', historyError);
-        // 即使保存失败也显示结果
-        setGeneratedResult({
-          original: userImage,
-          result: generatedImageUri,
-          templateName: selectedTab === 'template' 
-            ? TEMPLATES.find(t => t.id === selectedTemplate)?.name || '自定义'
-            : selectedTab === 'custom' ? t('outfitChange.customOutfit') : 'Pro Style'
-        });
-        Alert.alert(t('common.success'), '图片已生成（但保存历史记录失败）');
       }
       
     } catch (error: any) {
@@ -785,7 +837,8 @@ FINAL RESULT REQUIREMENTS:
       <Stack.Screen 
         options={{
           headerShown: true,
-          title: t('outfitChange.outfitSwap'),
+          title: t('outfitChange.outfitSwap', { lng: currentLanguage }),
+          headerTitle: t('outfitChange.outfitSwap', { lng: currentLanguage }),
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
               <ArrowLeft size={24} color="#1a1a1a" />
@@ -1108,7 +1161,11 @@ FINAL RESULT REQUIREMENTS:
               </View>
 
               {/* 结果图 */}
-              <View style={styles.resultImageContainer}>
+              <TouchableOpacity 
+                style={styles.resultImageContainer}
+                onPress={() => setShowLargeImage(true)}
+                activeOpacity={0.9}
+              >
                 <Image 
                   source={{ uri: generatedResult.result }} 
                   style={styles.resultImage} 
@@ -1117,7 +1174,10 @@ FINAL RESULT REQUIREMENTS:
                 <View style={[styles.resultLabel, styles.resultLabelResult]}>
                   <Text style={[styles.resultLabelText, styles.resultLabelTextResult]}>{t('history.result')}</Text>
                 </View>
-              </View>
+                <View style={styles.zoomHint}>
+                  <Sparkles size={12} color="#fff" />
+                </View>
+              </TouchableOpacity>
             </View>
 
             <Text style={styles.resultTemplateName}>
@@ -1128,6 +1188,55 @@ FINAL RESULT REQUIREMENTS:
 
         <View style={{ height: 120 }} />
       </ScrollView>
+
+      {/* 大图查看Modal */}
+      <Modal
+        visible={showLargeImage && !!generatedResult}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowLargeImage(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity 
+            style={styles.modalCloseArea} 
+            activeOpacity={1} 
+            onPress={() => setShowLargeImage(false)}
+          />
+          
+          <View style={styles.largeImageContainer}>
+            <Image 
+              source={{ uri: generatedResult?.result }} 
+              style={styles.largeImage} 
+              contentFit="contain" 
+            />
+            
+            <View style={styles.modalActions}>
+              <TouchableOpacity 
+                style={styles.modalActionButton}
+                onPress={() => generatedResult && handleSaveToGallery(generatedResult.result)}
+              >
+                <Download size={24} color="#fff" />
+                <Text style={styles.modalActionText}>{t('common.save')}</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.modalActionButton}
+                onPress={() => generatedResult && handleShare(generatedResult.result)}
+              >
+                <Share2 size={24} color="#fff" />
+                <Text style={styles.modalActionText}>{t('result.share')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <TouchableOpacity 
+            style={styles.modalCloseButton}
+            onPress={() => setShowLargeImage(false)}
+          >
+            <X size={28} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </Modal>
 
       {/* 固定底部按钮 */}
       <View style={styles.fixedBottom}>
@@ -1211,7 +1320,8 @@ const styles = StyleSheet.create({
   // 上传区域
   uploadArea: {
     aspectRatio: 3 / 4,
-    maxHeight: 400,
+    width: '100%',
+    alignSelf: 'center',
     borderRadius: 24,
     borderWidth: 2,
     borderStyle: 'dashed',
@@ -1811,5 +1921,66 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#ffffff',
     letterSpacing: 0.5,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCloseArea: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  largeImageContainer: {
+    width: '100%',
+    height: '80%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  largeImage: {
+    width: '90%',
+    height: '90%',
+    borderRadius: 16,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 40,
+    marginTop: 30,
+  },
+  modalActionButton: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  modalActionText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  modalCloseButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zoomHint: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
