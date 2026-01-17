@@ -926,6 +926,36 @@ FINAL RESULT REQUIREMENTS:
 
   const displayedTemplates = showAllTemplates ? TEMPLATES : TEMPLATES.slice(0, 9);
 
+  // 未登录时显示登录提示
+  if (!isLoggedIn) {
+    return (
+      <View style={styles.container}>
+        <Stack.Screen 
+          options={{
+            headerShown: true,
+            title: t('outfitChange.outfitSwap', { lng: currentLanguage }),
+            headerLeft: () => (
+              <TouchableOpacity onPress={() => router.back()}>
+                <ArrowLeft size={24} color="#1a1a1a" />
+              </TouchableOpacity>
+            ),
+          }}
+        />
+        <View style={styles.loginRequiredContainer}>
+          <Text style={styles.loginRequiredIcon}>👗</Text>
+          <Text style={styles.loginRequiredTitle}>{t('outfitChange.loginRequired')}</Text>
+          <Text style={styles.loginRequiredSubtitle}>{t('outfitChange.loginRequiredDesc')}</Text>
+          <TouchableOpacity 
+            style={styles.loginButton}
+            onPress={() => router.push('/profile')}
+          >
+            <Text style={styles.loginButtonText}>{t('common.login')}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Stack.Screen 
@@ -1435,6 +1465,41 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  loginRequiredContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  loginRequiredIcon: {
+    fontSize: 64,
+    marginBottom: 24,
+  },
+  loginRequiredTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  loginRequiredSubtitle: {
+    fontSize: 15,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 22,
+  },
+  loginButton: {
+    backgroundColor: '#1a1a1a',
+    paddingHorizontal: 48,
+    paddingVertical: 16,
+    borderRadius: 24,
+  },
+  loginButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   scrollView: {
     flex: 1,

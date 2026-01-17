@@ -12,6 +12,7 @@ import {
   Platform 
 } from 'react-native';
 import { useVerification } from '@/contexts/VerificationContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { saveToGallery } from '@/utils/share';
 
@@ -24,6 +25,7 @@ interface GroupedHistory {
 export default function HistoryScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { isLoggedIn } = useAuth();
   
   const { outfitChangeHistory, deleteOutfitChange } = useVerification();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -265,6 +267,25 @@ export default function HistoryScreen() {
     );
   }
 
+  // 未登录时显示登录提示
+  if (!isLoggedIn) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.loginRequiredContainer}>
+          <Text style={styles.loginRequiredIcon}>📋</Text>
+          <Text style={styles.loginRequiredTitle}>{t('history.loginRequired')}</Text>
+          <Text style={styles.loginRequiredSubtitle}>{t('history.loginRequiredDesc')}</Text>
+          <TouchableOpacity 
+            style={styles.loginButton}
+            onPress={() => router.push('/profile')}
+          >
+            <Text style={styles.loginButtonText}>{t('common.login')}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -284,6 +305,41 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  loginRequiredContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  loginRequiredIcon: {
+    fontSize: 64,
+    marginBottom: 24,
+  },
+  loginRequiredTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  loginRequiredSubtitle: {
+    fontSize: 15,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 22,
+  },
+  loginButton: {
+    backgroundColor: '#1a1a1a',
+    paddingHorizontal: 48,
+    paddingVertical: 16,
+    borderRadius: 24,
+  },
+  loginButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   
   // ScrollView
