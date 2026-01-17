@@ -28,6 +28,7 @@ import { useSquare } from '@/contexts/SquareContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { saveToGallery } from '@/utils/share';
+import BeautyFilter, { BeautyParams } from '@/components/BeautyFilter';
 
 type TabType = 'template' | 'custom' | 'pro';
 
@@ -259,6 +260,9 @@ export default function OutfitChangeNewScreen() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedResult, setGeneratedResult] = useState<{ original: string; result: string; templateName: string } | null>(null);
   const [showLargeImage, setShowLargeImage] = useState(false);
+  
+  // 美颜相关状态
+  const [showBeautyFilter, setShowBeautyFilter] = useState(false);
   
   // Pro Style相关状态
   const [selectedInfluencerId, setSelectedInfluencerId] = useState<string | null>(null);
@@ -886,6 +890,22 @@ FINAL RESULT REQUIREMENTS:
             {userImage ? (
               <>
                 <Image source={{ uri: userImage }} style={styles.uploadedImage} contentFit="cover" />
+                {/* 美颜按钮 */}
+                <TouchableOpacity 
+                  style={styles.beautyButton}
+                  onPress={() => setShowBeautyFilter(true)}
+                >
+                  <LinearGradient
+                    colors={['#ec4899', '#8b5cf6']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.beautyButtonGradient}
+                  >
+                    <Sparkles size={18} color="#fff" />
+                    <Text style={styles.beautyButtonText}>{t('beauty.smartBeauty')}</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+                {/* 删除按钮 */}
                 <TouchableOpacity 
                   style={styles.removeButton}
                   onPress={() => setUserImage(null)}
@@ -1254,6 +1274,19 @@ FINAL RESULT REQUIREMENTS:
         </View>
       </Modal>
 
+      {/* 美颜滤镜弹窗 */}
+      {userImage && (
+        <BeautyFilter
+          visible={showBeautyFilter}
+          imageUri={userImage}
+          onClose={() => setShowBeautyFilter(false)}
+          onApply={(beautifiedUri: string, _params: BeautyParams) => {
+            setUserImage(beautifiedUri);
+            setShowBeautyFilter(false);
+          }}
+        />
+      )}
+
       {/* 固定底部按钮 */}
       <View style={styles.fixedBottom}>
         <View style={styles.gradientContainer}>
@@ -1387,6 +1420,30 @@ const styles = StyleSheet.create({
   uploadedImage: {
     width: '100%',
     height: '100%',
+  },
+  beautyButton: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  beautyButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    gap: 6,
+  },
+  beautyButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
   },
   removeButton: {
     position: 'absolute',
