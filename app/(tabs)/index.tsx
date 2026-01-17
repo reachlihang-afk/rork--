@@ -77,18 +77,19 @@ export default function HomeScreen() {
                 <Text style={styles.heroSubtitle}>{t('home.transformInstantly')}</Text>
               </View>
               <View style={styles.heroImageContainer}>
-                <View style={styles.heroImagePlaceholder}>
-                  <Text style={styles.heroImagePlaceholderIcon}>👔</Text>
-                </View>
+                {/* 根据登录状态显示头像或爱心 */}
+                {isLoggedIn && user?.avatar ? (
+                  <Image 
+                    source={{ uri: user.avatar }} 
+                    style={styles.heroAvatar}
+                    contentFit="cover"
+                  />
+                ) : (
+                  <View style={styles.heroImagePlaceholder}>
+                    <Text style={styles.heroImagePlaceholderIcon}>❤️</Text>
+                  </View>
+                )}
               </View>
-            </View>
-            
-            {/* 上传按钮 - 点击整个卡片都会跳转 */}
-            <View style={styles.uploadButtonContainer}>
-              <View style={styles.uploadIconContainer}>
-                <Camera size={20} color="#0F172A" strokeWidth={2.5} />
-              </View>
-              <Text style={styles.uploadText}>{t('home.uploadSelfie')}</Text>
             </View>
           </LinearGradient>
         </TouchableOpacity>
@@ -253,6 +254,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E293B',
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 40,
+  },
+  heroAvatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   heroImagePlaceholderIcon: {
     fontSize: 32,

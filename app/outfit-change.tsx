@@ -918,12 +918,20 @@ FINAL RESULT REQUIREMENTS:
                     activeOpacity={0.7}
                   >
                     <View style={styles.templateIcon}>
-                      <Text style={styles.templateIconText}>{template.icon}</Text>
+                      <Text style={[
+                        styles.templateIconText,
+                        selectedTemplate === template.id && styles.templateIconTextSelected
+                      ]}>
+                        {template.icon}
+                      </Text>
                     </View>
-                    <Text style={[styles.templateName, isDark && styles.textDark]} numberOfLines={2}>
+                    <Text style={[
+                      styles.templateName, 
+                      isDark && styles.textDark,
+                      selectedTemplate === template.id && styles.templateNameSelected
+                    ]} numberOfLines={2}>
                       {template.name}
                     </Text>
-                    <Text style={styles.templateEmoji}>{template.icon}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -1127,7 +1135,7 @@ FINAL RESULT REQUIREMENTS:
           activeOpacity={0.9}
         >
           <LinearGradient
-            colors={['#1a1a1a', '#000000']}
+            colors={['#1a1a1a', '#1a1a1a']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.generateGradient}
@@ -1289,7 +1297,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tabActive: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#ffffff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -1299,10 +1307,10 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#6b7280',
+    color: '#9ca3af',
   },
   tabTextActive: {
-    color: '#ffffff',
+    color: '#1a1a1a',
     fontWeight: '700',
   },
 
@@ -1352,24 +1360,20 @@ const styles = StyleSheet.create({
   templateCard: {
     width: '31%',
     aspectRatio: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f9fafb',
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#f3f4f6',
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
     padding: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
   },
   templateCardDark: {
     backgroundColor: '#1e1e1e',
     borderColor: 'rgba(255,255,255,0.05)',
   },
   templateCardSelected: {
+    backgroundColor: '#1a1a1a',
     borderColor: '#1a1a1a',
     borderWidth: 2,
   },
@@ -1379,11 +1383,17 @@ const styles = StyleSheet.create({
   templateIconText: {
     fontSize: 32,
   },
+  templateIconTextSelected: {
+    opacity: 1,
+  },
   templateName: {
     fontSize: 12,
     fontWeight: '700',
     color: '#1a1a1a',
     textAlign: 'center',
+  },
+  templateNameSelected: {
+    color: '#ffffff',
   },
   templateEmoji: {
     fontSize: 10,
