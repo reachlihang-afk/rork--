@@ -1,519 +1,555 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { ShieldCheck, Sparkles, SearchX } from 'lucide-react-native';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { Sparkles, Camera, Plus, Bell } from 'lucide-react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useVerification } from '@/contexts/VerificationContext';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCoin } from '@/contexts/CoinContext';
+import { LinearGradient } from 'expo-linear-gradient';
+
+// 模板数据
+const TEMPLATES = [
+  { id: 'jennie', name: 'Jennie', subtitle: 'K-Pop Style', icon: '💖', badge: 'HOT', imageUri: null },
+  { id: 'princess', name: 'Princess', subtitle: 'Fairytale', icon: '👑', imageUri: null },
+  { id: 'random', name: 'Random', subtitle: 'Surprise Me', icon: '✨', isSpecial: true },
+  { id: 'cyberpunk', name: 'Cyberpunk', subtitle: 'Futuristic', icon: '🤖', imageUri: null },
+  { id: 'sports', name: 'Sports', subtitle: 'Energetic', icon: '🎾', imageUri: null },
+  { id: 'vintage', name: '90s Vintage', subtitle: 'Classic', icon: '🎞️', imageUri: null },
+];
+
+const CATEGORIES = [
+  { id: 'featured', name: 'Featured', active: true },
+  { id: 'trendy', name: 'Trendy 🔥', active: false },
+  { id: 'sports', name: 'Sports 🎾', active: false },
+  { id: 'kpop', name: 'K-Pop 🎤', active: false },
+  { id: 'vintage', name: 'Vintage 🎞️', active: false },
+];
 
 export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { outfitChangeHistory } = useVerification();
   const { user } = useAuth();
+  const { coinBalance, addCoins } = useCoin();
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <View style={styles.iconContainer}>
-            <Text style={styles.iconEmoji}>✨</Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Bai Bian Xing Jun</Text>
+        <View style={styles.headerRight}>
+          <View style={styles.coinContainer}>
+            <Text style={styles.coinText}>💎 {coinBalance}</Text>
+            <TouchableOpacity 
+              style={styles.addButton}
+              onPress={() => router.push('/recharge' as any)}
+            >
+              <Plus size={14} color="#fff" strokeWidth={3} />
+            </TouchableOpacity>
           </View>
-          <Text style={styles.title}>{t('home.title')}</Text>
-          <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
-          {user && (
-            <Text style={styles.welcomeText} numberOfLines={1} ellipsizeMode="tail">
-              {t('home.welcome', { name: user.nickname || user.userId })}
-            </Text>
-          )}
-        </View>
-
-        <View style={styles.quickActions}>
-          <TouchableOpacity 
-            style={[styles.quickActionCard, styles.quickActionCardFull]}
-            onPress={() => router.push('/outfit-change' as any)}
-          >
-            <View style={styles.quickActionIcon}>
-              <Text style={styles.actionIconText}>💃</Text>
-            </View>
-            <Text style={styles.quickActionTitle} numberOfLines={2}>{t('home.outfitChange')}</Text>
-            <Text style={styles.quickActionDescription} numberOfLines={3}>{t('home.outfitChangeDesc')}</Text>
+          <TouchableOpacity style={styles.notificationButton}>
+            <Bell size={20} color="#64748B" strokeWidth={2} />
+            <View style={styles.notificationDot} />
           </TouchableOpacity>
         </View>
+      </View>
 
-        {outfitChangeHistory.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{t('home.outfitHistory')}</Text>
-              <TouchableOpacity onPress={() => router.push('/history' as any)}>
-                <Text style={styles.viewAllText}>{t('home.viewAll')}</Text>
-              </TouchableOpacity>
-            </View>
-            {outfitChangeHistory.slice(0, 3).map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.recentCard}
-                onPress={() => {
-                  router.push(`/outfit-change-detail/${item.id}` as any);
-                }}
-              >
-                <Image 
-                  source={{ uri: item.originalImageUri }}
-                  style={styles.recentImage}
-                  contentFit="cover"
-                />
-                <View style={styles.recentContent}>
-                  <View style={[styles.templateBadge, { backgroundColor: getTemplateBadgeColor(item.templateName) }]}>
-                    <Text style={styles.templateIcon}>{getTemplateIcon(item.templateName)}</Text>
-                    <Text style={styles.recentTemplateName}>
-                      {item.templateName}
-                    </Text>
-                  </View>
-                  <Text style={styles.recentDate}>
-                    {formatDateTime(item.createdAt)}
-                  </Text>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero Card */}
+        <TouchableOpacity 
+          style={styles.heroCard}
+          onPress={() => router.push('/outfit-change' as any)}
+          activeOpacity={0.95}
+        >
+          <LinearGradient
+            colors={['#0F172A', '#1E293B', '#030712']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.heroGradient}
+          >
+            <View style={styles.heroContent}>
+              <View style={styles.heroLeft}>
+                <View style={styles.aiPoweredBadge}>
+                  <Sparkles size={14} color="#fff" strokeWidth={2.5} />
+                  <Text style={styles.aiPoweredText}>AI Powered</Text>
                 </View>
-                <Image 
-                  source={{ uri: item.resultImageUri }}
-                  style={styles.recentResultImage}
-                  contentFit="cover"
-                />
+                <Text style={styles.heroTitle}>One-click{'\n'}Outfit Swap</Text>
+                <Text style={styles.heroSubtitle}>Transform your look instantly.</Text>
+              </View>
+              <View style={styles.heroImageContainer}>
+                <View style={styles.heroImagePlaceholder}>
+                  <Text style={styles.heroImagePlaceholderIcon}>👔</Text>
+                </View>
+              </View>
+            </View>
+            <TouchableOpacity style={styles.uploadButton}>
+              <View style={styles.uploadIconContainer}>
+                <Camera size={20} color="#0F172A" strokeWidth={2.5} />
+              </View>
+              <Text style={styles.uploadText}>Upload Your Selfie</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* Templates Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Templates</Text>
+            <TouchableOpacity onPress={() => router.push('/outfit-change' as any)}>
+              <Text style={styles.viewAllLink}>View All</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Category Pills */}
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.categoryScroll}
+            contentContainerStyle={styles.categoryContent}
+          >
+            {CATEGORIES.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                style={[styles.categoryPill, category.active && styles.categoryPillActive]}
+              >
+                <Text style={[styles.categoryText, category.active && styles.categoryTextActive]}>
+                  {category.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* Template Grid */}
+          <View style={styles.templateGrid}>
+            {TEMPLATES.map((template) => (
+              <TouchableOpacity
+                key={template.id}
+                style={[styles.templateCard, template.isSpecial && styles.templateCardSpecial]}
+                onPress={() => router.push('/outfit-change' as any)}
+                activeOpacity={0.9}
+              >
+                {template.isSpecial ? (
+                  <View style={styles.randomTemplate}>
+                    <Text style={styles.randomIcon}>🎲</Text>
+                    <Text style={styles.randomLabel}>Try Luck</Text>
+                  </View>
+                ) : (
+                  <>
+                    <View style={styles.templateImageContainer}>
+                      {template.imageUri ? (
+                        <Image
+                          source={{ uri: template.imageUri }}
+                          style={styles.templateImage}
+                          contentFit="cover"
+                        />
+                      ) : (
+                        <View style={styles.templateImagePlaceholder}>
+                          <Text style={styles.templatePlaceholderIcon}>{template.icon}</Text>
+                        </View>
+                      )}
+                      {template.badge && (
+                        <View style={styles.hotBadge}>
+                          <Text style={styles.hotBadgeText}>{template.badge}</Text>
+                        </View>
+                      )}
+                    </View>
+                  </>
+                )}
+                <View style={styles.templateFooter}>
+                  <View style={styles.templateIcon}>
+                    <Text style={styles.templateIconText}>{template.icon}</Text>
+                  </View>
+                  <View style={styles.templateInfo}>
+                    <Text style={styles.templateName}>{template.name}</Text>
+                    <Text style={styles.templateSubtitle}>{template.subtitle}</Text>
+                  </View>
+                </View>
               </TouchableOpacity>
             ))}
           </View>
-        )}
+        </View>
       </ScrollView>
     </View>
   );
 }
 
-function getVerdictText(verdict: string, t: any): string {
-  const verdicts: Record<string, string> = {
-    'authentic': t('verdict.authenticShort'),
-    'slightly-edited': t('verdict.slightlyEditedShort'),
-    'heavily-edited': t('verdict.heavilyEditedShort'),
-    'suspicious': t('verdict.suspiciousShort'),
-  };
-  return verdicts[verdict] || verdict;
-}
-
-function getScoreColor(score: number): string {
-  if (score >= 9) {
-    return '#15803D';
-  } else if (score >= 7.5) {
-    return '#CA8A04';
-  }
-  return '#DC2626';
-}
-
-function formatScore(score: number): string {
-  if (score % 1 === 0) {
-    return score.toString();
-  }
-  return score.toFixed(1);
-}
-
-function getTemplateIcon(templateName: string): string {
-  // 根据模板名称返回对应的图标
-  const templateIcons: Record<string, string> = {
-    '随机装': '🎲',
-    '正装': '👔',
-    '比基尼': '👙',
-    '一键穿搭': '✨',
-    '运动装': '🏃',
-    '礼服': '👗',
-    '休闲装': '👕',
-    '校服': '🎓',
-    '泳装': '🏊',
-    '婚纱': '👰',
-    '西装': '🤵',
-    '婚纱/礼服': '👰',
-    '汉服': '🏮',
-    '超级英雄': '🦸',
-    '新年装-马年': '🐴',
-    '圣诞装': '🎄',
-    '咖啡师-星巴克': '☕',
-    '老钱风': '💰',
-    '网球装': '🎾',
-    '财神装': '💸',
-    '辣妹装': '🔥',
-    '美团外卖装': '🛵',
-    '滑雪服': '⛷️',
-    '空姐装': '✈️',
-    '户外装': '🏔️',
-    '牛仔装': '🤠',
-    '魔法师装': '🧙',
-    '海盗装': '🏴‍☠️',
-  };
-  return templateIcons[templateName] || '👔';
-}
-
-function getTemplateBadgeColor(templateName: string): string {
-  // 根据模板名称返回对应的背景颜色
-  const templateColors: Record<string, string> = {
-    '随机装': '#F3E8FF',
-    '正装': '#EEF2FF',
-    '比基尼': '#FEF3C7',
-    '一键穿搭': '#F0F9FF',
-    '运动装': '#DCFCE7',
-    '礼服': '#FCE7F3',
-    '休闲装': '#E0E7FF',
-    '校服': '#DDD6FE',
-    '泳装': '#CFFAFE',
-    '婚纱': '#FFE4E6',
-    '西装': '#E0E7FF',
-    '婚纱/礼服': '#FFE4E6',
-    '汉服': '#FEF3C7',
-    '超级英雄': '#DBEAFE',
-    '新年装-马年': '#FEE2E2',
-    '圣诞装': '#DCFCE7',
-    '咖啡师-星巴克': '#FEF3C7',
-    '老钱风': '#FEF9C3',
-    '网球装': '#DCFCE7',
-    '财神装': '#FEF3C7',
-    '辣妹装': '#FECACA',
-    '美团外卖装': '#FEF3C7',
-    '滑雪服': '#E0F2FE',
-    '空姐装': '#E0F2FE',
-    '户外装': '#D1FAE5',
-    '牛仔装': '#E0E7FF',
-    '魔法师装': '#DDD6FE',
-    '海盗装': '#374151',
-  };
-  return templateColors[templateName] || '#EEF2FF';
-}
-
-function formatDateTime(timestamp: number): string {
-  const date = new Date(timestamp);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-  return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
-}
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 40,
+    backgroundColor: '#FAFAFA',
   },
   header: {
-    alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 24,
-  },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#0066FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  iconEmoji: {
-    fontSize: 40,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#0F172A',
-    marginBottom: 8,
-    letterSpacing: -0.8,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#64748B',
-    textAlign: 'center',
-    maxWidth: 320,
-    lineHeight: 22,
-    fontWeight: '500',
-  },
-  statsCard: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 24,
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 5,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 102, 255, 0.1)',
-  },
-  statItem: {
-    flex: 1,
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 20,
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
   },
-  quickActions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 14,
-    marginBottom: 24,
-  },
-  quickActionCard: {
-    width: '48%',
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
-    minHeight: 160,
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 102, 255, 0.08)',
-  },
-  quickActionCardFull: {
-    width: '100%',
-  },
-  quickActionIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#E6F0FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  actionIconText: {
-    fontSize: 24,
-  },
-  quickActionTitle: {
-    fontSize: 16,
+  headerTitle: {
+    fontSize: 20,
     fontWeight: '700',
     color: '#0F172A',
-    marginBottom: 8,
-    textAlign: 'center',
-    letterSpacing: -0.3,
-    flexShrink: 1,
-  },
-  quickActionDescription: {
-    fontSize: 13,
-    color: '#64748B',
-    textAlign: 'center',
-    lineHeight: 18,
-    fontWeight: '500',
-    flexShrink: 1,
-  },
-  statValue: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: '#0066FF',
-    marginBottom: 6,
-    letterSpacing: -1.5,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: '#64748B',
-    fontWeight: '600',
-  },
-  divider: {
-    width: 1,
-    backgroundColor: '#E2E8F0',
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 19,
-    fontWeight: '700',
-    color: '#0F172A',
-    marginBottom: 14,
     letterSpacing: -0.5,
   },
-  actionCard: {
+  headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
+    gap: 12,
+  },
+  coinContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    borderRadius: 20,
+    paddingLeft: 12,
+    paddingRight: 4,
+    paddingVertical: 4,
+    gap: 6,
   },
-  actionCardPrimary: {
-    backgroundColor: '#0066FF',
-    shadowColor: '#0066FF',
-    shadowOpacity: 0.3,
-    borderColor: '#0066FF',
+  coinText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#475569',
   },
-  actionIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#E6F0FF',
+  addButton: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#0F172A',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 14,
-    shadowColor: '#0066FF',
+  },
+  notificationButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  notificationDot: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#EF4444',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    paddingTop: 24,
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+  },
+  heroCard: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    marginBottom: 24,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  heroGradient: {
+    padding: 24,
+  },
+  heroContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  heroLeft: {
+    flex: 1,
+  },
+  aiPoweredBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: 8,
+    gap: 4,
+  },
+  aiPoweredText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  heroTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    lineHeight: 30,
+    marginBottom: 4,
+  },
+  heroSubtitle: {
+    fontSize: 14,
+    color: '#CBD5E1',
+    fontWeight: '500',
+  },
+  heroImageContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    transform: [{ rotate: '3deg' }],
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#1E293B',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroImagePlaceholderIcon: {
+    fontSize: 32,
+  },
+  uploadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderStyle: 'dashed',
+    borderRadius: 16,
+    paddingVertical: 16,
+    gap: 12,
+  },
+  uploadIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
-  actionIconEmoji: {
-    fontSize: 24,
-  },
-  actionIconDisabled: {
-    backgroundColor: '#F1F5F9',
-  },
-  actionContent: {
-    flex: 1,
-  },
-  actionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#0F172A',
-    marginBottom: 4,
-    letterSpacing: -0.3,
-  },
-  actionTitlePrimary: {
-    color: '#fff',
-  },
-  actionTitleDisabled: {
-    color: '#94A3B8',
-  },
-  actionDescription: {
-    fontSize: 13,
-    color: '#64748B',
-    lineHeight: 18,
-    fontWeight: '500',
-  },
-  actionDescriptionPrimary: {
-    color: 'rgba(255, 255, 255, 0.9)',
-  },
-  actionDescriptionDisabled: {
-    color: '#CBD5E1',
-  },
-  badge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#fff',
-    letterSpacing: 0.4,
-    flexShrink: 1,
-  },
-  recentCard: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    padding: 14,
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 102, 255, 0.08)',
-  },
-  recentImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 14,
-    backgroundColor: '#E2E8F0',
-  },
-  recentContent: {
-    marginLeft: 12,
-    marginRight: 12,
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  templateBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginBottom: 4,
-  },
-  templateIcon: {
-    fontSize: 16,
-    marginRight: 4,
-  },
-  recentScore: {
-    fontSize: 22,
-    fontWeight: '800',
-    marginBottom: 4,
-    letterSpacing: -0.5,
-  },
-  recentVerdict: {
-    fontSize: 15,
-    fontWeight: '700',
-    marginLeft: 12,
-    alignSelf: 'center',
-  },
-  recentResultImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 14,
-    backgroundColor: '#E2E8F0',
-    marginLeft: 12,
-  },
-  recentTemplateName: {
+  uploadText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#4F46E5',
+    color: '#FFFFFF',
+  },
+  section: {
+    marginBottom: 24,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 12,
+    paddingHorizontal: 4,
   },
-  viewAllText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#0066FF',
-  },
-  recentDate: {
-    fontSize: 11,
-    color: '#94A3B8',
-    marginTop: 4,
-  },
-  welcomeText: {
-    fontSize: 14,
-    color: '#0066FF',
-    marginTop: 10,
+  sectionTitle: {
+    fontSize: 18,
     fontWeight: '700',
-    letterSpacing: -0.2,
+    color: '#0F172A',
+    letterSpacing: -0.5,
+  },
+  viewAllLink: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  categoryScroll: {
+    marginBottom: 16,
+    marginHorizontal: -20,
+    paddingHorizontal: 20,
+  },
+  categoryContent: {
+    gap: 10,
+    paddingRight: 20,
+  },
+  categoryPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  categoryPillActive: {
+    backgroundColor: '#0F172A',
+    borderColor: '#0F172A',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  categoryText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#64748B',
+  },
+  categoryTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  templateGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  templateCard: {
+    width: '47.5%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  templateCardSpecial: {
+    backgroundColor: '#F8FAFC',
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+  },
+  templateImageContainer: {
+    aspectRatio: 3 / 4,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#F1F5F9',
+    marginBottom: 10,
+    position: 'relative',
+  },
+  templateImage: {
+    width: '100%',
+    height: '100%',
+  },
+  templateImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  templatePlaceholderIcon: {
+    fontSize: 48,
+  },
+  hotBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  hotBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  randomTemplate: {
+    aspectRatio: 3 / 4,
+    borderRadius: 12,
+    backgroundColor: 'rgba(248, 250, 252, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.5)',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+    gap: 8,
+  },
+  randomIcon: {
+    fontSize: 36,
+    filter: 'grayscale(100%) contrast(125%)',
+  },
+  randomLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  templateFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 4,
+  },
+  templateIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  templateIconText: {
+    fontSize: 18,
+  },
+  templateInfo: {
+    flex: 1,
+  },
+  templateName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+    lineHeight: 16,
+  },
+  templateSubtitle: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#64748B',
+    marginTop: 2,
   },
 });
