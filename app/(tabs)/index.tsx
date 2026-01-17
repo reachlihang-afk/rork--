@@ -1,14 +1,12 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Sparkles, Camera } from 'lucide-react-native';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
+import { Camera } from 'lucide-react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useVerification } from '@/contexts/VerificationContext';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCoin } from '@/contexts/CoinContext';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
 
 // 最新的4个模板
 const LATEST_TEMPLATES = [
@@ -23,49 +21,10 @@ export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { coinBalance } = useCoin();
-  const [isTakingPhoto, setIsTakingPhoto] = useState(false);
 
   // 获取模板的翻译名称和副标题
   const getTemplateName = (id: string) => {
     return t(`outfitChange.templates.${id}`, id);
-  };
-
-  // 拍照功能
-  const handleTakePhoto = async () => {
-    if (isTakingPhoto) return;
-    
-    try {
-      setIsTakingPhoto(true);
-      
-      // 请求相机权限
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert(t('common.tip'), '需要相机权限才能拍照');
-        return;
-      }
-
-      // 启动相机
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [3, 4],
-        quality: 0.9,
-      });
-
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const photoUri = result.assets[0].uri;
-        // 跳转到换装页面并传递照片URI
-        router.push({
-          pathname: '/outfit-change' as any,
-          params: { photoUri }
-        });
-      }
-    } catch (error) {
-      console.error('拍照失败:', error);
-      Alert.alert(t('common.error'), '拍照失败，请重试');
-    } finally {
-      setIsTakingPhoto(false);
-    }
   };
 
   return (
@@ -85,7 +44,7 @@ export default function HomeScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero Card */}
+        {/* Hero Card - 直接点击进入换装页面 */}
         <TouchableOpacity 
           style={styles.heroCard}
           onPress={() => router.push('/outfit-change' as any)}
@@ -99,10 +58,6 @@ export default function HomeScreen() {
           >
             <View style={styles.heroContent}>
               <View style={styles.heroLeft}>
-                <View style={styles.aiPoweredBadge}>
-                  <Sparkles size={14} color="#fff" strokeWidth={2.5} />
-                  <Text style={styles.aiPoweredText}>{t('home.aiPowered')}</Text>
-                </View>
                 <Text style={styles.heroTitle}>{t('home.oneClickOutfit')}</Text>
                 <Text style={styles.heroSubtitle}>{t('home.transformInstantly')}</Text>
               </View>
@@ -113,19 +68,13 @@ export default function HomeScreen() {
               </View>
             </View>
             
-            {/* 拍照按钮 */}
-            <TouchableOpacity 
-              style={styles.cameraButton}
-              onPress={handleTakePhoto}
-              disabled={isTakingPhoto}
-            >
-              <View style={styles.cameraIconContainer}>
+            {/* 上传按钮 - 点击整个卡片都会跳转 */}
+            <View style={styles.uploadButtonContainer}>
+              <View style={styles.uploadIconContainer}>
                 <Camera size={20} color="#0F172A" strokeWidth={2.5} />
               </View>
-              <Text style={styles.cameraText}>
-                {isTakingPhoto ? t('common.loading') : t('home.takeSelfie')}
-              </Text>
-            </TouchableOpacity>
+              <Text style={styles.uploadText}>{t('home.uploadSelfie')}</Text>
+            </View>
           </LinearGradient>
         </TouchableOpacity>
 
@@ -253,24 +202,6 @@ const styles = StyleSheet.create({
   heroLeft: {
     flex: 1,
   },
-  aiPoweredBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    marginBottom: 8,
-    gap: 4,
-  },
-  aiPoweredText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
   heroTitle: {
     fontSize: 24,
     fontWeight: '700',
@@ -311,7 +242,7 @@ const styles = StyleSheet.create({
   heroImagePlaceholderIcon: {
     fontSize: 32,
   },
-  cameraButton: {
+  uploadButtonContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -323,7 +254,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: 12,
   },
-  cameraIconContainer: {
+  uploadIconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -336,7 +267,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  cameraText: {
+  uploadText: {
     fontSize: 14,
     fontWeight: '700',
     color: '#FFFFFF',
