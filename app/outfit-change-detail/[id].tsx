@@ -18,7 +18,7 @@ type ZoomableImageProps = {
 function ZoomableImage({ uri, t }: ZoomableImageProps) {
   const [saving, setSaving] = useState(false);
 
-  const handleLongPress = async () => {
+  const handleDownload = async () => {
     if (saving) return;
     
     try {
@@ -39,16 +39,13 @@ function ZoomableImage({ uri, t }: ZoomableImageProps) {
 
   return (
     <View style={[zoomStyles.container, { backgroundColor: 'rgba(0, 0, 0, 0.95)' }]}>
-      <TouchableOpacity
+      <View
         style={{
           width: '100%',
           height: '100%',
           alignItems: 'center',
           justifyContent: 'center',
         }}
-        activeOpacity={1}
-        onLongPress={handleLongPress}
-        delayLongPress={500}
       >
         <Image source={{ uri }} style={zoomStyles.image} contentFit="contain" />
         {saving && (
@@ -56,6 +53,18 @@ function ZoomableImage({ uri, t }: ZoomableImageProps) {
             <Text style={zoomStyles.savingText}>{t('common.saving')}...</Text>
           </View>
         )}
+      </View>
+      
+      <TouchableOpacity
+        style={zoomStyles.downloadButton}
+        onPress={handleDownload}
+        disabled={saving}
+        activeOpacity={0.8}
+      >
+        <View style={zoomStyles.downloadButtonInner}>
+          <Download size={20} color="#fff" strokeWidth={2.5} />
+          <Text style={zoomStyles.downloadButtonText}>{t('common.save')}</Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -546,6 +555,31 @@ const zoomStyles = StyleSheet.create({
   savingText: {
     color: '#fff',
     fontSize: 14,
+    fontWeight: '600',
+  },
+  downloadButton: {
+    position: 'absolute',
+    bottom: 100,
+    alignSelf: 'center',
+    zIndex: 10,
+  },
+  downloadButtonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(0, 102, 255, 0.95)',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  downloadButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: '600',
   },
 });

@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Image as ExpoImage } from 'expo-image';
 import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, RefreshControl, Alert, TextInput, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Modal, PanResponder, Animated } from 'react-native';
-import { Heart, MessageSquare, Trash2, MoreHorizontal, Pin, X, AlertTriangle } from 'lucide-react-native';
+import { Heart, MessageSquare, Trash2, MoreHorizontal, Pin, X, AlertTriangle, Download } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSquare, SquarePost, SquareComment } from '@/contexts/SquareContext';
@@ -20,7 +20,7 @@ type ZoomableImageProps = {
 function ZoomableImage({ uri, t }: ZoomableImageProps) {
   const [saving, setSaving] = useState(false);
 
-  const handleLongPress = async () => {
+  const handleDownload = async () => {
     if (saving) return;
     
     try {
@@ -41,16 +41,13 @@ function ZoomableImage({ uri, t }: ZoomableImageProps) {
 
   return (
     <View style={[zoomStyles.container, { backgroundColor: 'rgba(0, 0, 0, 0.95)' }]}>
-      <TouchableOpacity
+      <View
         style={{
           width: '100%',
           height: '100%',
           alignItems: 'center',
           justifyContent: 'center',
         }}
-        activeOpacity={1}
-        onLongPress={handleLongPress}
-        delayLongPress={500}
       >
         <ExpoImage source={{ uri }} style={zoomStyles.image} contentFit="contain" />
         {saving && (
@@ -58,6 +55,18 @@ function ZoomableImage({ uri, t }: ZoomableImageProps) {
             <Text style={zoomStyles.savingText}>{t('common.saving')}...</Text>
           </View>
         )}
+      </View>
+      
+      <TouchableOpacity
+        style={zoomStyles.downloadButton}
+        onPress={handleDownload}
+        disabled={saving}
+        activeOpacity={0.8}
+      >
+        <View style={zoomStyles.downloadButtonInner}>
+          <Download size={20} color="#fff" strokeWidth={2.5} />
+          <Text style={zoomStyles.downloadButtonText}>{t('common.save')}</Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -910,6 +919,31 @@ const zoomStyles = StyleSheet.create({
   savingText: {
     color: '#fff',
     fontSize: 14,
+    fontWeight: '600',
+  },
+  downloadButton: {
+    position: 'absolute',
+    bottom: 100,
+    alignSelf: 'center',
+    zIndex: 10,
+  },
+  downloadButtonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(0, 102, 255, 0.95)',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  downloadButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: '600',
   },
 });
