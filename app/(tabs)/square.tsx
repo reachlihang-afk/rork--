@@ -75,6 +75,7 @@ function ZoomableImage({ uri, t }: ZoomableImageProps) {
 function getTemplateIcon(templateName: string): string {
   const templateIcons: Record<string, string> = {
     '随机装': '🎲',
+    'Jennie同款': '💖',
     '正装': '👔',
     '比基尼': '👙',
     '一键穿搭': '✨',
@@ -103,6 +104,7 @@ function getTemplateIcon(templateName: string): string {
 function getTemplateBadgeColor(templateName: string): string {
   const templateColors: Record<string, string> = {
     '随机装': '#F3E8FF',
+    'Jennie同款': '#FFE4E6',
     '正装': '#EEF2FF',
     '比基尼': '#FEF3C7',
     '一键穿搭': '#F0F9FF',

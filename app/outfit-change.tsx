@@ -182,6 +182,40 @@ function getRandomPrincessStyle(): string {
   return DISNEY_PRINCESS_STYLES[randomIndex];
 }
 
+// Jennie穿搭风格库 - 20+种经典造型
+const JENNIE_OUTFIT_STYLES = [
+  'Jennie Chanel style - luxury Chanel tweed jacket with mini skirt, pearl accessories, elegant high fashion look with sophisticated French luxury vibes',
+  'Jennie airport fashion - oversized blazer, crop top, high-waisted jeans, designer sunglasses, effortlessly chic street style',
+  'Jennie stage performance - crystal embellished bodysuit with high boots, bold and glamorous concert outfit with sexy confident energy',
+  'Jennie Coachella style - colorful bohemian crop top with denim shorts, festival-ready look with playful accessories and braided hair',
+  'Jennie pink princess - all pink outfit with oversized pink blazer, pink mini dress, girly yet edgy Barbie-inspired aesthetic',
+  'Jennie leather look - black leather jacket with leather pants or skirt, rock chic style with bold attitude and fierce energy',
+  'Jennie preppy style - pleated mini skirt with cardigan or knit top, school girl inspired look with youthful charm',
+  'Jennie tennis outfit - white tennis dress or tennis skirt with polo top, sporty yet fashionable athletic look',
+  'Jennie designer suit - tailored oversized designer suit with crop top or bralette underneath, powerful boss lady style',
+  'Jennie vintage 90s - vintage inspired crop top with low-rise jeans, retro 90s Y2K aesthetic with nostalgic vibes',
+  'Jennie casual street - oversized hoodie or sweatshirt with bike shorts, comfortable yet stylish everyday street style',
+  'Jennie red carpet - elegant evening gown with sparkles or satin finish, glamorous Hollywood star look',
+  'Jennie denim style - denim jacket with denim skirt or jeans, all-denim Canadian tuxedo look with cool factor',
+  'Jennie black & white - classic black and white color blocking outfit, timeless monochrome elegance',
+  'Jennie crop top queen - various styles of crop tops with high-waisted bottoms, showing off her famous abs and confident style',
+  'Jennie Celine fashion - minimalist Celine designer pieces, sophisticated modern luxury style',
+  'Jennie edgy grunge - ripped jeans with band tees or graphic tops, rebellious grunge aesthetic with chains and boots',
+  'Jennie feminine floral - floral mini dress or floral top with skirt, romantic feminine style with delicate patterns',
+  'Jennie athleisure - designer sports bra with matching leggings or track pants, high-end athletic wear style',
+  'Jennie blazer power - oversized blazer as dress or with shorts underneath, powerful fashion-forward statement look',
+  'Jennie summer vacation - breezy summer dress or romper, vacation-ready look with sun hat and sunglasses',
+  'Jennie winter chic - luxury fur coat or long wool coat with designer boots, elegant winter fashion',
+  'Jennie party outfit - sparkly mini dress or sequin top with leather pants, ready for nightclub glamour',
+  'Jennie Korean street fashion - trendy Korean street style with layered pieces, oversized fits, and unique accessories',
+];
+
+// 随机选择一种Jennie穿搭风格
+function getRandomJennieStyle(): string {
+  const randomIndex = Math.floor(Math.random() * JENNIE_OUTFIT_STYLES.length);
+  return JENNIE_OUTFIT_STYLES[randomIndex];
+}
+
 const templates: Template[] = [
   {
     id: 'random',
@@ -190,6 +224,14 @@ const templates: Template[] = [
     // 注意：实际的 prompt 会在生成时动态创建
     prompt: COMMON_PROMPT_PREFIX + 'RANDOM_STYLE_PLACEHOLDER',
     icon: '🎲',
+  },
+  {
+    id: 'jennie',
+    name: 'Jennie同款',
+    nameEn: 'Jennie Style',
+    // 注意：实际的 prompt 会在生成时动态创建
+    prompt: COMMON_PROMPT_PREFIX + 'JENNIE_STYLE_PLACEHOLDER',
+    icon: '💖',
   },
   {
     id: 'bikini',
@@ -614,19 +656,23 @@ export default function OutfitChangeScreen() {
       
       let requestBody;
       if (mode === 'template') {
-        // 如果是随机装或童话公主装，每次动态生成一个完全不同的风格
+        // 如果是随机装、童话公主装或Jennie同款，每次动态生成一个完全不同的风格
         let finalPrompt = selectedTemplate!.prompt;
         
         if (selectedTemplate!.id === 'random') {
           const randomStyle = getRandomOutfitStyle();
           finalPrompt = COMMON_PROMPT_PREFIX + `Change the outfit to: ${randomStyle}. IMPORTANT: Create a COMPLETE OUTFIT SOLUTION with matching accessories, bag/purse, and shoes that perfectly coordinate with this style. The accessories, footwear, and bag should complement and enhance the overall look to create a cohesive, well-styled ensemble. Be creative and ensure the style is distinct and unique!`;
           console.log('[OutfitChange] Random style selected:', randomStyle);
+        } else if (selectedTemplate!.id === 'jennie') {
+          const jennieStyle = getRandomJennieStyle();
+          finalPrompt = COMMON_PROMPT_PREFIX + `Transform into Jennie from BLACKPINK fashion style: ${jennieStyle}. IMPORTANT: Recreate Jennie's iconic fashion sense with authentic details - capture her signature style elements, proportions, and overall vibe. Create a COMPLETE OUTFIT with matching accessories, bag, and shoes that Jennie would actually wear. Make it look like a real Jennie outfit transformation with her characteristic confidence and fashion-forward aesthetic!`;
+          console.log('[OutfitChange] Jennie style selected:', jennieStyle);
         } else if (selectedTemplate!.id === 'fairytale-princess') {
           const princessStyle = getRandomPrincessStyle();
           finalPrompt = COMMON_PROMPT_PREFIX + `Change the outfit to magical Disney princess dress: ${princessStyle}. Create an enchanting and authentic princess transformation with all the iconic details. Make it look like a real Disney princess came to life!`;
           console.log('[OutfitChange] Princess style selected:', princessStyle);
         } else {
-          // 其他模板统一增加“同类别内多样化”指令
+          // 其他模板统一增加"同类别内多样化"指令
           finalPrompt = `${selectedTemplate!.prompt} ${TEMPLATE_VARIATION_SUFFIX}`;
         }
         

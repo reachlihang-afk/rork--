@@ -420,6 +420,7 @@
     showLess: '閉じる',
     templates: {
       random: 'ランダムスタイル',
+      jennie: 'ジェニースタイル',
       bikini: 'ビキニ',
       formal: 'フォーマル',
       'fairytale-princess': 'おとぎ話のプリンセス',

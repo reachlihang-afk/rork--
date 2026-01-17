@@ -420,6 +420,7 @@
     showLess: '접기',
     templates: {
       random: '랜덤 스타일',
+      jennie: '제니 스타일',
       bikini: '비키니',
       formal: '정장',
       'fairytale-princess': '동화 공주',

@@ -429,6 +429,7 @@
     showLess: 'Show Less',
     templates: {
       random: 'Random Style',
+      jennie: 'Jennie Style',
       bikini: 'Bikini',
       formal: 'Formal',
       'fairytale-princess': 'Fairytale Princess',
