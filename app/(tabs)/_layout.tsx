@@ -11,8 +11,8 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#0066FF',
-        tabBarInactiveTintColor: '#94A3B8',
+        tabBarActiveTintColor: '#1a1a1a',
+        tabBarInactiveTintColor: '#9ca3af',
         headerShown: true,
         headerStyle: {
           backgroundColor: '#fff',
@@ -24,14 +24,16 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: '#fff',
           borderTopWidth: 1,
-          borderTopColor: '#E2E8F0',
-          height: 88,
+          borderTopColor: '#f3f4f6',
+          height: 80,
           paddingTop: 8,
+          paddingBottom: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
-          marginBottom: 8,
+          fontSize: 11,
+          fontWeight: '600',
+          marginTop: 4,
+          marginBottom: 4,
         },
       }}
     >
@@ -39,14 +41,14 @@ export default function TabLayout() {
         name="index"
         options={{
           title: t('home.title'),
-          tabBarIcon: ({ color }) => <Home size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Home size={22} color={color} strokeWidth={2} />,
         }}
       />
       <Tabs.Screen
         name="square"
         options={{
           title: t('square.title'),
-          tabBarIcon: ({ color }) => <Grid3x3 size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Grid3x3 size={22} color={color} strokeWidth={2} />,
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => router.back()}
@@ -61,7 +63,7 @@ export default function TabLayout() {
         name="history"
         options={{
           title: t('history.title'),
-          tabBarIcon: ({ color }) => <Clock size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Clock size={22} color={color} strokeWidth={2} />,
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => router.back()}
@@ -77,7 +79,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: t('profile.title'),
-          tabBarIcon: ({ color }) => <User size={24} color={color} />,
+          tabBarIcon: ({ color }) => <User size={22} color={color} strokeWidth={2} />,
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => router.back()}
