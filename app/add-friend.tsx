@@ -11,14 +11,15 @@ import {
   Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack } from 'expo-router';
-import { Search, Users, UserPlus, UserCheck, Clock } from 'lucide-react-native';
+import { Stack, useRouter } from 'expo-router';
+import { Search, Users, UserPlus, UserCheck, Clock, ArrowLeft } from 'lucide-react-native';
 import { useFriends } from '@/contexts/FriendsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function AddFriendScreen() {
   const { t } = useLanguage();
+  const router = useRouter();
   const { user } = useAuth();
   const { searchUserByIdOrPhone, sendFriendRequest, isFriend, hasPendingRequest } = useFriends();
   const [searchQuery, setSearchQuery] = useState('');
@@ -134,6 +135,14 @@ export default function AddFriendScreen() {
         options={{
           title: t('friends.addFriend'),
           headerStyle: { backgroundColor: '#fff' },
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ marginLeft: -8, padding: 8 }}
+            >
+              <ArrowLeft size={24} color="#1a1a1a" />
+            </TouchableOpacity>
+          ),
         }}
       />
 

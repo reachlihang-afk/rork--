@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, router } from 'expo-router';
-import { Users, UserPlus, Clock, Check, X, Trash2 } from 'lucide-react-native';
+import { Users, UserPlus, Clock, Check, X, Trash2, ArrowLeft } from 'lucide-react-native';
 import { useFriends } from '@/contexts/FriendsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -33,7 +33,17 @@ export default function FriendsScreen() {
   if (!user) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <Stack.Screen options={{ title: t('friends.title') }} />
+        <Stack.Screen options={{
+          title: t('friends.title'),
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ marginLeft: -8, padding: 8 }}
+            >
+              <ArrowLeft size={24} color="#1a1a1a" />
+            </TouchableOpacity>
+          ),
+        }} />
         <View style={styles.emptyContainer}>
           <Users size={64} color="#ccc" />
           <Text style={styles.emptyText}>{t('friends.loginRequired')}</Text>
@@ -151,6 +161,14 @@ export default function FriendsScreen() {
         options={{ 
           title: t('friends.title'),
           headerStyle: { backgroundColor: '#fff' },
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ marginLeft: -8, padding: 8 }}
+            >
+              <ArrowLeft size={24} color="#1a1a1a" />
+            </TouchableOpacity>
+          ),
           headerRight: () => (
             <TouchableOpacity
               onPress={() => router.push('/add-friend' as any)}

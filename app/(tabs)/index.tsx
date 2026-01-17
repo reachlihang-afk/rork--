@@ -91,6 +91,18 @@ export default function HomeScreen() {
                 )}
               </View>
             </View>
+            
+            {/* 圆形开始按钮 */}
+            <View style={styles.heroStartButtonContainer}>
+              <View style={styles.heroStartButton}>
+                <LinearGradient
+                  colors={['#ffffff', '#f0f0f0']}
+                  style={styles.heroStartButtonGradient}
+                >
+                  <Text style={styles.heroStartButtonIcon}>▶</Text>
+                </LinearGradient>
+              </View>
+            </View>
           </LinearGradient>
         </TouchableOpacity>
 
@@ -198,22 +210,24 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   heroCard: {
-    borderRadius: 24,
+    borderRadius: 28,
     overflow: 'hidden',
     marginBottom: 24,
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.4,
+    shadowRadius: 24,
+    elevation: 10,
+    minHeight: 260, // 增大高度
   },
   heroGradient: {
-    padding: 24,
+    padding: 32, // 增大内边距
+    minHeight: 260,
   },
   heroContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 24, // 增加底部间距
   },
   heroLeft: {
     flex: 1,
@@ -266,6 +280,39 @@ const styles = StyleSheet.create({
   heroImagePlaceholderIcon: {
     fontSize: 32,
   },
+  
+  // 圆形开始按钮
+  heroStartButtonContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+  },
+  heroStartButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    shadowColor: '#ffffff',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  heroStartButtonGradient: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.8)',
+  },
+  heroStartButtonIcon: {
+    fontSize: 28,
+    color: '#0F172A',
+    fontWeight: '900',
+    marginLeft: 4, // 微调播放图标位置
+  },
+
   uploadButtonContainer: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
-import { Shield, AlertCircle } from 'lucide-react-native';
+import { Shield, AlertCircle, ArrowLeft } from 'lucide-react-native';
 import { useFriends } from '@/contexts/FriendsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -146,6 +146,14 @@ export default function FriendHistoryScreen() {
           options={{ 
             title: t('friends.viewHistory'),
             headerStyle: { backgroundColor: '#fff' },
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ marginLeft: -8, padding: 8 }}
+              >
+                <ArrowLeft size={24} color="#1a1a1a" />
+              </TouchableOpacity>
+            ),
           }} 
         />
         <View style={styles.loadingContainer}>
@@ -162,6 +170,14 @@ export default function FriendHistoryScreen() {
           options={{ 
             title: t('friends.viewHistory'),
             headerStyle: { backgroundColor: '#fff' },
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ marginLeft: -8, padding: 8 }}
+              >
+                <ArrowLeft size={24} color="#1a1a1a" />
+              </TouchableOpacity>
+            ),
           }} 
         />
         <View style={styles.emptyContainer}>
@@ -179,6 +195,14 @@ export default function FriendHistoryScreen() {
           options={{ 
             title: friendInfo ? friendInfo.nickname : t('friends.viewHistory'),
             headerStyle: { backgroundColor: '#fff' },
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ marginLeft: -8, padding: 8 }}
+              >
+                <ArrowLeft size={24} color="#1a1a1a" />
+              </TouchableOpacity>
+            ),
           }} 
         />
         <View style={styles.emptyContainer}>
@@ -195,6 +219,14 @@ export default function FriendHistoryScreen() {
         options={{ 
           title: friendInfo ? friendInfo.nickname : t('friends.viewHistory'),
           headerStyle: { backgroundColor: '#fff' },
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ marginLeft: -8, padding: 8 }}
+            >
+              <ArrowLeft size={24} color="#1a1a1a" />
+            </TouchableOpacity>
+          ),
         }} 
       />
       {records.length > 0 ? (

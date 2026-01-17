@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
-import { Users, UserPlus, UserCheck, Clock, Shield } from 'lucide-react-native';
+import { Users, UserPlus, UserCheck, Clock, Shield, ArrowLeft } from 'lucide-react-native';
 import { useFriends } from '@/contexts/FriendsContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -131,7 +131,17 @@ export default function UserProfileScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <Stack.Screen options={{ title: t('friends.userProfile') }} />
+        <Stack.Screen options={{
+          title: t('friends.userProfile'),
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ marginLeft: -8, padding: 8 }}
+            >
+              <ArrowLeft size={24} color="#1a1a1a" />
+            </TouchableOpacity>
+          ),
+        }} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
         </View>
@@ -142,7 +152,17 @@ export default function UserProfileScreen() {
   if (!profileUser) {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
-        <Stack.Screen options={{ title: t('friends.userProfile') }} />
+        <Stack.Screen options={{
+          title: t('friends.userProfile'),
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ marginLeft: -8, padding: 8 }}
+            >
+              <ArrowLeft size={24} color="#1a1a1a" />
+            </TouchableOpacity>
+          ),
+        }} />
         <View style={styles.emptyContainer}>
           <Users size={64} color="#ccc" />
           <Text style={styles.emptyText}>{t('friends.userNotFound')}</Text>
@@ -157,6 +177,14 @@ export default function UserProfileScreen() {
         options={{ 
           title: t('friends.userProfile'),
           headerStyle: { backgroundColor: '#fff' },
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ marginLeft: -8, padding: 8 }}
+            >
+              <ArrowLeft size={24} color="#1a1a1a" />
+            </TouchableOpacity>
+          ),
         }} 
       />
       <ScrollView contentContainerStyle={styles.content}>
