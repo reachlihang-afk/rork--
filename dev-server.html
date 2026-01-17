@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PicSeek - 开发服务器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .status {
+            background: #f0fdf4;
+            border: 2px solid #86efac;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .status-text {
+            color: #15803d;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .updates {
+            margin-bottom: 30px;
+        }
+        
+        .updates h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+        }
+        
+        .update-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .update-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .update-icon {
+            font-size: 24px;
+            margin-right: 12px;
+        }
+        
+        .update-text {
+            flex: 1;
+            font-size: 14px;
+            color: #374151;
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .info {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .info-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .info-text {
+            color: #1e40af;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        code {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 PicSeek 开发服务器</h1>
+        <p class="subtitle">一键换装 · UI全面升级</p>
+        
+        <div class="status">
+            <div class="status-icon">🚀</div>
+            <div class="status-text">服务器正在启动中...</div>
+        </div>
+        
+        <div class="updates">
+            <h2>✨ 今日完成的更新</h2>
+            
+            <div class="update-item">
+                <div class="update-icon">📸</div>
+                <div class="update-text"><strong>换装结果页</strong> - Original/Result切换，固定底部操作栏</div>
+            </div>
+            
+            <div class="update-item">
+                <div class="update-icon">💎</div>
+                <div class="update-text"><strong>充值页面</strong> - 4个精美套餐，徽章系统，Dark Mode</div>
+            </div>
+            
+            <div class="update-item">
+                <div class="update-icon">📜</div>
+                <div class="update-text"><strong>历史页面</strong> - 时间分组，New徽章，并排对比</div>
+            </div>
+            
+            <div class="update-item">
+                <div class="update-icon">🎯</div>
+                <div class="update-text"><strong>换装页面</strong> - 修复历史保存，移除多余选项</div>
+            </div>
+            
+            <div class="update-item">
+                <div class="update-icon">🧭</div>
+                <div class="update-text"><strong>底部导航</strong> - 白色主题，优化样式</div>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <a href="http://localhost:19006" class="btn btn-primary" target="_blank">
+                🌐 打开Web版
+            </a>
+            <a href="http://localhost:8081" class="btn btn-secondary" target="_blank">
+                📱 Expo DevTools
+            </a>
+            <button class="btn btn-secondary full-width" onclick="location.reload()">
+                🔄 刷新状态
+            </button>
+        </div>
+        
+        <div class="info">
+            <div class="info-title">💡 访问方式</div>
+            <div class="info-text">
+                <strong>Web浏览器:</strong> <code>http://localhost:19006</code><br>
+                <strong>手机扫码:</strong> 使用Expo Go App扫描二维码<br>
+                <strong>模拟器:</strong> 按 <code>i</code> (iOS) 或 <code>a</code> (Android)
+            </div>
+        </div>
+        
+        <div class="info" style="margin-top: 15px; background: #fef3c7; border-left-color: #f59e0b;">
+            <div class="info-title" style="color: #92400e;">⚠️ 如果页面无法打开</div>
+            <div class="info-text" style="color: #92400e;">
+                1. 确保开发服务器已启动（查看终端）<br>
+                2. 等待编译完成（首次启动较慢）<br>
+                3. 检查端口 19006 是否被占用<br>
+                4. 尝试清除缓存后重启：<code>npm start -- --clear</code>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 自动检测服务器状态
+        let attempts = 0;
+        const maxAttempts = 30;
+        
+        function checkServer() {
+            attempts++;
+            fetch('http://localhost:19006')
+                .then(response => {
+                    if (response.ok) {
+                        document.querySelector('.status').innerHTML = `
+                            <div class="status-icon">✅</div>
+                            <div class="status-text">服务器已就绪！</div>
+                        `;
+                        document.querySelector('.status').style.background = '#f0fdf4';
+                        document.querySelector('.status').style.borderColor = '#86efac';
+                    }
+                })
+                .catch(error => {
+                    if (attempts < maxAttempts) {
+                        setTimeout(checkServer, 2000);
+                    } else {
+                        document.querySelector('.status').innerHTML = `
+                            <div class="status-icon">⏳</div>
+                            <div class="status-text">服务器启动中，请稍候...</div>
+                        `;
+                        document.querySelector('.status').style.background = '#fef3c7';
+                        document.querySelector('.status').style.borderColor = '#fcd34d';
+                    }
+                });
+        }
+        
+        // 开始检测
+        setTimeout(checkServer, 3000);
+    </script>
+</body>
+</html>
