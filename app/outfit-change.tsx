@@ -255,6 +255,7 @@ export default function OutfitChangeNewScreen() {
   const [customImages, setCustomImages] = useState<string[]>([]);
   const [showAllTemplates, setShowAllTemplates] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedResult, setGeneratedResult] = useState<{ original: string; result: string; templateName: string } | null>(null);
   
   // Pro Style相关状态
   const [selectedInfluencerId, setSelectedInfluencerId] = useState<string | null>(null);
@@ -724,9 +725,6 @@ FINAL RESULT REQUIREMENTS:
 
       const generatedImageUri = `data:${data.image.mimeType};base64,${data.image.base64Data}`;
       
-      // 提示用户图片已生成
-      Alert.alert(t('common.success'), '图片已生成');
-      
       // 使用换装次数（可能消耗免费次数或金币）
       await useOutfitChange();
       
@@ -736,19 +734,33 @@ FINAL RESULT REQUIREMENTS:
           ? TEMPLATES.find(t => t.id === selectedTemplate)?.name || '自定义'
           : selectedTab === 'custom' ? t('outfitChange.customOutfit') : 'Pro Style';
         
-        const recordId = await addOutfitChangeHistory(
+        await addOutfitChangeHistory(
           userImage,
           generatedImageUri,
           selectedTab === 'template' ? selectedTemplate! : 'custom-outfit',
           templateName
         );
         
-        // 跳转到结果页
-        router.push(`/outfit-change-detail/${recordId}` as any);
+        // 显示结果在页面上（不跳转）
+        setGeneratedResult({
+          original: userImage,
+          result: generatedImageUri,
+          templateName
+        });
+        
+        // 提示用户图片已生成
+        Alert.alert(t('common.success'), '图片已生成，请查看结果');
         
       } catch (historyError) {
         console.error('Failed to save to history:', historyError);
         // 即使保存失败也显示结果
+        setGeneratedResult({
+          original: userImage,
+          result: generatedImageUri,
+          templateName: selectedTab === 'template' 
+            ? TEMPLATES.find(t => t.id === selectedTemplate)?.name || '自定义'
+            : selectedTab === 'custom' ? t('outfitChange.customOutfit') : 'Pro Style'
+        });
         Alert.alert(t('common.success'), '图片已生成（但保存历史记录失败）');
       }
       
@@ -1067,6 +1079,58 @@ FINAL RESULT REQUIREMENTS:
           )}
         </View>
 
+        {/* 生成结果展示区域 */}
+        {generatedResult && (
+          <View style={styles.resultSection}>
+            <View style={styles.resultHeader}>
+              <Text style={[styles.resultTitle, isDark && styles.textDark]}>
+                ✨ {t('outfitChange.transformationComplete')}
+              </Text>
+              <TouchableOpacity 
+                style={styles.closeResultButton}
+                onPress={() => setGeneratedResult(null)}
+              >
+                <X size={20} color={isDark ? '#9ca3af' : '#6b7280'} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.resultComparison}>
+              {/* 原图 */}
+              <View style={styles.resultImageContainer}>
+                <Image 
+                  source={{ uri: generatedResult.original }} 
+                  style={styles.resultImage} 
+                  contentFit="cover" 
+                />
+                <View style={[styles.resultLabel, isDark && styles.resultLabelDark]}>
+                  <Text style={styles.resultLabelText}>{t('history.original')}</Text>
+                </View>
+              </View>
+
+              {/* 箭头 */}
+              <View style={styles.resultArrow}>
+                <Text style={styles.resultArrowText}>→</Text>
+              </View>
+
+              {/* 结果图 */}
+              <View style={styles.resultImageContainer}>
+                <Image 
+                  source={{ uri: generatedResult.result }} 
+                  style={styles.resultImage} 
+                  contentFit="cover" 
+                />
+                <View style={[styles.resultLabel, styles.resultLabelResult, isDark && styles.resultLabelDark]}>
+                  <Text style={[styles.resultLabelText, styles.resultLabelTextResult]}>{t('history.result')}</Text>
+                </View>
+              </View>
+            </View>
+
+            <Text style={[styles.resultTemplateName, isDark && styles.textDark]}>
+              {generatedResult.templateName}
+            </Text>
+          </View>
+        )}
+
         <View style={{ height: 120 }} />
       </ScrollView>
 
@@ -1115,7 +1179,7 @@ FINAL RESULT REQUIREMENTS:
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f5f5', // 浅灰色背景，更接近设计图
   },
   containerDark: {
     backgroundColor: '#121212',
@@ -1310,22 +1374,33 @@ const styles = StyleSheet.create({
   templateCard: {
     width: '31%',
     aspectRatio: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#ffffff',
     borderRadius: 20,
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: '#e5e7eb',
     padding: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   templateCardDark: {
     backgroundColor: '#1e1e1e',
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   templateCardSelected: {
     backgroundColor: '#1a1a1a',
     borderColor: '#1a1a1a',
-    borderWidth: 2,
+    borderWidth: 3,
+    transform: [{ scale: 1.05 }],
+    shadowColor: '#1a1a1a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   templateIcon: {
     marginBottom: 8,
@@ -1335,6 +1410,7 @@ const styles = StyleSheet.create({
   },
   templateIconTextSelected: {
     opacity: 1,
+    transform: [{ scale: 1.1 }],
   },
   templateName: {
     fontSize: 12,
@@ -1344,6 +1420,7 @@ const styles = StyleSheet.create({
   },
   templateNameSelected: {
     color: '#ffffff',
+    fontWeight: '800',
   },
   templateEmoji: {
     fontSize: 10,
@@ -1545,6 +1622,103 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 24,
   },
+
+  // 生成结果展示区域
+  resultSection: {
+    marginTop: 24,
+    marginBottom: 16,
+    backgroundColor: '#f9fafb',
+    borderRadius: 24,
+    padding: 20,
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+  },
+  resultHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  resultTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1a1a1a',
+  },
+  closeResultButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#e5e7eb',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  resultComparison: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  resultImageContainer: {
+    flex: 1,
+    aspectRatio: 3 / 4,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  resultImage: {
+    width: '100%',
+    height: '100%',
+  },
+  resultLabel: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    right: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  resultLabelDark: {
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  resultLabelResult: {
+    backgroundColor: 'rgba(26, 26, 26, 0.95)',
+  },
+  resultLabelText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  resultLabelTextResult: {
+    color: '#ffffff',
+  },
+  resultArrow: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#1a1a1a',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  resultArrowText: {
+    fontSize: 18,
+    color: '#ffffff',
+    fontWeight: '700',
+  },
+  resultTemplateName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#4b5563',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+
   selectedLookContainer: {
     marginTop: 8,
   },
