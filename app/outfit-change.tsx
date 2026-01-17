@@ -264,6 +264,14 @@ export default function OutfitChangeNewScreen() {
   const [selectedInfluencerId, setSelectedInfluencerId] = useState<string | null>(null);
   const [selectedLookPrompt, setSelectedLookPrompt] = useState<string | null>(null);
 
+  const getWritableDirectory = () => {
+    const fsAny = FileSystem as unknown as {
+      documentDirectory?: string | null;
+      cacheDirectory?: string | null;
+    };
+    return fsAny.documentDirectory ?? fsAny.cacheDirectory ?? '';
+  };
+
   // 保存到相册
   const handleSaveToGallery = async (uri: string) => {
     try {
@@ -285,9 +293,13 @@ export default function OutfitChangeNewScreen() {
       let localUri = uri;
       if (uri.startsWith('data:')) {
         const base64Data = uri.split(',')[1];
-        const filename = `${FileSystem.cacheDirectory}temp_share_${Date.now()}.jpg`;
+        const baseDir = getWritableDirectory();
+        if (!baseDir) {
+          throw new Error('No writable directory available');
+        }
+        const filename = `${baseDir}temp_share_${Date.now()}.jpg`;
         await FileSystem.writeAsStringAsync(filename, base64Data, {
-          encoding: FileSystem.EncodingType.Base64,
+          encoding: 'base64',
         });
         localUri = filename;
       }
@@ -791,10 +803,14 @@ FINAL RESULT REQUIREMENTS:
         let savedResultUri = generatedImageUri;
         if (Platform.OS !== 'web') {
           try {
+            const baseDir = getWritableDirectory();
+            if (!baseDir) {
+              throw new Error('No writable directory available');
+            }
             const filename = `outfit_result_${Date.now()}.jpg`;
-            const filepath = `${FileSystem.documentDirectory}${filename}`;
+            const filepath = `${baseDir}${filename}`;
             await FileSystem.writeAsStringAsync(filepath, generatedImageBase64, {
-              encoding: FileSystem.EncodingType.Base64,
+              encoding: 'base64',
             });
             savedResultUri = filepath;
             console.log('[OutfitChange] Saved result to local file:', filepath);
