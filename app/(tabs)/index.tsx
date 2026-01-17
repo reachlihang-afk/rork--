@@ -92,14 +92,14 @@ export default function HomeScreen() {
               </View>
             </View>
             
-            {/* 圆形开始按钮 */}
+            {/* 开始按钮 */}
             <View style={styles.heroStartButtonContainer}>
               <View style={styles.heroStartButton}>
                 <LinearGradient
-                  colors={['#ffffff', '#f0f0f0']}
+                  colors={['#ffffff', '#f8f8f8']}
                   style={styles.heroStartButtonGradient}
                 >
-                  <Text style={styles.heroStartButtonIcon}>▶</Text>
+                  <Text style={styles.heroStartButtonText}>{t('home.quickStart')}</Text>
                 </LinearGradient>
               </View>
             </View>
@@ -281,36 +281,31 @@ const styles = StyleSheet.create({
     fontSize: 32,
   },
   
-  // 圆形开始按钮
+  // 开始按钮
   heroStartButtonContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
+    marginTop: 20,
   },
   heroStartButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    shadowColor: '#ffffff',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
   heroStartButtonGradient: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
   },
-  heroStartButtonIcon: {
-    fontSize: 28,
-    color: '#0F172A',
-    fontWeight: '900',
-    marginLeft: 4, // 微调播放图标位置
+  heroStartButtonText: {
+    fontSize: 16,
+    color: '#1a1a1a',
+    fontWeight: '700',
+    letterSpacing: 1,
   },
 
   uploadButtonContainer: {

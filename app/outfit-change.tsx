@@ -259,6 +259,7 @@ export default function OutfitChangeNewScreen() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedResult, setGeneratedResult] = useState<{ original: string; result: string; templateName: string } | null>(null);
   const [showLargeImage, setShowLargeImage] = useState(false);
+  const [largeImageType, setLargeImageType] = useState<'original' | 'result'>('result');
   
   // Pro Style相关状态
   const [selectedInfluencerId, setSelectedInfluencerId] = useState<string | null>(null);
@@ -1161,7 +1162,14 @@ FINAL RESULT REQUIREMENTS:
             
             <View style={styles.resultComparison}>
               {/* 原图 */}
-              <View style={styles.resultImageContainer}>
+              <TouchableOpacity 
+                style={styles.resultImageContainer}
+                onPress={() => {
+                  setLargeImageType('original');
+                  setShowLargeImage(true);
+                }}
+                activeOpacity={0.9}
+              >
                 <Image 
                   source={{ uri: generatedResult.original }} 
                   style={styles.resultImage} 
@@ -1170,7 +1178,10 @@ FINAL RESULT REQUIREMENTS:
                 <View style={styles.resultLabel}>
                   <Text style={styles.resultLabelText}>{t('history.original')}</Text>
                 </View>
-              </View>
+                <View style={styles.zoomHint}>
+                  <Camera size={12} color="#fff" />
+                </View>
+              </TouchableOpacity>
 
               {/* 箭头 */}
               <View style={styles.resultArrow}>
@@ -1180,7 +1191,10 @@ FINAL RESULT REQUIREMENTS:
               {/* 结果图 */}
               <TouchableOpacity 
                 style={styles.resultImageContainer}
-                onPress={() => setShowLargeImage(true)}
+                onPress={() => {
+                  setLargeImageType('result');
+                  setShowLargeImage(true);
+                }}
                 activeOpacity={0.9}
               >
                 <Image 
@@ -1222,15 +1236,25 @@ FINAL RESULT REQUIREMENTS:
           
           <View style={styles.largeImageContainer}>
             <Image 
-              source={{ uri: generatedResult?.result }} 
+              source={{ uri: largeImageType === 'original' ? generatedResult?.original : generatedResult?.result }} 
               style={styles.largeImage} 
               contentFit="contain" 
             />
             
+            {/* 图片类型标签 */}
+            <View style={styles.imageTypeLabel}>
+              <Text style={styles.imageTypeLabelText}>
+                {largeImageType === 'original' ? t('history.original') : t('history.result')}
+              </Text>
+            </View>
+            
             <View style={styles.modalActions}>
               <TouchableOpacity 
                 style={styles.modalActionButton}
-                onPress={() => generatedResult && handleSaveToGallery(generatedResult.result)}
+                onPress={() => {
+                  const uri = largeImageType === 'original' ? generatedResult?.original : generatedResult?.result;
+                  if (uri) handleSaveToGallery(uri);
+                }}
               >
                 <Download size={24} color="#fff" />
                 <Text style={styles.modalActionText}>{t('common.save')}</Text>
@@ -1238,7 +1262,10 @@ FINAL RESULT REQUIREMENTS:
               
               <TouchableOpacity 
                 style={styles.modalActionButton}
-                onPress={() => generatedResult && handleShare(generatedResult.result)}
+                onPress={() => {
+                  const uri = largeImageType === 'original' ? generatedResult?.original : generatedResult?.result;
+                  if (uri) handleShare(uri);
+                }}
               >
                 <Share2 size={24} color="#fff" />
                 <Text style={styles.modalActionText}>{t('result.share')}</Text>
@@ -1965,6 +1992,21 @@ const styles = StyleSheet.create({
     width: '90%',
     height: '90%',
     borderRadius: 16,
+  },
+  imageTypeLabel: {
+    position: 'absolute',
+    top: 20,
+    left: '50%',
+    transform: [{ translateX: -40 }],
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  imageTypeLabelText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   modalActions: {
     flexDirection: 'row',
