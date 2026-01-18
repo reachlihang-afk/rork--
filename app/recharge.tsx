@@ -95,16 +95,18 @@ export default function RechargeScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity 
-            onPress={() => router.back()} 
-            style={styles.headerButton}
-          >
-            <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>
-            {t('recharge.title').toUpperCase()}
-          </Text>
-          <View style={styles.placeholder} />
+        <TouchableOpacity 
+          onPress={() => router.back()} 
+          style={styles.headerButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          activeOpacity={0.7}
+        >
+          <ArrowLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>
+          {t('recharge.title').toUpperCase()}
+        </Text>
+        <View style={styles.placeholder} />
         </View>
 
         <View style={styles.notLoginContainer}>
@@ -135,8 +137,10 @@ export default function RechargeScreen() {
         <TouchableOpacity 
           onPress={() => router.back()} 
           style={styles.headerButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          activeOpacity={0.7}
         >
-          <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2} />
+          <ArrowLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
           {t('recharge.title').toUpperCase()}
@@ -303,24 +307,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   
-  // Header
+  // Header - iOS 优化版本
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 60 : 24,
-    paddingBottom: 12,
+    paddingTop: Platform.OS === 'ios' ? 54 : 24,
+    paddingBottom: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
+    minHeight: Platform.OS === 'ios' ? 100 : 72,
   },
   headerButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#f5f5f5',
+    marginLeft: -8,
   },
   headerTitle: {
     fontSize: 14,

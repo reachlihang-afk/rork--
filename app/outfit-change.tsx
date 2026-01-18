@@ -1496,8 +1496,10 @@ FINAL RESULT REQUIREMENTS:
           <TouchableOpacity 
             style={styles.modalCloseButton}
             onPress={() => setShowLargeImage(false)}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+            activeOpacity={0.7}
           >
-            <X size={28} color="#fff" />
+            <X size={30} color="#fff" strokeWidth={2.5} />
           </TouchableOpacity>
         </View>
       </Modal>
@@ -2335,14 +2337,15 @@ const styles = StyleSheet.create({
   },
   modalCloseButton: {
     position: 'absolute',
-    top: 50,
-    right: 20,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    top: Platform.OS === 'ios' ? 54 : 40,
+    right: 24,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 100,
   },
   zoomHint: {
     position: 'absolute',
