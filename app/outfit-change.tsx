@@ -253,10 +253,13 @@ export default function OutfitChangeNewScreen() {
   };
   
   const { user, isLoggedIn } = useAuth();
-  const { coinBalance, canUseOutfitChange, useOutfitChange } = useCoin();
+  const { coinBalance, canUseOutfitChange, useOutfitChange, getRemainingFreeCounts } = useCoin();
   const { addOutfitChangeHistory } = useVerification();
   const { publishPost } = useSquare();
   const { showAlert } = useAlert();
+  
+  // 获取剩余免费次数
+  const { outfitChange: freeOutfitChangeCount } = getRemainingFreeCounts();
 
   // 状态管理
   const [selectedTab, setSelectedTab] = useState<TabType>('template');
@@ -1076,6 +1079,37 @@ FINAL RESULT REQUIREMENTS:
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* 钻石余额和剩余次数 */}
+        <View style={styles.balanceCard}>
+          <TouchableOpacity 
+            style={styles.balanceItem}
+            onPress={() => router.push('/recharge')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.balanceLeft}>
+              <Text style={styles.diamondIcon}>💎</Text>
+              <View>
+                <Text style={styles.balanceLabel}>钻石余额</Text>
+                <Text style={styles.balanceValue}>{coinBalance}</Text>
+              </View>
+            </View>
+            <Text style={styles.rechargeLink}>充值</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.balanceDivider} />
+          
+          <View style={styles.balanceItem}>
+            <View style={styles.balanceLeft}>
+              <Text style={styles.freeIcon}>🎁</Text>
+              <View>
+                <Text style={styles.balanceLabel}>免费次数</Text>
+                <Text style={styles.balanceValue}>{freeOutfitChangeCount}</Text>
+              </View>
+            </View>
+            <Text style={styles.freeTag}>剩余</Text>
+          </View>
+        </View>
+
         {/* 步骤1: 上传照片 */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -1592,6 +1626,70 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
   },
+  
+  // 钻石余额和剩余次数卡片
+  balanceCard: {
+    flexDirection: 'row',
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  balanceItem: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  balanceLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  diamondIcon: {
+    fontSize: 32,
+  },
+  freeIcon: {
+    fontSize: 32,
+  },
+  balanceLabel: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginBottom: 2,
+  },
+  balanceValue: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#1a1a1a',
+  },
+  rechargeLink: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#3b82f6',
+  },
+  freeTag: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#10b981',
+    backgroundColor: '#d1fae5',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  balanceDivider: {
+    width: 1,
+    height: '100%',
+    backgroundColor: '#e5e7eb',
+    marginHorizontal: 16,
+  },
+  
   section: {
     marginBottom: 24,
   },
