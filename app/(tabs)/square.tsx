@@ -651,9 +651,10 @@ export default function SquareScreen() {
               <TouchableOpacity
                 style={detailStyles.backButton}
                 onPress={() => setSelectedPost(null)}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                activeOpacity={0.7}
               >
-                <ChevronLeft size={28} color="#1a1a1a" strokeWidth={2} />
+                <ChevronLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
               </TouchableOpacity>
               
               <TouchableOpacity 
@@ -776,31 +777,6 @@ export default function SquareScreen() {
                     {t('square.totalComments', { count: selectedPost.comments.length })}
                   </Text>
                 </View>
-                
-                {/* 评论输入提示 */}
-                <TouchableOpacity 
-                  style={detailStyles.commentPrompt}
-                  onPress={() => {
-                    setCommentingPost(selectedPost.id);
-                    setTimeout(() => inputRef.current?.focus(), 100);
-                  }}
-                >
-                  {user?.avatar ? (
-                    <Image source={{ uri: user.avatar }} style={detailStyles.commentPromptAvatar} />
-                  ) : (
-                    <View style={detailStyles.commentPromptAvatarPlaceholder}>
-                      <User size={16} color="#9CA3AF" />
-                    </View>
-                  )}
-                  <View style={detailStyles.commentPromptInput}>
-                    <Text style={detailStyles.commentPromptText}>{t('square.sayWhat')}</Text>
-                  </View>
-                  <View style={detailStyles.commentPromptIcons}>
-                    <Text style={detailStyles.commentPromptIcon}>@</Text>
-                    <Text style={detailStyles.commentPromptIcon}>😊</Text>
-                    <Text style={detailStyles.commentPromptIcon}>🖼️</Text>
-                  </View>
-                </TouchableOpacity>
                 
                 {/* 点赞用户显示 */}
                 {selectedPost.likes.length > 0 && (
@@ -1022,13 +998,18 @@ export default function SquareScreen() {
                     <TextInput
                       ref={inputRef}
                       style={detailStyles.commentInput}
-                      placeholder={replyTo ? `${t('square.replyTo')} @${replyTo.nickname}` : t('square.addComment')}
+                      placeholder={replyTo ? `@${replyTo.nickname}` : t('square.addComment')}
                       placeholderTextColor="#9CA3AF"
                       value={commentText}
                       onChangeText={setCommentText}
                       maxLength={200}
-                      autoFocus
-                      multiline
+                      autoFocus={false}
+                      multiline={false}
+                      keyboardAppearance="light"
+                      returnKeyType="send"
+                      enablesReturnKeyAutomatically
+                      blurOnSubmit={false}
+                      onSubmitEditing={handleSendComment}
                     />
                     <TouchableOpacity
                       style={[detailStyles.sendButton, !commentText.trim() && detailStyles.sendButtonDisabled]}
@@ -2374,10 +2355,16 @@ const detailStyles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 0.5,
     borderBottomColor: '#f0f0f0',
+    zIndex: 10,
   },
   backButton: {
-    padding: 4,
-    marginRight: 8,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
   },
   headerUserInfo: {
     flex: 1,
@@ -2802,10 +2789,11 @@ const detailStyles = StyleSheet.create({
   },
   commentInputContainer: {
     backgroundColor: '#fff',
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingTop: 12,
     borderTopWidth: 0.5,
     borderTopColor: '#f0f0f0',
+    width: '100%',
   },
   replyIndicator: {
     flexDirection: 'row',
@@ -2824,23 +2812,29 @@ const detailStyles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    gap: 12,
+    gap: 10,
+    width: '100%',
   },
   commentInput: {
     flex: 1,
     backgroundColor: '#f5f5f5',
     borderRadius: 20,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 10,
-    fontSize: 15,
-    maxHeight: 100,
+    fontSize: 14,
+    maxHeight: 80,
+    minHeight: 40,
     color: '#1a1a1a',
   },
   sendButton: {
     backgroundColor: '#FF2442',
-    paddingHorizontal: 18,
+    paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 18,
+    borderRadius: 16,
+    minWidth: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
   sendButtonDisabled: {
     backgroundColor: '#f0f0f0',
