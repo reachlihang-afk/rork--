@@ -211,13 +211,20 @@ export default function EditProfileScreen() {
               autoCapitalize="none"
               returnKeyType="done"
               blurOnSubmit={true}
-              editable={true}
+              editable={!isSubmitting}
               selectTextOnFocus={true}
+              keyboardType="default"
+              textContentType="none"
+              importantForAutofill="no"
               onFocus={() => {
-                console.log('[EditProfile] Nickname input focused');
+                console.log('[EditProfile] Nickname input focused, current value:', nickname);
+              }}
+              onBlur={() => {
+                console.log('[EditProfile] Nickname input blurred, final value:', nickname);
               }}
               onSubmitEditing={() => {
                 console.log('[EditProfile] Nickname submit');
+                Keyboard.dismiss();
                 handleSave();
               }}
             />
@@ -335,7 +342,11 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
     borderWidth: 1,
     borderColor: '#f1f5f9',
-    outlineStyle: 'none' as any,
+    minHeight: 54,
+    ...(Platform.OS === 'web' ? {
+      outlineStyle: 'none' as any,
+      cursor: 'text' as any,
+    } : {}),
   },
   hint: {
     fontSize: 12,
