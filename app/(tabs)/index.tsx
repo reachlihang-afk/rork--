@@ -27,7 +27,7 @@ export default function HomeScreen() {
     return t(`outfitChange.templates.${id}`, id);
   };
 
-  // 点击金币/钻石的处理
+  // 点击钻石的处理
   const handleCoinClick = () => {
     if (isLoggedIn) {
       // 已登录,跳转到充值页面

@@ -176,10 +176,10 @@ export default function ProfileScreen() {
           >
             <View style={styles.coinLeft}>
               <View style={styles.coinIconContainer}>
-                <Coins size={24} color="#F59E0B" />
+                <Text style={styles.diamondIcon}>💎</Text>
               </View>
               <View>
-                <Text style={styles.coinLabel}>{t('profile.myCoins')}</Text>
+                <Text style={styles.coinLabel}>我的钻石</Text>
                 <Text style={styles.coinBalance}>{coinBalance}</Text>
               </View>
             </View>
@@ -834,9 +834,12 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#fffbeb',
+    backgroundColor: '#f0f9ff',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  diamondIcon: {
+    fontSize: 28,
   },
   coinLabel: {
     fontSize: 12,

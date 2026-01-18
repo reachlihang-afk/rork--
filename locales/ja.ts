@@ -98,7 +98,7 @@ export default {
     loginSuccess: 'ログイン成功！',
     loginFailed: 'ログインに失敗しました。もう一度お試しください',
     loginTime: 'ログイン時間：',
-    myCoins: 'マイコイン',
+    myCoins: 'マイダイヤモンド',
     recharge: 'チャージ',
     remainingFreeTimes: '本日の無料枠残り',
     outfitChangeTimes: '着替え回数',

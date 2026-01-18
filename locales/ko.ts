@@ -98,7 +98,7 @@ export default {
     loginSuccess: '로그인 성공!',
     loginFailed: '로그인 실패, 다시 시도하세요',
     loginTime: '로그인 시간: ',
-    myCoins: '내 코인',
+    myCoins: '내 다이아몬드',
     recharge: '충전',
     remainingFreeTimes: '오늘 남은 무료 횟수',
     outfitChangeTimes: '의상 변경',

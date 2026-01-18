@@ -104,7 +104,7 @@ export default {
     loginSuccess: 'Login successful!',
     loginFailed: 'Login failed, please try again',
     loginTime: 'Login Time: ',
-    myCoins: 'My Coins',
+    myCoins: 'My Diamonds',
     recharge: 'Recharge',
     remainingFreeTimes: 'Daily Free Quota Remaining',
     outfitChangeTimes: 'Outfit Change',
