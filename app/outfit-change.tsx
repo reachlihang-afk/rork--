@@ -967,8 +967,13 @@ FINAL RESULT REQUIREMENTS:
           }
         }
         
+        // 自定义模式下，历史记录的originalImageUri应该是参考服饰，而不是用户照片
+        const historyOriginalImage = selectedTab === 'custom' && customImages.length > 0 
+          ? customImages[0] 
+          : userImage;
+        
         await addOutfitChangeHistory(
-          userImage,
+          historyOriginalImage,
           savedResultUri,
           selectedTab === 'template' ? selectedTemplate! : 'custom-outfit',
           templateName
