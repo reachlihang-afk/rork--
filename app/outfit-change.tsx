@@ -1079,36 +1079,23 @@ FINAL RESULT REQUIREMENTS:
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* 钻石余额和剩余次数 */}
-        <View style={styles.balanceCard}>
-          <TouchableOpacity 
-            style={styles.balanceItem}
-            onPress={() => router.push('/recharge')}
-            activeOpacity={0.7}
-          >
-            <View style={styles.balanceLeft}>
-              <Text style={styles.diamondIcon}>💎</Text>
-              <View>
-                <Text style={styles.balanceLabel}>钻石余额</Text>
-                <Text style={styles.balanceValue}>{coinBalance}</Text>
-              </View>
+        {/* 钻石余额 */}
+        <TouchableOpacity 
+          style={styles.coinBalanceCard}
+          onPress={() => router.push('/recharge')}
+          activeOpacity={0.7}
+        >
+          <View style={styles.coinBalanceLeft}>
+            <Text style={styles.coinIcon}>💎</Text>
+            <View>
+              <Text style={styles.coinBalanceLabel}>钻石余额</Text>
+              <Text style={styles.coinBalanceValue}>{coinBalance}</Text>
             </View>
-            <Text style={styles.rechargeLink}>充值</Text>
-          </TouchableOpacity>
-          
-          <View style={styles.balanceDivider} />
-          
-          <View style={styles.balanceItem}>
-            <View style={styles.balanceLeft}>
-              <Text style={styles.freeIcon}>🎁</Text>
-              <View>
-                <Text style={styles.balanceLabel}>免费次数</Text>
-                <Text style={styles.balanceValue}>{freeOutfitChangeCount}</Text>
-              </View>
-            </View>
-            <Text style={styles.freeTag}>剩余</Text>
           </View>
-        </View>
+          <View style={styles.rechargeButton}>
+            <Text style={styles.rechargeButtonText}>充值</Text>
+          </View>
+        </TouchableOpacity>
 
         {/* 步骤1: 上传照片 */}
         <View style={styles.section}>
@@ -1217,7 +1204,7 @@ FINAL RESULT REQUIREMENTS:
                 <View style={styles.freeAttemptsTag}>
                   <Sparkles size={14} color="#1a1a1a" />
                   <Text style={styles.freeAttemptsText}>
-                    {t('outfitChange.freeAttempts')}: {coinBalance}/5
+                    免费次数: {freeOutfitChangeCount}/5
                   </Text>
                 </View>
               </View>
@@ -1627,11 +1614,13 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   
-  // 钻石余额和剩余次数卡片
-  balanceCard: {
+  // 钻石余额卡片
+  coinBalanceCard: {
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: '#ffffff',
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
@@ -1642,52 +1631,34 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  balanceItem: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  balanceLeft: {
+  coinBalanceLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  diamondIcon: {
-    fontSize: 32,
+  coinIcon: {
+    fontSize: 28,
   },
-  freeIcon: {
-    fontSize: 32,
-  },
-  balanceLabel: {
+  coinBalanceLabel: {
     fontSize: 12,
     color: '#6b7280',
     marginBottom: 2,
   },
-  balanceValue: {
+  coinBalanceValue: {
     fontSize: 20,
     fontWeight: '800',
     color: '#1a1a1a',
   },
-  rechargeLink: {
+  rechargeButton: {
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  rechargeButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#3b82f6',
-  },
-  freeTag: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#10b981',
-    backgroundColor: '#d1fae5',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  balanceDivider: {
-    width: 1,
-    height: '100%',
-    backgroundColor: '#e5e7eb',
-    marginHorizontal: 16,
+    color: '#ffffff',
   },
   
   section: {
