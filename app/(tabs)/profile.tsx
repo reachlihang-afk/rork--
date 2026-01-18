@@ -1,4 +1,4 @@
-﻿import { User, LogOut, Coins, ChevronRight, Globe, Edit3, Users, Shield } from 'lucide-react-native';
+import { User, LogOut, Coins, ChevronRight, Globe, Edit3, Users, Shield } from 'lucide-react-native';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, Alert, ActivityIndicator, Modal, Pressable, ScrollView, Image, Keyboard, Platform } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
@@ -140,7 +140,7 @@ export default function ProfileScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0066FF" />
+        <ActivityIndicator size="large" color="#1a1a1a" />
       </View>
     );
   }
@@ -214,7 +214,7 @@ export default function ProfileScreen() {
           >
             <View style={styles.languageLeft}>
               <View style={styles.languageIconContainer}>
-                <Globe size={18} color="#0066FF" />
+                <Globe size={18} color="#1a1a1a" />
               </View>
               <Text style={styles.languageLabel}>{t('profile.language')}</Text>
             </View>
@@ -426,178 +426,219 @@ export default function ProfileScreen() {
     );
   }
 
-  return (
-    <>
-      <ScrollView 
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <View style={styles.iconContainer}>
-            <User size={40} color="#0066FF" strokeWidth={2.5} />
-          </View>
-          <Text style={styles.title}>{t('profile.phoneLogin')}</Text>
-        </View>
-
-        <View style={styles.form}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>{t('profile.phone')}</Text>
-              <TextInput
-                style={styles.input}
-                placeholder={t('profile.phonePlaceholder')}
-                keyboardType="phone-pad"
-                inputMode="tel"
-                maxLength={11}
-                value={phone}
-                onChangeText={setPhone}
-                editable={true}
-                selectTextOnFocus={true}
-                autoComplete={Platform.OS === 'web' ? 'tel' : 'off'}
-                pointerEvents="auto"
-              />
+  if (!isLoggedIn) {
+    return (
+      <View style={styles.container}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <LinearGradient
+            colors={['#0F172A', '#1E293B', '#030712']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.loginHero}
+          >
+            <View style={styles.loginHeroContent}>
+              <View style={styles.loginIconWrapper}>
+                <User size={40} color="#ffffff" strokeWidth={2} />
+              </View>
+              <Text style={styles.loginHeroTitle}>{t('profile.phoneLogin')}</Text>
+              <Text style={styles.loginHeroSubtitle}>{t('home.transformInstantly')}</Text>
             </View>
+          </LinearGradient>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>{t('profile.verificationCode')}</Text>
-              <View style={styles.codeRow}>
+          <View style={styles.content}>
+            <View style={styles.form}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>{t('profile.phone')}</Text>
                 <TextInput
-                  style={[styles.input, styles.codeInput]}
-                  placeholder={t('profile.verificationCodePlaceholder')}
-                  keyboardType="number-pad"
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={verificationCode}
-                  onChangeText={setVerificationCode}
+                  style={styles.input}
+                  placeholder={t('profile.phonePlaceholder')}
+                  keyboardType="phone-pad"
+                  inputMode="tel"
+                  maxLength={11}
+                  value={phone}
+                  onChangeText={setPhone}
                   editable={true}
                   selectTextOnFocus={true}
-                  autoComplete={Platform.OS === 'web' ? 'one-time-code' : 'off'}
-                  pointerEvents="auto"
+                  autoComplete={Platform.OS === 'web' ? 'tel' : 'off'}
+                  placeholderTextColor="#94a3b8"
                 />
-                <TouchableOpacity
-                  style={[styles.sendCodeButton, (countdown > 0) && styles.sendCodeButtonDisabled]}
-                  onPress={handleSendCode}
-                  disabled={countdown > 0}
-                >
-                  <Text style={[styles.sendCodeButtonText, (countdown > 0) && styles.sendCodeButtonTextDisabled]} numberOfLines={1}>
-                    {countdown > 0 ? `${countdown}${t('profile.resendCode')}` : t('profile.sendCode')}
-                  </Text>
-                </TouchableOpacity>
               </View>
-            </View>
 
-            {codeSent && (
-              <View style={styles.tipBox}>
-                <Text style={styles.tipBoxText}>{t('profile.demoCode')}</Text>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>{t('profile.verificationCode')}</Text>
+                <View style={styles.codeRow}>
+                  <TextInput
+                    style={[styles.input, styles.codeInput]}
+                    placeholder={t('profile.verificationCodePlaceholder')}
+                    keyboardType="number-pad"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={verificationCode}
+                    onChangeText={setVerificationCode}
+                    editable={true}
+                    selectTextOnFocus={true}
+                    autoComplete={Platform.OS === 'web' ? 'one-time-code' : 'off'}
+                    placeholderTextColor="#94a3b8"
+                  />
+                  <TouchableOpacity
+                    style={[styles.sendCodeButton, (countdown > 0) && styles.sendCodeButtonDisabled]}
+                    onPress={handleSendCode}
+                    disabled={countdown > 0}
+                  >
+                    <Text style={[styles.sendCodeButtonText, (countdown > 0) && styles.sendCodeButtonTextDisabled]}>
+                      {countdown > 0 ? `${countdown}s` : t('profile.sendCode')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            )}
 
-            <TouchableOpacity
-              style={[styles.loginButton, isSubmitting && styles.loginButtonDisabled]}
-              onPress={handleLogin}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.loginButtonText}>{t('profile.login')}</Text>
+              {codeSent && (
+                <View style={styles.tipBox}>
+                  <Text style={styles.tipBoxText}>{t('profile.demoCode')}</Text>
+                </View>
               )}
-            </TouchableOpacity>
-          </View>
 
-          <TouchableOpacity 
-            style={styles.languageCard}
-            onPress={() => setShowLanguageModal(true)}
-          >
-            <View style={styles.languageLeft}>
-              <View style={styles.languageIconContainer}>
-                <Globe size={18} color="#0066FF" />
-              </View>
-              <Text style={styles.languageLabel}>{t('profile.language')}</Text>
-            </View>
-            <View style={styles.languageRight}>
-              <Text style={styles.languageValue}>{languageNames[currentLanguage]}</Text>
-              <ChevronRight size={18} color="#64748B" />
-            </View>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-      <Modal
-        visible={showLanguageModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowLanguageModal(false)}
-      >
-        <Pressable style={styles.modalOverlay} onPress={() => setShowLanguageModal(false)}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{t('profile.selectLanguage')}</Text>
-            {(['zh', 'en', 'ja', 'ko'] as Language[]).map((lang) => (
               <TouchableOpacity
-                key={lang}
-                style={[
-                  styles.languageOption,
-                  currentLanguage === lang && styles.languageOptionActive,
-                ]}
-                onPress={() => handleLanguageSelect(lang)}
+                style={[styles.loginButton, isSubmitting && styles.loginButtonDisabled]}
+                onPress={handleLogin}
+                disabled={isSubmitting}
               >
-                <Text style={[
-                  styles.languageOptionText,
-                  currentLanguage === lang && styles.languageOptionTextActive,
-                ]}>
-                  {languageNames[lang]}
-                </Text>
-                {currentLanguage === lang && (
-                  <View style={styles.checkMark}>
-                    <Text style={styles.checkMarkText}>✓</Text>
-                  </View>
+                {isSubmitting ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.loginButtonText}>{t('profile.login')}</Text>
                 )}
               </TouchableOpacity>
-            ))}
+            </View>
+
+            <TouchableOpacity 
+              style={styles.languageCard}
+              onPress={() => setShowLanguageModal(true)}
+            >
+              <View style={styles.languageLeft}>
+                <View style={styles.languageIconContainer}>
+                  <Globe size={18} color="#1a1a1a" />
+                </View>
+                <Text style={styles.languageLabel}>{t('profile.language')}</Text>
+              </View>
+              <View style={styles.languageRight}>
+                <Text style={styles.languageValue}>{languageNames[currentLanguage]}</Text>
+                <ChevronRight size={18} color="#64748B" />
+              </View>
+            </TouchableOpacity>
           </View>
-        </Pressable>
-      </Modal>
-    </>
-  );
+        </ScrollView>
+
+        <Modal
+          visible={showLanguageModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowLanguageModal(false)}
+        >
+          <Pressable style={styles.modalOverlay} onPress={() => setShowLanguageModal(false)}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>{t('profile.selectLanguage')}</Text>
+              {(['zh', 'en', 'ja', 'ko'] as Language[]).map((lang) => (
+                <TouchableOpacity
+                  key={lang}
+                  style={[
+                    styles.languageOption,
+                    currentLanguage === lang && styles.languageOptionActive,
+                  ]}
+                  onPress={() => handleLanguageSelect(lang)}
+                >
+                  <Text style={[
+                    styles.languageOptionText,
+                    currentLanguage === lang && styles.languageOptionTextActive,
+                  ]}>
+                    {languageNames[lang]}
+                  </Text>
+                  {currentLanguage === lang && (
+                    <View style={styles.checkMark}>
+                      <Text style={styles.checkMarkText}>✓</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </Pressable>
+        </Modal>
+      </View>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#ffffff',
   },
   scrollContent: {
     flexGrow: 1,
   },
   content: {
-    padding: 20,
+    padding: 24,
     paddingBottom: 40,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  loginHero: {
+    paddingTop: Platform.OS === 'ios' ? 80 : 60,
+    paddingBottom: 40,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+  },
+  loginHeroContent: {
+    alignItems: 'center',
+  },
+  loginIconWrapper: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  loginHeroTitle: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#ffffff',
+    letterSpacing: -1,
+    marginBottom: 8,
+  },
+  loginHeroSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 8,
+    marginBottom: 40,
+    marginTop: 20,
   },
   iconContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#E6F0FF',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#f8fafc',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 14,
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
   },
   avatarWrapper: {
     width: 80,
@@ -610,21 +651,21 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    borderWidth: 3,
-    borderColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#f8fafc',
   },
   avatarPlaceholder: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#0066FF',
+    backgroundColor: '#1a1a1a',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   editBadge: {
     position: 'absolute',
@@ -633,68 +674,66 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#0066FF',
+    backgroundColor: '#1a1a1a',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#fff',
   },
   nicknameText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#0F172A',
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1a1a1a',
     marginBottom: 4,
+    letterSpacing: -0.5,
   },
   phoneText: {
     fontSize: 14,
-    color: '#64748B',
+    color: '#64748b',
+    fontWeight: '500',
   },
   avatarContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#0066FF',
+    backgroundColor: '#1a1a1a',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#0F172A',
-    letterSpacing: -0.5,
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#1a1a1a',
+    letterSpacing: -1,
   },
   form: {
-    marginBottom: 20,
+    marginBottom: 32,
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   label: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#1a1a1a',
     marginBottom: 8,
-    letterSpacing: -0.2,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   input: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: '#0F172A',
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1,
+    color: '#1a1a1a',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
     outlineStyle: 'none' as any,
     ...(Platform.OS === 'web' && {
       outlineWidth: 0,
@@ -709,78 +748,74 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sendCodeButton: {
-    backgroundColor: '#0066FF',
-    borderRadius: 14,
-    paddingHorizontal: 16,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    paddingHorizontal: 20,
     justifyContent: 'center',
     alignItems: 'center',
     minWidth: 100,
-    maxWidth: 140,
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 3,
-    flexShrink: 1,
   },
   sendCodeButtonDisabled: {
-    backgroundColor: '#CBD5E1',
+    backgroundColor: '#f1f5f9',
   },
   sendCodeButtonText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
-    flexShrink: 1,
-    textAlign: 'center',
+    fontWeight: '700',
+    color: '#ffffff',
   },
   sendCodeButtonTextDisabled: {
-    color: '#94A3B8',
+    color: '#94a3b8',
   },
   tipBox: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: '#f8fafc',
     borderRadius: 12,
-    padding: 12,
-    marginBottom: 14,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    borderStyle: 'dashed',
   },
   tipBoxText: {
     fontSize: 14,
-    color: '#A16207',
+    color: '#64748b',
     textAlign: 'center',
+    fontWeight: '500',
   },
   loginButton: {
-    backgroundColor: '#0066FF',
-    borderRadius: 14,
-    padding: 17,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 18,
     alignItems: 'center',
-    shadowColor: '#0066FF',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  loginButtonDisabled: {
-    backgroundColor: '#CBD5E1',
-  },
-  loginButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  coinCard: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 4,
+  },
+  loginButtonDisabled: {
+    backgroundColor: '#f1f5f9',
+  },
+  loginButtonText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#ffffff',
+    letterSpacing: 0.5,
+  },
+  coinCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
     borderWidth: 1,
-    borderColor: 'rgba(0, 102, 255, 0.08)',
+    borderColor: '#f1f5f9',
   },
   coinLeft: {
     flexDirection: 'row',
@@ -791,25 +826,23 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: '#fffbeb',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 2,
   },
   coinLabel: {
     fontSize: 12,
-    color: '#64748B',
+    color: '#64748b',
+    fontWeight: '600',
     marginBottom: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   coinBalance: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#0F172A',
-    letterSpacing: -0.8,
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#1a1a1a',
+    letterSpacing: -1,
   },
   coinRight: {
     flexDirection: 'row',
@@ -818,29 +851,30 @@ const styles = StyleSheet.create({
   },
   rechargeText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#0066FF',
+    fontWeight: '700',
+    color: '#1a1a1a',
   },
   usageCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 20,
-    padding: 20,
-    marginBottom: 14,
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
+    padding: 24,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
     borderWidth: 1,
-    borderColor: 'rgba(0, 102, 255, 0.08)',
+    borderColor: '#f1f5f9',
   },
   usageTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#64748B',
-    marginBottom: 12,
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#94a3b8',
+    marginBottom: 20,
     textAlign: 'center',
-    flexShrink: 1,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
   },
   usageRow: {
     flexDirection: 'row',
@@ -852,77 +886,73 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   usageCount: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: '#0066FF',
-    marginBottom: 8,
-    letterSpacing: -1.2,
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#1a1a1a',
+    marginBottom: 6,
+    letterSpacing: -1,
   },
   usageLabel: {
-    fontSize: 12,
-    color: '#64748B',
+    fontSize: 11,
+    color: '#64748b',
     textAlign: 'center',
-    flexShrink: 1,
+    fontWeight: '600',
   },
   usageDivider: {
     width: 1,
-    height: 32,
-    backgroundColor: '#E2E8F0',
+    height: 30,
+    backgroundColor: '#f1f5f9',
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 16,
-    padding: 16,
-    borderWidth: 1.5,
-    borderColor: '#FEE2E2',
-    shadowColor: '#DC2626',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#fee2e2',
+    marginTop: 20,
   },
   logoutButtonText: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#DC2626',
+    fontWeight: '700',
+    color: '#dc2626',
   },
   languageCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 20,
-    padding: 18,
-    marginBottom: 14,
+    padding: 20,
+    marginBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
     borderWidth: 1,
-    borderColor: 'rgba(0, 102, 255, 0.08)',
+    borderColor: '#f1f5f9',
   },
   languageLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
   },
   languageIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#E6F0FF',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f8fafc',
     alignItems: 'center',
     justifyContent: 'center',
   },
   languageLabel: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#0F172A',
+    fontWeight: '700',
+    color: '#1a1a1a',
   },
   languageRight: {
     flexDirection: 'row',
@@ -931,89 +961,98 @@ const styles = StyleSheet.create({
   },
   languageValue: {
     fontSize: 14,
-    color: '#64748B',
+    color: '#64748b',
+    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 24,
-    width: '80%',
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    padding: 32,
+    width: '85%',
     maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.2,
+    shadowRadius: 30,
+    elevation: 20,
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#0F172A',
-    marginBottom: 20,
+    fontWeight: '900',
+    color: '#1a1a1a',
+    marginBottom: 24,
     textAlign: 'center',
+    letterSpacing: -0.5,
   },
   languageOption: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-    backgroundColor: '#F8FAFC',
+    padding: 18,
+    borderRadius: 16,
+    marginBottom: 10,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
   },
   languageOptionActive: {
-    backgroundColor: '#E6F0FF',
+    backgroundColor: '#1a1a1a',
+    borderColor: '#1a1a1a',
   },
   languageOptionText: {
     fontSize: 16,
-    color: '#64748B',
-    fontWeight: '500',
+    color: '#64748b',
+    fontWeight: '700',
   },
   languageOptionTextActive: {
-    color: '#0066FF',
-    fontWeight: '600',
+    color: '#ffffff',
   },
   checkMark: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#0066FF',
+    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkMarkText: {
-    color: '#fff',
+    color: '#1a1a1a',
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '900',
   },
   settingsCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 20,
-    padding: 18,
-    marginBottom: 14,
+    padding: 20,
+    marginBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
     borderWidth: 1,
-    borderColor: 'rgba(0, 102, 255, 0.08)',
+    borderColor: '#f1f5f9',
   },
   settingsLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
     flex: 1,
   },
   settingsIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#D1FAE5',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f0fdf4',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1025,11 +1064,11 @@ const styles = StyleSheet.create({
   },
   settingsLabel: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#0F172A',
+    fontWeight: '700',
+    color: '#1a1a1a',
   },
   requestBadge: {
-    backgroundColor: '#EF4444',
+    backgroundColor: '#dc2626',
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -1038,56 +1077,57 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   requestBadgeText: {
-    color: '#fff',
+    color: '#ffffff',
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   privacyCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 20,
-    padding: 20,
-    marginBottom: 14,
-    shadowColor: '#0066FF',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
+    padding: 24,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
     borderWidth: 1,
-    borderColor: 'rgba(0, 102, 255, 0.08)',
+    borderColor: '#f1f5f9',
   },
   privacyHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
+    gap: 16,
+    marginBottom: 20,
   },
   privacyIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F3E8FF',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#faf5ff',
     alignItems: 'center',
     justifyContent: 'center',
   },
   privacyTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#0F172A',
+    fontWeight: '800',
+    color: '#1a1a1a',
   },
   privacyOption: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   privacyOptionText: {
     fontSize: 14,
     color: '#475569',
+    fontWeight: '600',
     flex: 1,
   },
   privacyDivider: {
     height: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#f1f5f9',
     marginVertical: 12,
   },
   privacyValueContainer: {
@@ -1097,25 +1137,25 @@ const styles = StyleSheet.create({
   },
   privacyValue: {
     fontSize: 14,
-    color: '#64748B',
-    fontWeight: '500',
+    color: '#94a3b8',
+    fontWeight: '700',
   },
   toggle: {
     width: 48,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#e2e8f0',
     padding: 2,
     justifyContent: 'center',
   },
   toggleActive: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#10b981',
   },
   toggleThumb: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
