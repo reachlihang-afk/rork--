@@ -1414,18 +1414,17 @@ FINAL RESULT REQUIREMENTS:
               <TouchableOpacity 
                 style={[
                   styles.resultActionButton, 
-                  styles.resultActionButtonPrimary,
                   isPublished && styles.resultActionButtonDisabled
                 ]}
                 onPress={handlePublishToSquare}
                 disabled={isPublishing || isPublished}
               >
                 {isPublishing ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <ActivityIndicator size="small" color="#1a1a1a" />
                 ) : (
-                  <Share2 size={20} color="#fff" />
+                  <Share2 size={20} color={isPublished ? "#9ca3af" : "#1a1a1a"} />
                 )}
-                <Text style={[styles.resultActionText, styles.resultActionTextPrimary]}>
+                <Text style={[styles.resultActionText, isPublished && styles.resultActionTextDisabled]}>
                   {isPublished ? t('square.published') : t('square.publishToSquare')}
                 </Text>
               </TouchableOpacity>
@@ -1767,13 +1766,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   templateCardSelected: {
-    backgroundColor: '#fff5f8',
-    borderColor: '#FF6B9D',
+    backgroundColor: '#fafafa',
+    borderColor: '#1a1a1a',
     borderWidth: 2.5,
     transform: [{ scale: 1.02 }],
-    shadowColor: '#FF6B9D',
+    shadowColor: '#1a1a1a',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 6,
   },
@@ -1784,12 +1783,12 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#FF6B9D',
+    backgroundColor: '#1a1a1a',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#FF6B9D',
+    shadowColor: '#1a1a1a',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3,
   },
@@ -1810,7 +1809,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   templateNameSelected: {
-    color: '#FF6B9D',
+    color: '#1a1a1a',
     fontWeight: '800',
   },
   templateEmoji: {
@@ -2063,7 +2062,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   resultLabelResult: {
-    backgroundColor: 'rgba(26, 26, 26, 0.95)',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
   resultLabelText: {
     fontSize: 11,
@@ -2073,7 +2072,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   resultLabelTextResult: {
-    color: '#ffffff',
+    color: '#1a1a1a',
   },
   resultArrow: {
     width: 32,
@@ -2118,8 +2117,8 @@ const styles = StyleSheet.create({
     borderColor: '#1a1a1a',
   },
   resultActionButtonDisabled: {
-    backgroundColor: '#9ca3af',
-    borderColor: '#9ca3af',
+    backgroundColor: '#f9fafb',
+    borderColor: '#e5e7eb',
   },
   resultActionText: {
     fontSize: 14,
@@ -2128,6 +2127,9 @@ const styles = StyleSheet.create({
   },
   resultActionTextPrimary: {
     color: '#ffffff',
+  },
+  resultActionTextDisabled: {
+    color: '#9ca3af',
   },
 
   selectedLookContainer: {
