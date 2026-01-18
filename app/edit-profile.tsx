@@ -11,7 +11,6 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Keyboard,
-  TouchableWithoutFeedback,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
@@ -133,14 +132,13 @@ export default function EditProfileScreen() {
   }, [nickname, avatar, updateProfile, updateUserNickname, user, isSubmitting]);
 
   return (
-    <TouchableWithoutFeedback testID="editProfile.dismissKeyboard" onPress={Keyboard.dismiss} accessible={false}>
-      <View style={styles.container}>
+    <View style={styles.container}>
       <Stack.Screen options={screenOptions} />
 
       {authLoading ? (
         <SafeAreaView style={styles.safeArea} edges={['top']}>
           <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0066FF" />
+          <ActivityIndicator size="large" color="#1a1a1a" />
           <Text style={styles.loadingText}>加载中...</Text>
           </View>
         </SafeAreaView>
@@ -164,7 +162,7 @@ export default function EditProfileScreen() {
               <ScrollView
                 contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}
                 keyboardShouldPersistTaps="handled"
-                keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+                keyboardDismissMode="on-drag"
                 showsVerticalScrollIndicator={false}
                 testID="editProfile.scroll"
               >
@@ -253,7 +251,6 @@ export default function EditProfileScreen() {
         </View>
       )}
     </View>
-    </TouchableWithoutFeedback>
   );
 }
 
