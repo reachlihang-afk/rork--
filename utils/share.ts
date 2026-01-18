@@ -45,6 +45,8 @@ export async function generateQRCode(url: string): Promise<string> {
 
 export async function saveToGallery(uri: string): Promise<boolean> {
   try {
+    console.log('[saveToGallery] Starting save, URI type:', uri.startsWith('data:') ? 'base64' : 'file');
+    
     if (Platform.OS === 'web') {
       // Web平台：触发下载
       const link = document.createElement('a');
@@ -56,10 +58,12 @@ export async function saveToGallery(uri: string): Promise<boolean> {
       return true;
     }
 
-    // 请求相册权限
+    // 请求相册权限（确保获得完整权限）
     const { status } = await MediaLibrary.requestPermissionsAsync();
+    console.log('[saveToGallery] Permission status:', status);
+    
     if (status !== 'granted') {
-      Alert.alert('提示', '需要相册权限才能保存图片');
+      Alert.alert('提示', '需要相册权限才能保存图片，请在设置中开启相册权限');
       return false;
     }
 
@@ -68,7 +72,8 @@ export async function saveToGallery(uri: string): Promise<boolean> {
     // 如果是 base64 数据 URL，需要先保存为临时文件
     if (uri.startsWith('data:')) {
       console.log('[saveToGallery] Converting base64 to file...');
-      const filename = `picseek-download-${Date.now()}.jpg`;
+      const timestamp = Date.now();
+      const filename = `picseek_${timestamp}.jpg`;
       const baseDir = getWritableDirectory();
       
       if (!baseDir) {
@@ -82,36 +87,59 @@ export async function saveToGallery(uri: string): Promise<boolean> {
       // 提取 base64 数据
       const base64Data = uri.split(',')[1];
       if (!base64Data) {
-        console.error('[saveToGallery] Invalid base64 data');
+        console.error('[saveToGallery] Invalid base64 data - no comma found');
         return false;
       }
+      
+      console.log('[saveToGallery] Base64 data length:', base64Data.length);
       
       // 写入文件
       await FileSystem.writeAsStringAsync(fileUri, base64Data, {
         encoding: 'base64' as any,
       });
-      console.log('[saveToGallery] File saved to:', fileUri);
+      
+      // 验证文件是否成功写入
+      const fileInfo = await FileSystem.getInfoAsync(fileUri);
+      console.log('[saveToGallery] File info:', fileInfo);
+      
+      if (!fileInfo.exists) {
+        console.error('[saveToGallery] File was not created');
+        return false;
+      }
     }
+
+    console.log('[saveToGallery] Saving to gallery from:', fileUri);
 
     // 保存到相册
     const asset = await MediaLibrary.createAssetAsync(fileUri);
-    console.log('[saveToGallery] Asset created:', asset.id);
+    console.log('[saveToGallery] Asset created:', asset.id, asset.uri);
     
-    // 尝试将图片保存到相册（某些设备需要这一步）
+    // 尝试将图片保存到 PicSeek 相册
     try {
-      const album = await MediaLibrary.getAlbumAsync('PicSeek');
+      let album = await MediaLibrary.getAlbumAsync('PicSeek');
       if (album) {
         await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+        console.log('[saveToGallery] Image added to existing PicSeek album');
       } else {
-        await MediaLibrary.createAlbumAsync('PicSeek', asset, false);
+        album = await MediaLibrary.createAlbumAsync('PicSeek', asset, false);
+        console.log('[saveToGallery] Created new PicSeek album');
       }
-      console.log('[saveToGallery] Image added to PicSeek album');
     } catch (albumError) {
       // 如果相册操作失败，图片仍然会保存到默认相册
       console.warn('[saveToGallery] Album operation failed, image saved to default album:', albumError);
     }
     
-    console.log('[saveToGallery] Image saved to gallery successfully');
+    // 清理临时文件（如果是从base64创建的）
+    if (uri.startsWith('data:')) {
+      try {
+        await FileSystem.deleteAsync(fileUri, { idempotent: true });
+        console.log('[saveToGallery] Cleaned up temp file');
+      } catch (cleanupError) {
+        console.warn('[saveToGallery] Failed to cleanup temp file:', cleanupError);
+      }
+    }
+    
+    console.log('[saveToGallery] Image saved to gallery successfully!');
     return true;
   } catch (error) {
     console.error('[saveToGallery] Failed to save to gallery:', error);

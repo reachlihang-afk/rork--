@@ -273,6 +273,10 @@ export default function OutfitChangeNewScreen() {
   const [generatingTime, setGeneratingTime] = useState(0);
   const generatingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
+  // 滚动相关
+  const scrollViewRef = useRef<ScrollView>(null);
+  const resultSectionY = useRef<number>(0);
+  
   // 生成计时器效果
   useEffect(() => {
     if (isGenerating) {
@@ -909,10 +913,16 @@ FINAL RESULT REQUIREMENTS:
       });
       setIsPublished(false); // 重置发布状态
       
-      // 提示换装完成
+      // 提示换装完成，点击后滚动到结果区域
       showAlert({
         type: 'success',
-        message: t('outfitChange.outfitComplete')
+        message: t('outfitChange.outfitComplete'),
+        onConfirm: () => {
+          // 滚动到结果区域
+          setTimeout(() => {
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+          }, 100);
+        }
       });
       
       // 保存到历史记录（失败不影响当前展示）
@@ -1012,6 +1022,7 @@ FINAL RESULT REQUIREMENTS:
       />
 
       <ScrollView 
+        ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -1423,30 +1434,6 @@ FINAL RESULT REQUIREMENTS:
               <Text style={styles.imageTypeLabelText}>
                 {largeImageType === 'original' ? t('history.original') : t('history.result')}
               </Text>
-            </View>
-            
-            <View style={styles.modalActions}>
-              <TouchableOpacity 
-                style={styles.modalActionButton}
-                onPress={() => {
-                  const uri = largeImageType === 'original' ? generatedResult?.original : generatedResult?.result;
-                  if (uri) handleSaveToGallery(uri);
-                }}
-              >
-                <Download size={24} color="#fff" />
-                <Text style={styles.modalActionText}>{t('common.save')}</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.modalActionButton}
-                onPress={() => {
-                  const uri = largeImageType === 'original' ? generatedResult?.original : generatedResult?.result;
-                  if (uri) handleShare(uri);
-                }}
-              >
-                <Share2 size={24} color="#fff" />
-                <Text style={styles.modalActionText}>{t('result.share')}</Text>
-              </TouchableOpacity>
             </View>
           </View>
 
