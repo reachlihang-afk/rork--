@@ -494,21 +494,6 @@ export default function SquareScreen() {
               <View style={pipStyles.beforeLabel}>
                 <Text style={pipStyles.beforeLabelText}>{t('square.before')}</Text>
               </View>
-              
-              {/* 自定义模式：显示参考服饰小图标 */}
-              {post.customOutfitImages && post.customOutfitImages.length > 0 && (
-                <View style={pipStyles.customOutfitIndicator}>
-                  {post.customOutfitImages.slice(0, 2).map((uri, index) => (
-                    <View key={index} style={pipStyles.customOutfitMiniThumb}>
-                      <Image
-                        source={{ uri }}
-                        style={pipStyles.customOutfitMiniImage}
-                        resizeMode="cover"
-                      />
-                    </View>
-                  ))}
-                </View>
-              )}
             </View>
           )}
         </View>
@@ -702,21 +687,6 @@ export default function SquareScreen() {
                       <View style={detailStyles.beforeLabel}>
                         <Text style={detailStyles.beforeLabelText}>{t('square.before')}</Text>
                       </View>
-                      
-                      {/* 自定义模式：显示参考服饰缩略图 */}
-                      {selectedPost.customOutfitImages && selectedPost.customOutfitImages.length > 0 && (
-                        <View style={detailStyles.customOutfitOverlay}>
-                          {selectedPost.customOutfitImages.map((uri, index) => (
-                            <View key={index} style={detailStyles.customOutfitThumb}>
-                              <Image
-                                source={{ uri }}
-                                style={detailStyles.customOutfitThumbImage}
-                                resizeMode="cover"
-                              />
-                            </View>
-                          ))}
-                        </View>
-                      )}
                     </TouchableOpacity>
                   )}
                 </View>
@@ -2091,30 +2061,6 @@ const pipStyles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 0.5,
   },
-  customOutfitIndicator: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    flexDirection: 'row',
-    gap: 2,
-  },
-  customOutfitMiniThumb: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    overflow: 'hidden',
-    borderWidth: 1.5,
-    borderColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  customOutfitMiniImage: {
-    width: '100%',
-    height: '100%',
-  },
   description: {
     fontSize: 13,
     fontWeight: '500',
@@ -2261,30 +2207,6 @@ const detailStyles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     letterSpacing: 0.5,
-  },
-  customOutfitOverlay: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    flexDirection: 'row',
-    gap: 3,
-  },
-  customOutfitThumb: {
-    width: 28,
-    height: 28,
-    borderRadius: 6,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  customOutfitThumbImage: {
-    width: '100%',
-    height: '100%',
   },
   userSection: {
     flexDirection: 'row',

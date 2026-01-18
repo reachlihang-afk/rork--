@@ -266,10 +266,11 @@ export default function OutfitChangeNewScreen() {
   const [showAllTemplates, setShowAllTemplates] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedResult, setGeneratedResult] = useState<{ 
-    original: string; 
+    original: string;        // 原图（模板模式=用户照片，自定义模式=参考服饰）
     result: string; 
     templateName: string;
-    customOutfitImages?: string[];  // 自定义模式下的参考服饰图片
+    customOutfitImages?: string[];  // 自定义模式下的所有参考服饰图片
+    userPhoto?: string;             // 自定义模式下保存的用户照片
   } | null>(null);
   const [showLargeImage, setShowLargeImage] = useState(false);
   const [largeImageType, setLargeImageType] = useState<'original' | 'result'>('result');
@@ -918,11 +919,17 @@ FINAL RESULT REQUIREMENTS:
         : selectedTab === 'custom' ? t('outfitChange.customOutfit') : 'Pro Style';
 
       // 显示结果在页面上（不跳转）
+      // 自定义穿搭模式：原图显示参考服饰（用户想看服饰穿身上的效果）
+      const originalImage = selectedTab === 'custom' && customImages.length > 0 
+        ? customImages[0]  // 使用第一张参考服饰作为原图
+        : userImage;
+      
       setGeneratedResult({
-        original: userImage,
+        original: originalImage,
         result: generatedImageUri,
         templateName,
         customOutfitImages: selectedTab === 'custom' ? [...customImages] : undefined,
+        userPhoto: selectedTab === 'custom' ? userImage : undefined,  // 保存用户照片以便需要时使用
       });
       setIsPublished(false); // 重置发布状态
       
@@ -1353,21 +1360,6 @@ FINAL RESULT REQUIREMENTS:
                   <View style={styles.zoomHint}>
                     <Camera size={12} color="#fff" />
                   </View>
-                  
-                  {/* 自定义模式：显示参考服饰缩略图 */}
-                  {generatedResult.customOutfitImages && generatedResult.customOutfitImages.length > 0 && (
-                    <View style={styles.customOutfitThumbnails}>
-                      {generatedResult.customOutfitImages.map((uri, index) => (
-                        <View key={index} style={styles.customOutfitThumb}>
-                          <Image 
-                            source={{ uri }} 
-                            style={styles.customOutfitThumbImage}
-                            contentFit="cover"
-                          />
-                        </View>
-                      ))}
-                    </View>
-                  )}
                 </TouchableOpacity>
               </View>
 
@@ -2035,30 +2027,6 @@ const styles = StyleSheet.create({
     borderColor: '#e5e7eb',
   },
   resultImage: {
-    width: '100%',
-    height: '100%',
-  },
-  customOutfitThumbnails: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    flexDirection: 'column',
-    gap: 4,
-  },
-  customOutfitThumb: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  customOutfitThumbImage: {
     width: '100%',
     height: '100%',
   },
