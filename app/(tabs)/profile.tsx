@@ -461,6 +461,7 @@ export default function ProfileScreen() {
                   selectTextOnFocus={true}
                   autoComplete={Platform.OS === 'web' ? 'tel' : 'off'}
                   placeholderTextColor="#94a3b8"
+                  keyboardAppearance="light"
                 />
               </View>
 
@@ -479,6 +480,7 @@ export default function ProfileScreen() {
                     selectTextOnFocus={true}
                     autoComplete={Platform.OS === 'web' ? 'one-time-code' : 'off'}
                     placeholderTextColor="#94a3b8"
+                    keyboardAppearance="light"
                   />
                   <TouchableOpacity
                     style={[styles.sendCodeButton, (countdown > 0) && styles.sendCodeButtonDisabled]}

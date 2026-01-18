@@ -971,58 +971,85 @@ export default function SquareScreen() {
               </View>
             </View>
             
-            {/* 评论输入弹窗 */}
+            {/* 评论输入弹窗 - 重构版 */}
             {commentingPost === selectedPost.id && (
-              <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={detailStyles.commentInputOverlay}
+              <Modal
+                visible={true}
+                transparent
+                animationType="fade"
+                onRequestClose={() => {
+                  setCommentingPost(null);
+                  setReplyTo(null);
+                  setCommentText('');
+                }}
               >
-                <TouchableOpacity 
-                  style={detailStyles.commentInputBackdrop}
-                  activeOpacity={1}
-                  onPress={() => {
-                    setCommentingPost(null);
-                    setReplyTo(null);
-                  }}
-                />
-                <View style={[detailStyles.commentInputContainer, { paddingBottom: Platform.OS === 'ios' ? 30 : 16 }]}>
-                  {replyTo && (
-                    <View style={detailStyles.replyIndicator}>
-                      <Text style={detailStyles.replyText}>{t('square.replyTo')} @{replyTo.nickname}</Text>
-                      <TouchableOpacity onPress={() => setReplyTo(null)}>
-                        <X size={16} color="#9CA3AF" />
+                <KeyboardAvoidingView
+                  behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                  style={detailStyles.commentModalContainer}
+                >
+                  <TouchableOpacity 
+                    style={detailStyles.commentModalBackdrop}
+                    activeOpacity={1}
+                    onPress={() => {
+                      setCommentingPost(null);
+                      setReplyTo(null);
+                      setCommentText('');
+                    }}
+                  />
+                  
+                  <View style={detailStyles.commentModalContent}>
+                    {replyTo && (
+                      <View style={detailStyles.replyIndicator}>
+                        <Text style={detailStyles.replyText}>
+                          {t('square.replyTo')} @{replyTo.nickname}
+                        </Text>
+                        <TouchableOpacity 
+                          onPress={() => setReplyTo(null)}
+                          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        >
+                          <X size={18} color="#666" />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    
+                    <View style={detailStyles.commentInputRow}>
+                      <TextInput
+                        ref={inputRef}
+                        style={detailStyles.commentInputField}
+                        placeholder={replyTo ? `@${replyTo.nickname}...` : t('square.addComment')}
+                        placeholderTextColor="#999"
+                        value={commentText}
+                        onChangeText={setCommentText}
+                        maxLength={200}
+                        autoFocus
+                        keyboardAppearance="light"
+                        returnKeyType="send"
+                        blurOnSubmit={false}
+                        onSubmitEditing={() => {
+                          if (commentText.trim()) {
+                            handleSendComment();
+                          }
+                        }}
+                      />
+                      <TouchableOpacity
+                        style={[
+                          detailStyles.commentSendButton, 
+                          !commentText.trim() && detailStyles.commentSendButtonDisabled
+                        ]}
+                        onPress={handleSendComment}
+                        disabled={!commentText.trim()}
+                      >
+                        <Text style={[
+                          detailStyles.commentSendButtonText,
+                          !commentText.trim() && detailStyles.commentSendButtonTextDisabled
+                        ]}>
+                          {t('square.send')}
+                        </Text>
                       </TouchableOpacity>
                     </View>
-                  )}
-                  <View style={detailStyles.inputRow}>
-                    <TextInput
-                      ref={inputRef}
-                      style={detailStyles.commentInput}
-                      placeholder={replyTo ? `@${replyTo.nickname}` : t('square.addComment')}
-                      placeholderTextColor="#9CA3AF"
-                      value={commentText}
-                      onChangeText={setCommentText}
-                      maxLength={200}
-                      autoFocus={false}
-                      multiline={false}
-                      keyboardAppearance="light"
-                      returnKeyType="send"
-                      enablesReturnKeyAutomatically
-                      blurOnSubmit={false}
-                      onSubmitEditing={handleSendComment}
-                    />
-                    <TouchableOpacity
-                      style={[detailStyles.sendButton, !commentText.trim() && detailStyles.sendButtonDisabled]}
-                      onPress={handleSendComment}
-                      disabled={!commentText.trim()}
-                    >
-                      <Text style={[detailStyles.sendButtonText, !commentText.trim() && detailStyles.sendButtonTextDisabled]}>
-                        {t('square.send')}
-                      </Text>
-                    </TouchableOpacity>
                   </View>
-                </View>
-              </KeyboardAvoidingView>
+                </KeyboardAvoidingView>
+              </Modal>
             )}
             
             {/* 删除确认 - 仅作者可见 */}
@@ -2750,15 +2777,17 @@ const detailStyles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 18,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 10,
     gap: 8,
+    marginRight: 12,
   },
   bottomInputText: {
     fontSize: 14,
     color: '#999',
+    flex: 1,
   },
   bottomActions: {
     flexDirection: 'row',
@@ -2775,25 +2804,27 @@ const detailStyles = StyleSheet.create({
     color: '#1a1a1a',
   },
   // 评论输入弹窗
-  commentInputOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  // 评论输入弹窗样式 - 重构版
+  commentModalContainer: {
+    flex: 1,
     justifyContent: 'flex-end',
   },
-  commentInputBackdrop: {
+  commentModalBackdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
-  commentInputContainer: {
+  commentModalContent: {
     backgroundColor: '#fff',
-    paddingHorizontal: 12,
-    paddingTop: 12,
-    borderTopWidth: 0.5,
-    borderTopColor: '#f0f0f0',
-    width: '100%',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
   },
   replyIndicator: {
     flexDirection: 'row',
@@ -2801,40 +2832,51 @@ const detailStyles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: '#f5f5f5',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 8,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   replyText: {
+    flex: 1,
     fontSize: 13,
     color: '#666',
   },
-  inputRow: {
+  commentInputRow: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     gap: 10,
-    width: '100%',
   },
-  commentInput: {
+  commentInputField: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f8f8',
     borderRadius: 20,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 10,
-    fontSize: 14,
-    maxHeight: 80,
-    minHeight: 40,
+    fontSize: 15,
     color: '#1a1a1a',
+    minHeight: 40,
+    maxHeight: 40,
   },
-  sendButton: {
+  commentSendButton: {
     backgroundColor: '#FF2442',
-    paddingHorizontal: 14,
+    paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 16,
-    minWidth: 50,
+    borderRadius: 20,
+    minWidth: 60,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: 0,
+  },
+  commentSendButtonDisabled: {
+    backgroundColor: '#e5e5e5',
+  },
+  commentSendButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  commentSendButtonTextDisabled: {
+    color: '#999',
   },
   sendButtonDisabled: {
     backgroundColor: '#f0f0f0',
@@ -2845,7 +2887,7 @@ const detailStyles = StyleSheet.create({
     fontWeight: '600',
   },
   sendButtonTextDisabled: {
-    color: '#ccc',
+    color: '#999',
   },
   // 删除按钮
   deleteButton: {

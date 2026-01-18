@@ -225,6 +225,7 @@ export default function EditProfileScreen() {
                 Keyboard.dismiss();
                 handleSave();
               }}
+              keyboardAppearance="light"
             />
             <Text style={styles.hint}>{nickname.length}/20</Text>
           </View>

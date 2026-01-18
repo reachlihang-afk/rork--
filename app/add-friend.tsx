@@ -160,6 +160,7 @@ export default function AddFriendScreen() {
               onSubmitEditing={handleSearch}
               editable={true}
               selectTextOnFocus={true}
+              keyboardAppearance="light"
             />
             <TouchableOpacity
               style={styles.searchButton}
