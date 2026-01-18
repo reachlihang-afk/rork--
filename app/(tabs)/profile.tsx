@@ -159,11 +159,11 @@ export default function ProfileScreen() {
                 <Image source={{ uri: user.avatar }} style={styles.avatar} />
               ) : (
                 <View style={styles.avatarPlaceholder}>
-                  <User size={40} color="#fff" strokeWidth={2.5} />
+                  <User size={40} color="#1a1a1a" strokeWidth={2.5} />
                 </View>
               )}
               <View style={styles.editBadge}>
-                <Edit3 size={12} color="#fff" />
+                <Edit3 size={12} color="#1a1a1a" />
               </View>
             </TouchableOpacity>
             <Text style={styles.nicknameText}>{user.nickname || user.userId}</Text>
@@ -435,20 +435,15 @@ export default function ProfileScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <LinearGradient
-            colors={['#0F172A', '#1E293B', '#030712']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.loginHero}
-          >
+          <View style={styles.loginHero}>
             <View style={styles.loginHeroContent}>
               <View style={styles.loginIconWrapper}>
-                <User size={40} color="#ffffff" strokeWidth={2} />
+                <User size={40} color="#1a1a1a" strokeWidth={2} />
               </View>
               <Text style={styles.loginHeroTitle}>{t('profile.phoneLogin')}</Text>
               <Text style={styles.loginHeroSubtitle}>{t('home.transformInstantly')}</Text>
             </View>
-          </LinearGradient>
+          </View>
 
           <View style={styles.content}>
             <View style={styles.form}>
@@ -592,36 +587,44 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loginHero: {
-    paddingTop: Platform.OS === 'ios' ? 80 : 60,
-    paddingBottom: 40,
+    paddingTop: Platform.OS === 'ios' ? 100 : 80,
+    paddingBottom: 60,
     paddingHorizontal: 24,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
   },
   loginHeroContent: {
     alignItems: 'center',
   },
   loginIconWrapper: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#f8fafc',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: '#f1f5f9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
   },
   loginHeroTitle: {
     fontSize: 32,
     fontWeight: '900',
-    color: '#ffffff',
+    color: '#1a1a1a',
     letterSpacing: -1,
     marginBottom: 8,
   },
   loginHeroSubtitle: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#64748b',
     fontWeight: '600',
     letterSpacing: 0.5,
   },
@@ -659,14 +662,11 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#f8fafc',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
   },
   editBadge: {
     position: 'absolute',
@@ -675,11 +675,16 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#fff',
+    borderWidth: 1.5,
+    borderColor: '#f1f5f9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   nicknameText: {
     fontSize: 22,
@@ -697,15 +702,12 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#f8fafc',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
   },
   title: {
     fontSize: 28,
@@ -749,20 +751,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sendCodeButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#ffffff',
     borderRadius: 12,
     paddingHorizontal: 20,
     justifyContent: 'center',
     alignItems: 'center',
     minWidth: 100,
+    borderWidth: 1.5,
+    borderColor: '#1a1a1a',
   },
   sendCodeButtonDisabled: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f8fafc',
+    borderColor: '#e2e8f0',
   },
   sendCodeButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#ffffff',
+    color: '#1a1a1a',
   },
   sendCodeButtonTextDisabled: {
     color: '#94a3b8',
