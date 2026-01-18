@@ -126,6 +126,12 @@ export default {
     profileUpdated: 'プロフィールを更新しました',
     updateFailed: '更新に失敗しました。もう一度お試しください',
     cameraPermissionRequired: 'カメラの権限が必要です',
+    addBio: '自己紹介を追加',
+    bio: '自己紹介',
+    bioPlaceholder: '自己紹介を入力...',
+    following: 'フォロー中',
+    followers: 'フォロワー',
+    swaps: '着せ替え',
   },
   verdict: {
     authentic: '写真一致',

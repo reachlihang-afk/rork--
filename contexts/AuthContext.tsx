@@ -8,6 +8,9 @@ interface User {
   userId: string;
   nickname?: string;
   avatar?: string;
+  bio?: string;
+  followingCount?: number;
+  followersCount?: number;
 }
 
 export const [AuthContext, useAuth] = createContextHook(() => {
@@ -93,6 +96,9 @@ export const [AuthContext, useAuth] = createContextHook(() => {
       userId: isNewUser ? generateUserId() : existingUser.userId,
       nickname: !isNewUser && existingUser?.nickname ? existingUser.nickname : undefined,
       avatar: !isNewUser && existingUser?.avatar ? existingUser.avatar : undefined,
+      bio: !isNewUser && existingUser?.bio ? existingUser.bio : undefined,
+      followingCount: !isNewUser && existingUser?.followingCount ? existingUser.followingCount : 0,
+      followersCount: !isNewUser && existingUser?.followersCount ? existingUser.followersCount : 0,
     };
     setUser(newUser);
     await AsyncStorage.setItem('user', JSON.stringify(newUser));
@@ -115,9 +121,9 @@ export const [AuthContext, useAuth] = createContextHook(() => {
     await AsyncStorage.removeItem('user');
   }, []);
 
-  const updateProfile = useCallback(async (nickname: string, avatar: string) => {
+  const updateProfile = useCallback(async (nickname: string, avatar: string, bio?: string) => {
     const trimmed = nickname.trim();
-    console.log('[AuthContext] updateProfile called:', { nickname: trimmed, avatar: avatar ? 'has avatar' : 'no avatar' });
+    console.log('[AuthContext] updateProfile called:', { nickname: trimmed, avatar: avatar ? 'has avatar' : 'no avatar', bio });
 
     if (!trimmed) {
       throw new Error('Nickname is required');
@@ -156,6 +162,7 @@ export const [AuthContext, useAuth] = createContextHook(() => {
       ...user,
       nickname: trimmed,
       avatar: avatar || undefined,
+      bio: bio?.trim() || user.bio,
     };
 
     setUser(updatedUser);

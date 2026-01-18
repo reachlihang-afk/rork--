@@ -7,6 +7,7 @@ import { useCoin } from '@/contexts/CoinContext';
 import { useLanguage, Language, languageNames } from '@/contexts/LanguageContext';
 import { useFriends } from '@/contexts/FriendsContext';
 import { useAlert } from '@/contexts/AlertContext';
+import { useVerification } from '@/contexts/VerificationContext';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
@@ -17,6 +18,7 @@ export default function ProfileScreen() {
   const { currentLanguage, changeLanguage } = useLanguage();
   const { pendingRequestsCount, privacySettings, updatePrivacySettings } = useFriends();
   const { showAlert } = useAlert();
+  const { outfitChangeHistory } = useVerification();
   const [phone, setPhone] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
@@ -162,12 +164,34 @@ export default function ProfileScreen() {
                   <User size={40} color="#1a1a1a" strokeWidth={2.5} />
                 </View>
               )}
-              <View style={styles.editBadge}>
-                <Edit3 size={12} color="#1a1a1a" />
+              <View style={styles.verifiedBadge}>
+                <Text style={styles.verifiedIcon}>✓</Text>
               </View>
             </TouchableOpacity>
             <Text style={styles.nicknameText}>{user.nickname || user.userId}</Text>
-            <Text style={styles.phoneText}>{user.phone}</Text>
+            {user.bio ? (
+              <Text style={styles.bioText}>{user.bio}</Text>
+            ) : (
+              <TouchableOpacity onPress={() => router.push('/edit-profile')}>
+                <Text style={styles.bioPlaceholder}>{t('profile.addBio')}</Text>
+              </TouchableOpacity>
+            )}
+            
+            {/* 统计数据 */}
+            <View style={styles.statsContainer}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>{user.followingCount || 0}</Text>
+                <Text style={styles.statLabel}>{t('profile.following')}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>{user.followersCount || 0}</Text>
+                <Text style={styles.statLabel}>{t('profile.followers')}</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>{outfitChangeHistory.length}</Text>
+                <Text style={styles.statLabel}>{t('profile.swaps')}</Text>
+              </View>
+            </View>
           </View>
 
           <TouchableOpacity 
@@ -660,23 +684,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f1f5f9',
   },
-  editBadge: {
+  verifiedBadge: {
     position: 'absolute',
     bottom: 0,
     right: 0,
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#3b82f6',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: '#f1f5f9',
+    borderWidth: 2,
+    borderColor: '#ffffff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 2,
+  },
+  verifiedIcon: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '800',
   },
   nicknameText: {
     fontSize: 22,
@@ -689,6 +718,45 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748b',
     fontWeight: '500',
+  },
+  bioText: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 4,
+    paddingHorizontal: 20,
+    lineHeight: 20,
+  },
+  bioPlaceholder: {
+    fontSize: 14,
+    color: '#94a3b8',
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 4,
+    fontStyle: 'italic',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 24,
+    gap: 40,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1a1a1a',
+    letterSpacing: -0.5,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontWeight: '500',
+    marginTop: 2,
   },
   avatarContainer: {
     width: 80,

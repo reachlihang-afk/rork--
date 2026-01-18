@@ -126,6 +126,12 @@ export default {
     profileUpdated: '프로필이 업데이트되었습니다',
     updateFailed: '업데이트 실패, 다시 시도하세요',
     cameraPermissionRequired: '카메라 권한이 필요합니다',
+    addBio: '자기소개 추가',
+    bio: '자기소개',
+    bioPlaceholder: '자기소개를 입력하세요...',
+    following: '팔로잉',
+    followers: '팔로워',
+    swaps: '착장',
   },
   verdict: {
     authentic: '사진 일치',

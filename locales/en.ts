@@ -132,6 +132,12 @@ export default {
     profileUpdated: 'Profile updated successfully',
     updateFailed: 'Update failed, please try again',
     cameraPermissionRequired: 'Camera permission required',
+    addBio: 'Add bio',
+    bio: 'Bio',
+    bioPlaceholder: 'Tell us about yourself...',
+    following: 'Following',
+    followers: 'Followers',
+    swaps: 'Swaps',
   },
   verdict: {
     authentic: 'Photo Matches',

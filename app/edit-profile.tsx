@@ -30,6 +30,7 @@ export default function EditProfileScreen() {
 
   const [nickname, setNickname] = useState<string>(user?.nickname || '');
   const [avatar, setAvatar] = useState<string>(user?.avatar || '');
+  const [bio, setBio] = useState<string>(user?.bio || '');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const pickImage = useCallback(async () => {
@@ -84,6 +85,11 @@ export default function EditProfileScreen() {
     setNickname(text);
   }, []);
 
+  const handleBioChange = useCallback((text: string) => {
+    console.log('[EditProfile] Bio changing to:', text);
+    setBio(text);
+  }, []);
+
   const screenOptions = useMemo(() => ({
     title: t('profile.editProfile'),
     headerBackVisible: false,
@@ -118,10 +124,10 @@ export default function EditProfileScreen() {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
-    console.log('[EditProfile] Saving profile:', { nickname: trimmedNickname, hasAvatar: !!avatar });
+    console.log('[EditProfile] Saving profile:', { nickname: trimmedNickname, hasAvatar: !!avatar, bio: bio.trim() });
 
     try {
-      await updateProfile(trimmedNickname, avatar);
+      await updateProfile(trimmedNickname, avatar, bio.trim());
       if (user) {
         await updateUserNickname(user.userId, trimmedNickname);
       }
@@ -202,11 +208,11 @@ export default function EditProfileScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>昵称</Text>
+            <Text style={styles.label}>{t('profile.nickname')}</Text>
             <TextInput
               testID="editProfile.nicknameInput"
               style={styles.input}
-              placeholder="请输入昵称"
+              placeholder={t('profile.nicknamePlaceholder')}
               placeholderTextColor="#94A3B8"
               value={nickname}
               onChangeText={handleNicknameChange}
@@ -214,8 +220,8 @@ export default function EditProfileScreen() {
               autoComplete="off"
               autoCorrect={false}
               autoCapitalize="none"
-              returnKeyType="done"
-              blurOnSubmit={true}
+              returnKeyType="next"
+              blurOnSubmit={false}
               editable={!isSubmitting}
               selectTextOnFocus={true}
               keyboardType="default"
@@ -227,14 +233,43 @@ export default function EditProfileScreen() {
               onBlur={() => {
                 console.log('[EditProfile] Nickname input blurred, final value:', nickname);
               }}
+              keyboardAppearance="light"
+            />
+            <Text style={styles.hint}>{nickname.length}/20</Text>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('profile.bio')}</Text>
+            <TextInput
+              testID="editProfile.bioInput"
+              style={[styles.input, styles.bioInput]}
+              placeholder={t('profile.bioPlaceholder')}
+              placeholderTextColor="#94A3B8"
+              value={bio}
+              onChangeText={handleBioChange}
+              maxLength={100}
+              multiline={true}
+              numberOfLines={3}
+              autoComplete="off"
+              autoCorrect={false}
+              returnKeyType="done"
+              blurOnSubmit={true}
+              editable={!isSubmitting}
+              textAlignVertical="top"
+              onFocus={() => {
+                console.log('[EditProfile] Bio input focused, current value:', bio);
+              }}
+              onBlur={() => {
+                console.log('[EditProfile] Bio input blurred, final value:', bio);
+              }}
               onSubmitEditing={() => {
-                console.log('[EditProfile] Nickname submit');
+                console.log('[EditProfile] Bio submit');
                 Keyboard.dismiss();
                 handleSave();
               }}
               keyboardAppearance="light"
             />
-            <Text style={styles.hint}>{nickname.length}/20</Text>
+            <Text style={styles.hint}>{bio.length}/100</Text>
           </View>
 
             <TouchableOpacity
@@ -352,6 +387,10 @@ const styles = StyleSheet.create({
       outlineStyle: 'none' as any,
       cursor: 'text' as any,
     } : {}),
+  },
+  bioInput: {
+    minHeight: 100,
+    paddingTop: 16,
   },
   hint: {
     fontSize: 12,

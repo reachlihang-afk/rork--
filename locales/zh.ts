@@ -132,6 +132,12 @@ export default {
     profileUpdated: '资料更新成功',
     updateFailed: '更新失败，请重试',
     cameraPermissionRequired: '需要相册访问权限',
+    addBio: '添加个人介绍',
+    bio: '个人介绍',
+    bioPlaceholder: '介绍一下自己吧...',
+    following: '关注',
+    followers: '粉丝',
+    swaps: '换装',
   },
   verdict: {
     authentic: '照片一致',
