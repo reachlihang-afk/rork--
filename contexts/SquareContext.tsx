@@ -19,6 +19,7 @@ export interface SquarePost {
   originalImageUri?: string;
   resultImageUri?: string;
   templateName?: string;
+  customOutfitImages?: string[];  // 自定义穿搭模式下的参考服饰图片
   // 通用字段
   description?: string;
   createdAt: number;

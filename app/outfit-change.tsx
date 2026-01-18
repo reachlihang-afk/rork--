@@ -265,7 +265,12 @@ export default function OutfitChangeNewScreen() {
   const [customImages, setCustomImages] = useState<string[]>([]);
   const [showAllTemplates, setShowAllTemplates] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedResult, setGeneratedResult] = useState<{ original: string; result: string; templateName: string } | null>(null);
+  const [generatedResult, setGeneratedResult] = useState<{ 
+    original: string; 
+    result: string; 
+    templateName: string;
+    customOutfitImages?: string[];  // 自定义模式下的参考服饰图片
+  } | null>(null);
   const [showLargeImage, setShowLargeImage] = useState(false);
   const [largeImageType, setLargeImageType] = useState<'original' | 'result'>('result');
   
@@ -345,6 +350,7 @@ export default function OutfitChangeNewScreen() {
         originalImageUri: generatedResult.original,
         resultImageUri: generatedResult.result,
         templateName: generatedResult.templateName,
+        customOutfitImages: generatedResult.customOutfitImages,
         pinnedCommentId: undefined,
       });
 
@@ -915,7 +921,8 @@ FINAL RESULT REQUIREMENTS:
       setGeneratedResult({
         original: userImage,
         result: generatedImageUri,
-        templateName
+        templateName,
+        customOutfitImages: selectedTab === 'custom' ? [...customImages] : undefined,
       });
       setIsPublished(false); // 重置发布状态
       
@@ -1325,27 +1332,44 @@ FINAL RESULT REQUIREMENTS:
             </View>
             
             <View style={styles.resultComparison}>
-              {/* 原图 */}
-              <TouchableOpacity 
-                style={styles.resultImageContainer}
-                onPress={() => {
-                  setLargeImageType('original');
-                  setShowLargeImage(true);
-                }}
-                activeOpacity={0.9}
-              >
-                <Image 
-                  source={{ uri: generatedResult.original }} 
-                  style={styles.resultImage} 
-                  contentFit="cover" 
-                />
-                <View style={styles.resultLabel}>
-                  <Text style={styles.resultLabelText}>{t('history.original')}</Text>
-                </View>
-                <View style={styles.zoomHint}>
-                  <Camera size={12} color="#fff" />
-                </View>
-              </TouchableOpacity>
+              {/* 原图区域 - 自定义模式显示组合图 */}
+              <View style={styles.resultOriginalSection}>
+                <TouchableOpacity 
+                  style={styles.resultImageContainer}
+                  onPress={() => {
+                    setLargeImageType('original');
+                    setShowLargeImage(true);
+                  }}
+                  activeOpacity={0.9}
+                >
+                  <Image 
+                    source={{ uri: generatedResult.original }} 
+                    style={styles.resultImage} 
+                    contentFit="cover" 
+                  />
+                  <View style={styles.resultLabel}>
+                    <Text style={styles.resultLabelText}>{t('history.original')}</Text>
+                  </View>
+                  <View style={styles.zoomHint}>
+                    <Camera size={12} color="#fff" />
+                  </View>
+                  
+                  {/* 自定义模式：显示参考服饰缩略图 */}
+                  {generatedResult.customOutfitImages && generatedResult.customOutfitImages.length > 0 && (
+                    <View style={styles.customOutfitThumbnails}>
+                      {generatedResult.customOutfitImages.map((uri, index) => (
+                        <View key={index} style={styles.customOutfitThumb}>
+                          <Image 
+                            source={{ uri }} 
+                            style={styles.customOutfitThumbImage}
+                            contentFit="cover"
+                          />
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
 
               {/* 箭头 */}
               <View style={styles.resultArrow}>
@@ -1997,6 +2021,9 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 12,
   },
+  resultOriginalSection: {
+    flex: 1,
+  },
   resultImageContainer: {
     flex: 1,
     aspectRatio: 3 / 4,
@@ -2008,6 +2035,30 @@ const styles = StyleSheet.create({
     borderColor: '#e5e7eb',
   },
   resultImage: {
+    width: '100%',
+    height: '100%',
+  },
+  customOutfitThumbnails: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    flexDirection: 'column',
+    gap: 4,
+  },
+  customOutfitThumb: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  customOutfitThumbImage: {
     width: '100%',
     height: '100%',
   },
