@@ -350,9 +350,15 @@ export default function OutfitChangeNewScreen() {
 
       setIsPublished(true);
       showAlert({
-        type: 'success',
+        type: 'confirm',
         title: t('common.success'),
-        message: t('square.publishSuccessPrompt')
+        message: t('square.publishSuccessPrompt'),
+        confirmText: t('common.confirm'),
+        cancelText: t('common.cancel'),
+        onConfirm: () => {
+          // 跳转到广场页面
+          router.push('/(tabs)/square');
+        }
       });
     } catch (error) {
       console.error('Publish to square failed:', error);

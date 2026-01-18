@@ -68,21 +68,24 @@ export async function saveToGallery(uri: string): Promise<boolean> {
     }
 
     let fileUri = uri;
+    let tempFileCreated = false;
     
     // 如果是 base64 数据 URL，需要先保存为临时文件
     if (uri.startsWith('data:')) {
       console.log('[saveToGallery] Converting base64 to file...');
       const timestamp = Date.now();
       const filename = `picseek_${timestamp}.jpg`;
-      const baseDir = getWritableDirectory();
       
-      if (!baseDir) {
-        console.error('[saveToGallery] No writable directory available');
+      // 使用 cacheDirectory 作为临时存储
+      const cacheDir = (FileSystem as any).cacheDirectory;
+      if (!cacheDir) {
+        console.error('[saveToGallery] No cache directory available');
         Alert.alert('错误', '无法获取存储目录');
         return false;
       }
       
-      fileUri = `${baseDir}${filename}`;
+      fileUri = `${cacheDir}${filename}`;
+      tempFileCreated = true;
       
       // 提取 base64 数据
       const base64Data = uri.split(',')[1];
@@ -92,15 +95,16 @@ export async function saveToGallery(uri: string): Promise<boolean> {
       }
       
       console.log('[saveToGallery] Base64 data length:', base64Data.length);
+      console.log('[saveToGallery] Writing to:', fileUri);
       
-      // 写入文件
+      // 使用 writeAsStringAsync 写入文件（encoding 使用字符串以兼容类型）
       await FileSystem.writeAsStringAsync(fileUri, base64Data, {
         encoding: 'base64' as any,
       });
       
       // 验证文件是否成功写入
       const fileInfo = await FileSystem.getInfoAsync(fileUri);
-      console.log('[saveToGallery] File info:', fileInfo);
+      console.log('[saveToGallery] File created:', fileInfo.exists, 'size:', (fileInfo as any).size);
       
       if (!fileInfo.exists) {
         console.error('[saveToGallery] File was not created');
@@ -108,41 +112,40 @@ export async function saveToGallery(uri: string): Promise<boolean> {
       }
     }
 
-    console.log('[saveToGallery] Saving to gallery from:', fileUri);
+    console.log('[saveToGallery] Creating asset from:', fileUri);
 
     // 保存到相册
     const asset = await MediaLibrary.createAssetAsync(fileUri);
-    console.log('[saveToGallery] Asset created:', asset.id, asset.uri);
+    console.log('[saveToGallery] Asset created successfully:', asset.id);
     
-    // 尝试将图片保存到 PicSeek 相册
+    // 尝试将图片保存到 PicSeek 相册（可选，失败不影响保存）
     try {
       let album = await MediaLibrary.getAlbumAsync('PicSeek');
       if (album) {
         await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-        console.log('[saveToGallery] Image added to existing PicSeek album');
       } else {
-        album = await MediaLibrary.createAlbumAsync('PicSeek', asset, false);
-        console.log('[saveToGallery] Created new PicSeek album');
+        await MediaLibrary.createAlbumAsync('PicSeek', asset, false);
       }
+      console.log('[saveToGallery] Added to PicSeek album');
     } catch (albumError) {
-      // 如果相册操作失败，图片仍然会保存到默认相册
-      console.warn('[saveToGallery] Album operation failed, image saved to default album:', albumError);
+      // 相册操作失败不影响保存结果
+      console.log('[saveToGallery] Album operation skipped:', albumError);
     }
     
-    // 清理临时文件（如果是从base64创建的）
-    if (uri.startsWith('data:')) {
+    // 清理临时文件
+    if (tempFileCreated) {
       try {
         await FileSystem.deleteAsync(fileUri, { idempotent: true });
-        console.log('[saveToGallery] Cleaned up temp file');
-      } catch (cleanupError) {
-        console.warn('[saveToGallery] Failed to cleanup temp file:', cleanupError);
+        console.log('[saveToGallery] Temp file cleaned up');
+      } catch (e) {
+        // 忽略清理错误
       }
     }
     
-    console.log('[saveToGallery] Image saved to gallery successfully!');
+    console.log('[saveToGallery] SUCCESS - Image saved to gallery!');
     return true;
-  } catch (error) {
-    console.error('[saveToGallery] Failed to save to gallery:', error);
+  } catch (error: any) {
+    console.error('[saveToGallery] FAILED:', error.message || error);
     return false;
   }
 }
