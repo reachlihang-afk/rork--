@@ -308,6 +308,8 @@ export default {
     author: '投稿者',
     firstComment: '最初',
     reply: '返信',
+    andMore: '他{{count}}人',
+    pinned: 'ピン留め',
     deleteCommentConfirm: 'このコメントを削除してもよろしいですか？',
     viewMoreComments: 'さらに{{count}}件のコメントを表示',
     collapse: '折りたたむ',

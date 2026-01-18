@@ -542,6 +542,23 @@ export default function SquareScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+        
+        {/* 预览评论 */}
+        {post.comments.length > 0 && (
+          <View style={pipStyles.commentsPreview}>
+            {post.comments.slice(0, 2).map((comment) => (
+              <Text key={comment.id} style={pipStyles.previewComment} numberOfLines={1}>
+                <Text style={pipStyles.previewCommentAuthor}>{comment.userNickname}</Text>
+                <Text style={pipStyles.previewCommentText}>: {comment.content}</Text>
+              </Text>
+            ))}
+            {post.comments.length > 2 && (
+              <Text style={pipStyles.viewAllComments}>
+                {t('square.viewMoreComments', { count: post.comments.length - 2 })}
+              </Text>
+            )}
+          </View>
+        )}
       </TouchableOpacity>
     );
   };
@@ -785,49 +802,140 @@ export default function SquareScreen() {
                   </View>
                 </TouchableOpacity>
                 
-                {/* 评论列表 */}
-                {selectedPost.comments.map((comment, index) => (
-                  <View key={comment.id} style={detailStyles.commentItem}>
-                    {comment.userAvatar ? (
-                      <Image source={{ uri: comment.userAvatar }} style={detailStyles.commentAvatar} />
-                    ) : (
-                      <View style={detailStyles.commentAvatarPlaceholder}>
-                        <Text style={detailStyles.commentAvatarText}>
-                          {comment.userNickname.charAt(0).toUpperCase()}
-                        </Text>
-                      </View>
-                    )}
-                    <View style={detailStyles.commentMain}>
-                      <View style={detailStyles.commentHeader}>
-                        <Text style={detailStyles.commentAuthor}>{comment.userNickname}</Text>
-                        {comment.userId === selectedPost.userId && (
-                          <View style={detailStyles.authorBadge}>
-                            <Text style={detailStyles.authorBadgeText}>{t('square.author')}</Text>
-                          </View>
-                        )}
-                      </View>
-                      <Text style={detailStyles.commentText}>{comment.content}</Text>
-                      <View style={detailStyles.commentMeta}>
-                        <Text style={detailStyles.commentTime}>{formatTime(comment.createdAt)}</Text>
-                        <TouchableOpacity 
-                          style={detailStyles.commentReplyButton}
-                          onPress={() => handleCommentPress(selectedPost.id, comment, selectedPost.userId)}
-                        >
-                          <Text style={detailStyles.commentReplyText}>{t('square.reply')}</Text>
-                        </TouchableOpacity>
-                      </View>
-                      {index === 0 && (
-                        <View style={detailStyles.firstCommentBadge}>
-                          <Text style={detailStyles.firstCommentBadgeText}>{t('square.firstComment')}</Text>
-                        </View>
-                      )}
-                    </View>
-                    <View style={detailStyles.commentActions}>
-                      <Heart size={16} color="#9CA3AF" />
-                      <MessageCircle size={16} color="#9CA3AF" />
-                    </View>
+                {/* 点赞用户显示 */}
+                {selectedPost.likes.length > 0 && (
+                  <View style={detailStyles.likesSection}>
+                    <Heart size={14} color="#EF4444" fill="#EF4444" />
+                    <Text style={detailStyles.likesText} numberOfLines={2}>
+                      {selectedPost.likes.slice(0, 5).map((userId, idx) => {
+                        const likedUser = posts.find(p => p.userId === userId);
+                        const name = likedUser?.userNickname || userId.slice(-4);
+                        return idx === 0 ? name : `, ${name}`;
+                      }).join('')}
+                      {selectedPost.likes.length > 5 && ` ${t('square.andMore', { count: selectedPost.likes.length - 5 })}`}
+                    </Text>
                   </View>
-                ))}
+                )}
+                
+                {/* 评论列表 - 支持置顶和嵌套回复 */}
+                {(() => {
+                  // 组织评论：主评论和回复分开
+                  const topLevelComments = selectedPost.comments.filter(c => !c.replyToCommentId);
+                  const replyComments = selectedPost.comments.filter(c => c.replyToCommentId);
+                  
+                  // 置顶评论放最前面
+                  const pinnedComment = selectedPost.pinnedCommentId 
+                    ? topLevelComments.find(c => c.id === selectedPost.pinnedCommentId)
+                    : null;
+                  const unpinnedTopComments = topLevelComments
+                    .filter(c => c.id !== selectedPost.pinnedCommentId)
+                    .sort((a, b) => b.createdAt - a.createdAt);
+                  const sortedTopComments = pinnedComment 
+                    ? [pinnedComment, ...unpinnedTopComments]
+                    : unpinnedTopComments;
+                  
+                  return sortedTopComments.map((comment, idx) => {
+                    const isPinned = selectedPost.pinnedCommentId === comment.id;
+                    const replies = replyComments
+                      .filter(r => r.replyToCommentId === comment.id)
+                      .sort((a, b) => a.createdAt - b.createdAt);
+                    
+                    return (
+                      <View key={comment.id}>
+                        {/* 主评论 */}
+                        <View style={detailStyles.commentItem}>
+                          {comment.userAvatar ? (
+                            <Image source={{ uri: comment.userAvatar }} style={detailStyles.commentAvatar} />
+                          ) : (
+                            <View style={detailStyles.commentAvatarPlaceholder}>
+                              <Text style={detailStyles.commentAvatarText}>
+                                {comment.userNickname.charAt(0).toUpperCase()}
+                              </Text>
+                            </View>
+                          )}
+                          <View style={detailStyles.commentMain}>
+                            <View style={detailStyles.commentHeader}>
+                              <Text style={detailStyles.commentAuthor}>{comment.userNickname}</Text>
+                              {comment.userId === selectedPost.userId && (
+                                <View style={detailStyles.authorBadge}>
+                                  <Text style={detailStyles.authorBadgeText}>{t('square.author')}</Text>
+                                </View>
+                              )}
+                              {isPinned && (
+                                <View style={detailStyles.pinnedBadge}>
+                                  <Pin size={10} color="#FF6B35" fill="#FF6B35" />
+                                  <Text style={detailStyles.pinnedBadgeText}>{t('square.pinned')}</Text>
+                                </View>
+                              )}
+                            </View>
+                            <Text style={detailStyles.commentText}>{comment.content}</Text>
+                            <View style={detailStyles.commentMeta}>
+                              <Text style={detailStyles.commentTime}>{formatTime(comment.createdAt)}</Text>
+                              <TouchableOpacity 
+                                style={detailStyles.commentReplyButton}
+                                onPress={() => handleCommentPress(selectedPost.id, comment, selectedPost.userId)}
+                              >
+                                <Text style={detailStyles.commentReplyText}>{t('square.reply')}</Text>
+                              </TouchableOpacity>
+                            </View>
+                            {idx === 0 && !isPinned && (
+                              <View style={detailStyles.firstCommentBadge}>
+                                <Text style={detailStyles.firstCommentBadgeText}>{t('square.firstComment')}</Text>
+                              </View>
+                            )}
+                          </View>
+                          <View style={detailStyles.commentActions}>
+                            <Heart size={16} color="#9CA3AF" />
+                            <MessageCircle size={16} color="#9CA3AF" />
+                          </View>
+                        </View>
+                        
+                        {/* 回复评论 - 嵌套显示 */}
+                        {replies.map((reply) => (
+                          <View key={reply.id} style={[detailStyles.commentItem, detailStyles.replyItem]}>
+                            {reply.userAvatar ? (
+                              <Image source={{ uri: reply.userAvatar }} style={detailStyles.replyAvatar} />
+                            ) : (
+                              <View style={detailStyles.replyAvatarPlaceholder}>
+                                <Text style={detailStyles.replyAvatarText}>
+                                  {reply.userNickname.charAt(0).toUpperCase()}
+                                </Text>
+                              </View>
+                            )}
+                            <View style={detailStyles.commentMain}>
+                              <View style={detailStyles.commentHeader}>
+                                <Text style={detailStyles.commentAuthor}>{reply.userNickname}</Text>
+                                {reply.userId === selectedPost.userId && (
+                                  <View style={detailStyles.authorBadge}>
+                                    <Text style={detailStyles.authorBadgeText}>{t('square.author')}</Text>
+                                  </View>
+                                )}
+                              </View>
+                              <Text style={detailStyles.commentText}>
+                                {reply.replyToNickname && (
+                                  <Text style={detailStyles.replyToText}>@{reply.replyToNickname} </Text>
+                                )}
+                                {reply.content}
+                              </Text>
+                              <View style={detailStyles.commentMeta}>
+                                <Text style={detailStyles.commentTime}>{formatTime(reply.createdAt)}</Text>
+                                <TouchableOpacity 
+                                  style={detailStyles.commentReplyButton}
+                                  onPress={() => handleCommentPress(selectedPost.id, reply, selectedPost.userId)}
+                                >
+                                  <Text style={detailStyles.commentReplyText}>{t('square.reply')}</Text>
+                                </TouchableOpacity>
+                              </View>
+                            </View>
+                            <View style={detailStyles.commentActions}>
+                              <Heart size={14} color="#9CA3AF" />
+                            </View>
+                          </View>
+                        ))}
+                      </View>
+                    );
+                  });
+                })()}
                 
                 {selectedPost.comments.length === 0 && (
                   <View style={detailStyles.noComments}>
@@ -2226,6 +2334,28 @@ const pipStyles = StyleSheet.create({
   likeCountActive: {
     color: '#EF4444',
   },
+  // 预览评论样式
+  commentsPreview: {
+    paddingTop: 8,
+    paddingHorizontal: 10,
+    gap: 4,
+  },
+  previewComment: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  previewCommentAuthor: {
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  previewCommentText: {
+    color: '#666',
+  },
+  viewAllComments: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 2,
+  },
 });
 
 // 帖子详情弹窗样式
@@ -2549,6 +2679,66 @@ const detailStyles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     paddingLeft: 8,
+  },
+  // 点赞用户显示
+  likesSection: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#fef5f5',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 16,
+    gap: 8,
+  },
+  likesText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#666',
+    lineHeight: 18,
+  },
+  // 置顶标签
+  pinnedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    marginLeft: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    backgroundColor: '#FFF5F2',
+    borderRadius: 4,
+  },
+  pinnedBadgeText: {
+    fontSize: 10,
+    color: '#FF6B35',
+    fontWeight: '600',
+  },
+  // 回复评论样式
+  replyItem: {
+    marginLeft: 46,
+    paddingTop: 12,
+    borderTopWidth: 0,
+  },
+  replyAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+  },
+  replyAvatarPlaceholder: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#f0f0f0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  replyAvatarText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  replyToText: {
+    color: '#1a1a1a',
+    fontWeight: '500',
   },
   noComments: {
     paddingVertical: 40,

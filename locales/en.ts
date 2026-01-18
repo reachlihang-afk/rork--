@@ -331,6 +331,8 @@ export default {
     author: 'Author',
     firstComment: 'First',
     reply: 'Reply',
+    andMore: 'and {{count}} more',
+    pinned: 'Pinned',
     deleteCommentConfirm: 'Are you sure you want to delete this comment?',
     viewMoreComments: 'View {{count}} more comments',
     collapse: 'Collapse',

@@ -332,6 +332,8 @@ export default {
     author: '作者',
     firstComment: '首评',
     reply: '回复',
+    andMore: '等{{count}}人',
+    pinned: '置顶',
     deleteCommentConfirm: '确定要删除这条评论吗？',
     viewMoreComments: '查看更多{{count}}条评论',
     collapse: '收起',

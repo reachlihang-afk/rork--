@@ -308,6 +308,8 @@ export default {
     author: '작성자',
     firstComment: '첫댓글',
     reply: '답글',
+    andMore: '외 {{count}}명',
+    pinned: '고정',
     deleteCommentConfirm: '이 댓글을 삭제하시겠습니까?',
     viewMoreComments: '댓글 {{count}}개 더 보기',
     collapse: '접기',
