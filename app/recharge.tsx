@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform }
 import { router, Stack } from 'expo-router';
 import { ArrowLeft, RefreshCw, Lock } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCoin } from '@/contexts/CoinContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -53,6 +54,7 @@ const RECHARGE_PACKAGES: RechargePackage[] = [
 
 export default function RechargeScreen() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { coinBalance, addCoins } = useCoin();
   const { isLoggedIn } = useAuth();
   const { showAlert } = useAlert();
@@ -96,7 +98,7 @@ export default function RechargeScreen() {
         <Stack.Screen options={{ headerShown: false }} />
         
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity 
           onPress={() => router.back()} 
           style={styles.headerButton}
@@ -135,7 +137,7 @@ export default function RechargeScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity 
           onPress={() => router.back()} 
           style={styles.headerButton}
@@ -289,18 +291,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   
-  // Header - 参照历史记录页面优化
+  // Header - 使用动态安全区域
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 60 : 24,
     paddingBottom: 12,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
-    minHeight: Platform.OS === 'ios' ? 104 : 76,
   },
   headerButton: {
     width: 48,

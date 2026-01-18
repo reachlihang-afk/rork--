@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { ArrowLeft, MoreHorizontal, Sparkles } from 'lucide-react-native';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useVerification } from '@/contexts/VerificationContext';
 import { useTranslation } from 'react-i18next';
 
@@ -10,6 +11,7 @@ export default function OutfitChangeDetailScreen() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   
   const { outfitChangeHistory, deleteOutfitChange } = useVerification();
   
@@ -74,12 +76,12 @@ export default function OutfitChangeDetailScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity 
           onPress={() => router.back()}
           style={styles.backButton}
           activeOpacity={0.7}
-          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
         >
           <View style={styles.backButtonInner}>
             <ArrowLeft size={22} color="#1a1a1a" strokeWidth={2.5} />
@@ -94,7 +96,7 @@ export default function OutfitChangeDetailScreen() {
         <TouchableOpacity 
           onPress={handleMore}
           style={styles.headerButton}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
         >
           <MoreHorizontal size={24} color="#1a1a1a" />
         </TouchableOpacity>
@@ -190,18 +192,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   
-  // Header - 参照历史记录页面优化
+  // Header - 使用动态安全区域
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 60 : 24,
     paddingBottom: 12,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
-    minHeight: Platform.OS === 'ios' ? 104 : 76,
   },
   backButton: {
     flexDirection: 'row',

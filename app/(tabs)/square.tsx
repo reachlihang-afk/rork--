@@ -647,7 +647,7 @@ export default function SquareScreen() {
         {selectedPost && (
           <View style={detailStyles.fullScreenContainer}>
             {/* 顶部导航栏 */}
-            <View style={[detailStyles.header, { paddingTop: Platform.OS === 'ios' ? 60 : 20 }]}>
+            <View style={[detailStyles.header, { paddingTop: insets.top + 12 }]}>
               <TouchableOpacity
                 style={detailStyles.backButton}
                 onPress={() => setSelectedPost(null)}

@@ -22,6 +22,7 @@ import * as Sharing from 'expo-sharing';
 import { Camera, Sparkles, Lock, X, ArrowLeft, Download, Share2, Check } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCoin } from '@/contexts/CoinContext';
 import { useVerification } from '@/contexts/VerificationContext';
 import { useSquare } from '@/contexts/SquareContext';
@@ -253,6 +254,7 @@ export default function OutfitChangeNewScreen() {
   };
   
   const { user, isLoggedIn } = useAuth();
+  const insets = useSafeAreaInsets();
   const { coinBalance, canUseOutfitChange, useOutfitChange, getRemainingFreeCounts } = useCoin();
   const { addOutfitChangeHistory } = useVerification();
   const { publishPost } = useSquare();
@@ -1515,7 +1517,7 @@ FINAL RESULT REQUIREMENTS:
           </View>
 
           <TouchableOpacity 
-            style={styles.modalCloseButton}
+            style={[styles.modalCloseButton, { top: insets.top + 12 }]}
             onPress={() => setShowLargeImage(false)}
             hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
             activeOpacity={0.7}
@@ -2406,12 +2408,11 @@ const styles = StyleSheet.create({
   },
   modalCloseButton: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 44,
     right: 24,
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 100,
