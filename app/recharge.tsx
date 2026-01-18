@@ -289,18 +289,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   
-  // Header - iOS 优化版本
+  // Header - 参照历史记录页面优化
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 54 : 24,
-    paddingBottom: 16,
+    paddingTop: Platform.OS === 'ios' ? 60 : 24,
+    paddingBottom: 12,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
-    minHeight: Platform.OS === 'ios' ? 100 : 72,
+    minHeight: Platform.OS === 'ios' ? 104 : 76,
   },
   headerButton: {
     width: 48,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#f5f5f5',
-    marginLeft: -8,
+    marginLeft: 0,
   },
   headerTitle: {
     fontSize: 14,

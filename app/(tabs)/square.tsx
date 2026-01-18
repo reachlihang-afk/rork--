@@ -647,7 +647,7 @@ export default function SquareScreen() {
         {selectedPost && (
           <View style={detailStyles.fullScreenContainer}>
             {/* 顶部导航栏 */}
-            <View style={[detailStyles.header, { paddingTop: Platform.OS === 'ios' ? 54 : 16 }]}>
+            <View style={[detailStyles.header, { paddingTop: Platform.OS === 'ios' ? 60 : 20 }]}>
               <TouchableOpacity
                 style={detailStyles.backButton}
                 onPress={() => setSelectedPost(null)}
@@ -2373,7 +2373,7 @@ const detailStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  // 顶部导航栏 - iOS 优化版本
+  // 顶部导航栏 - 参照历史记录页面优化
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2393,6 +2393,7 @@ const detailStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+    marginLeft: 0,
   },
   headerUserInfo: {
     flex: 1,

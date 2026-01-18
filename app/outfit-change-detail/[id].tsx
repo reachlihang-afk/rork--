@@ -190,28 +190,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   
-  // Header - iOS 优化版本，更易点击
+  // Header - 参照历史记录页面优化
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 54 : 20,
-    paddingBottom: 16,
+    paddingTop: Platform.OS === 'ios' ? 60 : 24,
+    paddingBottom: 12,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
-    minHeight: Platform.OS === 'ios' ? 100 : 72,
+    minHeight: Platform.OS === 'ios' ? 104 : 76,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    marginLeft: -12,
-    minWidth: 100,
-    minHeight: 44,
+    gap: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    marginLeft: -8,
+    minWidth: 90,
+    minHeight: 48,
   },
   backButtonInner: {
     width: 40,

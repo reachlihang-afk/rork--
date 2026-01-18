@@ -2337,7 +2337,7 @@ const styles = StyleSheet.create({
   },
   modalCloseButton: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 54 : 40,
+    top: Platform.OS === 'ios' ? 60 : 44,
     right: 24,
     width: 48,
     height: 48,
