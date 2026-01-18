@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform, useState } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { ArrowLeft, RefreshCw, Lock } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -55,6 +55,7 @@ export default function RechargeScreen() {
   const { coinBalance, addCoins } = useCoin();
   const { isLoggedIn } = useAuth();
   const { showAlert } = useAlert();
+  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
 
   const handleRecharge = (pkg: RechargePackage) => {
     showAlert({
@@ -170,18 +171,21 @@ export default function RechargeScreen() {
         {/* Packages */}
         <View style={styles.packagesContainer}>
           {RECHARGE_PACKAGES.map((pkg, index) => {
+            const isSelected = selectedPackage === pkg.id;
             const isPopular = pkg.tier === 'popular';
             const isBest = pkg.tier === 'best';
-            const isLuxury = pkg.tier === 'luxury';
 
             return (
               <TouchableOpacity
                 key={pkg.id}
                 style={[
                   styles.packageCard,
-                  isBest && styles.packageCardBest,
+                  isSelected && styles.packageCardSelected,
                 ]}
-                onPress={() => handleRecharge(pkg)}
+                onPress={() => {
+                  setSelectedPackage(pkg.id);
+                  handleRecharge(pkg);
+                }}
                 activeOpacity={0.9}
               >
                 {/* Popular Badge */}
@@ -202,7 +206,7 @@ export default function RechargeScreen() {
                   </View>
                 )}
 
-                <View style={[styles.packageContent, isBest && styles.packageContentBest]}>
+                <View style={styles.packageContent}>
                   {/* Tier Name & Save Badge */}
                   <View style={styles.packageHeader}>
                     <Text style={styles.tierName}>
@@ -217,14 +221,14 @@ export default function RechargeScreen() {
                     )}
                   </View>
 
-                  {/* Coins Amount */}
-                  <View style={[styles.coinsRow, isBest && styles.coinsRowBest]}>
+                  {/* Diamonds Amount */}
+                  <View style={styles.coinsRow}>
                     <View style={styles.coinsInfo}>
-                      <Text style={[styles.coinsAmount, isBest && styles.coinsAmountBest]}>
+                      <Text style={styles.coinsAmount}>
                         {pkg.coins.toLocaleString()}
                       </Text>
                       <Text style={styles.coinsLabel}>
-                        {t('recharge.coins')}
+                        钻石
                       </Text>
                       {pkg.bonus && (
                         <Text style={styles.bonusText}>
@@ -233,35 +237,12 @@ export default function RechargeScreen() {
                       )}
                     </View>
 
-                    {/* Price Button */}
-                    {isLuxury ? (
-                      <TouchableOpacity style={styles.luxuryButton} activeOpacity={0.9}>
-                        <LinearGradient
-                          colors={['#57534e', '#000000']}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 1 }}
-                          style={styles.gradientButton}
-                        >
-                          <Text style={styles.priceTextLuxury}>
-                            ${pkg.price.toFixed(2)}
-                          </Text>
-                        </LinearGradient>
-                      </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity 
-                        style={[
-                          styles.priceButton,
-                          pkg.tier === 'starter' && styles.priceButtonStarter,
-                          pkg.tier === 'popular' && styles.priceButtonPopular,
-                          pkg.tier === 'best' && styles.priceButtonBest,
-                        ]}
-                        activeOpacity={0.9}
-                      >
-                        <Text style={styles.priceText}>
-                          ${pkg.price.toFixed(2)}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
+                    {/* Price Button - 统一样式 */}
+                    <View style={styles.priceButton}>
+                      <Text style={styles.priceText}>
+                        ${pkg.price.toFixed(2)}
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -383,7 +364,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   
-  // Packages
+  // Packages - 统一样式
   packagesContainer: {
     paddingHorizontal: 20,
     gap: 16,
@@ -391,7 +372,7 @@ const styles = StyleSheet.create({
   packageCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#e7e5e4',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -400,14 +381,14 @@ const styles = StyleSheet.create({
     elevation: 2,
     position: 'relative',
   },
-  packageCardBest: {
+  packageCardSelected: {
     borderWidth: 2,
     borderColor: '#1a1a1a',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 24,
-    elevation: 10,
+    shadowRadius: 8,
+    elevation: 5,
   },
   popularBadge: {
     position: 'absolute',
@@ -451,10 +432,6 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 12,
   },
-  packageContentBest: {
-    paddingTop: 32,
-    paddingBottom: 32,
-  },
   packageHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -485,9 +462,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  coinsRowBest: {
-    marginTop: 8,
-  },
   coinsInfo: {
     flex: 1,
   },
@@ -496,9 +470,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#1a1a1a',
     lineHeight: 30,
-  },
-  coinsAmountBest: {
-    fontSize: 36,
   },
   coinsLabel: {
     fontSize: 12,
@@ -513,39 +484,15 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   
-  // Price Buttons
+  // Price Button - 统一样式
   priceButton: {
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#f3f4f6',
-  },
-  priceButtonStarter: {
-    backgroundColor: '#f3f4f6',
-  },
-  priceButtonPopular: {
-    backgroundColor: '#B89B5E',
-  },
-  priceButtonBest: {
     backgroundColor: '#1a1a1a',
-    paddingHorizontal: 32,
   },
   priceText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#1a1a1a',
-    letterSpacing: 0.5,
-  },
-  luxuryButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  gradientButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-  },
-  priceTextLuxury: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '800',
     color: '#ffffff',
     letterSpacing: 0.5,
