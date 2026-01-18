@@ -647,14 +647,14 @@ export default function SquareScreen() {
         {selectedPost && (
           <View style={detailStyles.fullScreenContainer}>
             {/* 顶部导航栏 */}
-            <View style={[detailStyles.header, { paddingTop: Platform.OS === 'ios' ? 50 : 16 }]}>
+            <View style={[detailStyles.header, { paddingTop: Platform.OS === 'ios' ? 54 : 16 }]}>
               <TouchableOpacity
                 style={detailStyles.backButton}
                 onPress={() => setSelectedPost(null)}
-                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
                 activeOpacity={0.7}
               >
-                <ChevronLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
+                <ChevronLeft size={28} color="#1a1a1a" strokeWidth={2.5} />
               </TouchableOpacity>
               
               <TouchableOpacity 
@@ -2373,25 +2373,26 @@ const detailStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  // 顶部导航栏
+  // 顶部导航栏 - iOS 优化版本
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     paddingBottom: 12,
     backgroundColor: '#fff',
     borderBottomWidth: 0.5,
     borderBottomColor: '#f0f0f0',
     zIndex: 10,
+    minHeight: 72,
   },
   backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
+    marginRight: 12,
   },
   headerUserInfo: {
     flex: 1,

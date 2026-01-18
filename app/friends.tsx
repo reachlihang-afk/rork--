@@ -38,9 +38,18 @@ export default function FriendsScreen() {
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => router.back()}
-              style={{ marginLeft: -8, padding: 8 }}
+              style={{ 
+                marginLeft: -8, 
+                padding: 12,
+                minWidth: 48,
+                minHeight: 48,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+              activeOpacity={0.6}
             >
-              <ArrowLeft size={24} color="#1a1a1a" />
+              <ArrowLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
             </TouchableOpacity>
           ),
         }} />

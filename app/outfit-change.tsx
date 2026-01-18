@@ -1010,8 +1010,20 @@ FINAL RESULT REQUIREMENTS:
             headerShown: true,
             title: t('outfitChange.outfitSwap', { lng: currentLanguage }),
             headerLeft: () => (
-              <TouchableOpacity onPress={() => router.back()}>
-                <ArrowLeft size={24} color="#1a1a1a" />
+              <TouchableOpacity 
+                onPress={() => router.back()}
+                style={{ 
+                  marginLeft: -8, 
+                  padding: 12,
+                  minWidth: 48,
+                  minHeight: 48,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+                activeOpacity={0.6}
+              >
+                <ArrowLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
               </TouchableOpacity>
             ),
           }}
@@ -1039,8 +1051,20 @@ FINAL RESULT REQUIREMENTS:
           title: t('outfitChange.outfitSwap', { lng: currentLanguage }),
           headerTitle: t('outfitChange.outfitSwap', { lng: currentLanguage }),
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()}>
-              <ArrowLeft size={24} color="#1a1a1a" />
+            <TouchableOpacity 
+              onPress={() => router.back()}
+              style={{ 
+                marginLeft: -8, 
+                padding: 12,
+                minWidth: 48,
+                minHeight: 48,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+              activeOpacity={0.6}
+            >
+              <ArrowLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
             </TouchableOpacity>
           ),
         }}

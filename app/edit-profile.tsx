@@ -91,11 +91,18 @@ export default function EditProfileScreen() {
     headerLeft: () => (
       <TouchableOpacity
         onPress={() => router.back()}
-        style={{ padding: 8 }}
-        hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+        style={{ 
+          padding: 12, 
+          marginLeft: -8,
+          minWidth: 48,
+          minHeight: 48,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+        hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
         activeOpacity={0.6}
       >
-        <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2} />
+        <ArrowLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
       </TouchableOpacity>
     ),
   }), [t]);

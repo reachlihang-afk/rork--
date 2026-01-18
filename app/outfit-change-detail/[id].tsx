@@ -79,10 +79,10 @@ export default function OutfitChangeDetailScreen() {
           onPress={() => router.back()}
           style={styles.backButton}
           activeOpacity={0.7}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
         >
           <View style={styles.backButtonInner}>
-            <ArrowLeft size={20} color="#1a1a1a" strokeWidth={2.5} />
+            <ArrowLeft size={22} color="#1a1a1a" strokeWidth={2.5} />
           </View>
           <Text style={styles.backButtonText}>{t('common.back')}</Text>
         </TouchableOpacity>
@@ -190,35 +190,39 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   
-  // Header
+  // Header - iOS 优化版本，更易点击
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingTop: Platform.OS === 'ios' ? 56 : 20,
-    paddingBottom: 12,
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'ios' ? 54 : 20,
+    paddingBottom: 16,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
+    minHeight: Platform.OS === 'ios' ? 100 : 72,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 8,
-    paddingRight: 12,
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    marginLeft: -12,
+    minWidth: 100,
+    minHeight: 44,
   },
   backButtonInner: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
   backButtonText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     color: '#1a1a1a',
   },
