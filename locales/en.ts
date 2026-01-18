@@ -108,8 +108,6 @@ export default {
     recharge: 'Recharge',
     remainingFreeTimes: 'Daily Free Quota Remaining',
     outfitChangeTimes: 'Outfit Change',
-    verificationTimes: 'Verifications',
-    findSourceTimes: 'Source Searches',
     memberBenefits: '✅ Member Benefits',
     benefit1: '• 3 free verifications daily',
     benefit2: '• 3 free source searches daily',

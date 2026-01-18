@@ -26,7 +26,7 @@ export default function ProfileScreen() {
   const [showVisibilityModal, setShowVisibilityModal] = useState(false);
   const [showTimeRangeModal, setShowTimeRangeModal] = useState(false);
   
-  const { verification, imageSource, outfitChange } = getRemainingFreeCounts();
+  const { outfitChange } = getRemainingFreeCounts();
 
   const handleLanguageSelect = async (lang: Language) => {
     await changeLanguage(lang);
@@ -195,16 +195,6 @@ export default function ProfileScreen() {
               <View style={styles.usageItem}>
                 <Text style={styles.usageCount}>{outfitChange}</Text>
                 <Text style={styles.usageLabel} numberOfLines={2}>{t('profile.outfitChangeTimes')}</Text>
-              </View>
-              <View style={styles.usageDivider} />
-              <View style={styles.usageItem}>
-                <Text style={styles.usageCount}>{verification}</Text>
-                <Text style={styles.usageLabel} numberOfLines={2}>{t('profile.verificationTimes')}</Text>
-              </View>
-              <View style={styles.usageDivider} />
-              <View style={styles.usageItem}>
-                <Text style={styles.usageCount}>{imageSource}</Text>
-                <Text style={styles.usageLabel} numberOfLines={2}>{t('profile.findSourceTimes')}</Text>
               </View>
             </View>
           </View>
@@ -908,11 +898,6 @@ const styles = StyleSheet.create({
     color: '#64748b',
     textAlign: 'center',
     fontWeight: '600',
-  },
-  usageDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: '#f1f5f9',
   },
   logoutButton: {
     flexDirection: 'row',

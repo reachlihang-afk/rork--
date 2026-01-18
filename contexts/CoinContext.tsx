@@ -5,8 +5,6 @@ import { useAuth } from './AuthContext';
 
 interface DailyUsage {
   date: string;
-  verificationCount: number;
-  imageSourceCount: number;
   outfitChangeCount: number;
 }
 
@@ -28,8 +26,6 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
   const [coinBalance, setCoinBalance] = useState<number>(0);
   const [dailyUsage, setDailyUsage] = useState<DailyUsage>({
     date: getTodayDate(),
-    verificationCount: 0,
-    imageSourceCount: 0,
     outfitChangeCount: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -39,16 +35,11 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
     if (usage.date !== today) {
       return {
         date: today,
-        verificationCount: 0,
-        imageSourceCount: 0,
         outfitChangeCount: 0,
       };
     }
-    // 确保所有字段都存在，处理旧数据没有 outfitChangeCount 的情况
     return {
       date: usage.date,
-      verificationCount: usage.verificationCount || 0,
-      imageSourceCount: usage.imageSourceCount || 0,
       outfitChangeCount: usage.outfitChangeCount || 0,
     };
   }, []);
@@ -103,8 +94,6 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
             await AsyncStorage.removeItem(`${STORAGE_KEYS.DAILY_USAGE}_${userKey}`);
             const newUsage = {
               date: getTodayDate(),
-              verificationCount: 0,
-              imageSourceCount: 0,
               outfitChangeCount: 0,
             };
             setDailyUsage(newUsage);
@@ -124,8 +113,6 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
               await AsyncStorage.removeItem(`${STORAGE_KEYS.DAILY_USAGE}_${userKey}`);
               const newUsage = {
                 date: getTodayDate(),
-                verificationCount: 0,
-                imageSourceCount: 0,
                 outfitChangeCount: 0,
               };
               setDailyUsage(newUsage);
@@ -136,8 +123,6 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
           await AsyncStorage.removeItem(`${STORAGE_KEYS.DAILY_USAGE}_${userKey}`);
           const newUsage = {
             date: getTodayDate(),
-            verificationCount: 0,
-            imageSourceCount: 0,
             outfitChangeCount: 0,
           };
           setDailyUsage(newUsage);
@@ -145,8 +130,6 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
       } else {
         const newUsage = {
           date: getTodayDate(),
-          verificationCount: 0,
-          imageSourceCount: 0,
           outfitChangeCount: 0,
         };
         setDailyUsage(newUsage);
@@ -156,8 +139,6 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
       setCoinBalance(0);
       setDailyUsage({
         date: getTodayDate(),
-        verificationCount: 0,
-        imageSourceCount: 0,
         outfitChangeCount: 0,
       });
     } finally {
@@ -197,108 +178,6 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
     return true;
   };
 
-  const canUseVerification = (): { canUse: boolean; needsCoins: boolean; message: string } => {
-    const resetUsage = resetDailyUsageIfNeeded(dailyUsage);
-    const freeLimit = isLoggedIn ? FREE_DAILY_LIMIT_REGISTERED : FREE_DAILY_LIMIT_GUEST;
-
-    if (resetUsage.verificationCount < freeLimit) {
-      return { canUse: true, needsCoins: false, message: '使用免费次数' };
-    }
-
-    if (!isLoggedIn) {
-      return { 
-        canUse: false, 
-        needsCoins: false, 
-        message: '未登录用户每天仅限1次免费验证，请登录后继续使用' 
-      };
-    }
-
-    if (coinBalance >= COIN_COST_PER_USE) {
-      return { canUse: true, needsCoins: true, message: `需要消耗${COIN_COST_PER_USE}金币` };
-    }
-
-    return { 
-      canUse: false, 
-      needsCoins: true, 
-      message: `金币不足，需要${COIN_COST_PER_USE}金币，请充值` 
-    };
-  };
-
-  const canUseImageSource = (): { canUse: boolean; needsCoins: boolean; message: string } => {
-    const resetUsage = resetDailyUsageIfNeeded(dailyUsage);
-    const freeLimit = isLoggedIn ? FREE_DAILY_LIMIT_REGISTERED : FREE_DAILY_LIMIT_GUEST;
-
-    if (resetUsage.imageSourceCount < freeLimit) {
-      return { canUse: true, needsCoins: false, message: '使用免费次数' };
-    }
-
-    if (!isLoggedIn) {
-      return { 
-        canUse: false, 
-        needsCoins: false, 
-        message: '未登录用户每天仅限1次免费找出处，请登录后继续使用' 
-      };
-    }
-
-    if (coinBalance >= COIN_COST_PER_USE) {
-      return { canUse: true, needsCoins: true, message: `需要消耗${COIN_COST_PER_USE}金币` };
-    }
-
-    return { 
-      canUse: false, 
-      needsCoins: true, 
-      message: `金币不足，需要${COIN_COST_PER_USE}金币，请充值` 
-    };
-  };
-
-  const useVerification = async (): Promise<boolean> => {
-    const { canUse, needsCoins } = canUseVerification();
-    if (!canUse) {
-      return false;
-    }
-
-    const resetUsage = resetDailyUsageIfNeeded(dailyUsage);
-    const newUsage = {
-      ...resetUsage,
-      verificationCount: resetUsage.verificationCount + 1,
-    };
-
-    if (needsCoins) {
-      const success = await deductCoins(COIN_COST_PER_USE);
-      if (!success) {
-        return false;
-      }
-    }
-
-    setDailyUsage(newUsage);
-    await saveData(coinBalance - (needsCoins ? COIN_COST_PER_USE : 0), newUsage);
-    return true;
-  };
-
-  const useImageSource = async (): Promise<boolean> => {
-    const { canUse, needsCoins } = canUseImageSource();
-    if (!canUse) {
-      return false;
-    }
-
-    const resetUsage = resetDailyUsageIfNeeded(dailyUsage);
-    const newUsage = {
-      ...resetUsage,
-      imageSourceCount: resetUsage.imageSourceCount + 1,
-    };
-
-    if (needsCoins) {
-      const success = await deductCoins(COIN_COST_PER_USE);
-      if (!success) {
-        return false;
-      }
-    }
-
-    setDailyUsage(newUsage);
-    await saveData(coinBalance - (needsCoins ? COIN_COST_PER_USE : 0), newUsage);
-    return true;
-  };
-
   const canUseOutfitChange = (): { canUse: boolean; needsCoins: boolean; message: string } => {
     const resetUsage = resetDailyUsageIfNeeded(dailyUsage);
     const freeLimit = isLoggedIn ? FREE_DAILY_LIMIT_REGISTERED : FREE_DAILY_LIMIT_GUEST;
@@ -316,13 +195,13 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
     }
 
     if (coinBalance >= COIN_COST_PER_USE) {
-      return { canUse: true, needsCoins: true, message: `需要消耗${COIN_COST_PER_USE}金币` };
+      return { canUse: true, needsCoins: true, message: `需要消耗${COIN_COST_PER_USE}钻石` };
     }
 
     return { 
       canUse: false, 
       needsCoins: true, 
-      message: `金币不足，需要${COIN_COST_PER_USE}金币，请充值` 
+      message: `钻石不足，需要${COIN_COST_PER_USE}钻石，请充值` 
     };
   };
 
@@ -355,8 +234,6 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
     const freeLimit = isLoggedIn ? FREE_DAILY_LIMIT_REGISTERED : FREE_DAILY_LIMIT_GUEST;
     
     return {
-      verification: Math.max(0, freeLimit - resetUsage.verificationCount),
-      imageSource: Math.max(0, freeLimit - resetUsage.imageSourceCount),
       outfitChange: Math.max(0, freeLimit - resetUsage.outfitChangeCount),
     };
   };
@@ -367,11 +244,7 @@ export const [CoinProvider, useCoin] = createContextHook(() => {
     isLoading,
     addCoins,
     deductCoins,
-    canUseVerification,
-    canUseImageSource,
     canUseOutfitChange,
-    useVerification,
-    useImageSource,
     useOutfitChange,
     getRemainingFreeCounts,
   };

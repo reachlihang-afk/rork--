@@ -108,8 +108,6 @@ export default {
     recharge: '充值',
     remainingFreeTimes: '今日剩余免费次数',
     outfitChangeTimes: '换装次数',
-    verificationTimes: '验证次数',
-    findSourceTimes: '找出处次数',
     memberBenefits: '✅ 会员权益',
     benefit1: '• 每天免费验证3次',
     benefit2: '• 每天免费找出处3次',

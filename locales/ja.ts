@@ -102,8 +102,6 @@ export default {
     recharge: 'チャージ',
     remainingFreeTimes: '本日の無料枠残り',
     outfitChangeTimes: '着替え回数',
-    verificationTimes: '検証回数',
-    findSourceTimes: '出処検索回数',
     memberBenefits: '✅ メンバー特典',
     benefit1: '• 毎日3回無料検証',
     benefit2: '• 毎日3回無料出処検索',
