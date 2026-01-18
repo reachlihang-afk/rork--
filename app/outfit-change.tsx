@@ -19,7 +19,7 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { Camera, Sparkles, Lock, X, ArrowLeft, Download, Share2 } from 'lucide-react-native';
+import { Camera, Sparkles, Lock, X, ArrowLeft, Download, Share2, Check } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useCoin } from '@/contexts/CoinContext';
@@ -1171,6 +1171,12 @@ FINAL RESULT REQUIREMENTS:
                     onPress={() => setSelectedTemplate(template.id)}
                     activeOpacity={0.7}
                   >
+                    {/* 选中指示器 */}
+                    {selectedTemplate === template.id && (
+                      <View style={styles.templateCheckMark}>
+                        <Check size={12} color="#fff" strokeWidth={3} />
+                      </View>
+                    )}
                     <View style={styles.templateIcon}>
                       <Text style={[
                         styles.templateIconText,
@@ -1761,15 +1767,31 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   templateCardSelected: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#1a1a1a',
-    borderWidth: 3,
-    transform: [{ scale: 1.05 }],
-    shadowColor: '#1a1a1a',
+    backgroundColor: '#fff5f8',
+    borderColor: '#FF6B9D',
+    borderWidth: 2.5,
+    transform: [{ scale: 1.02 }],
+    shadowColor: '#FF6B9D',
     shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  templateCheckMark: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#FF6B9D',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#FF6B9D',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowRadius: 4,
+    elevation: 3,
   },
   templateIcon: {
     marginBottom: 8,
@@ -1788,7 +1810,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   templateNameSelected: {
-    color: '#ffffff',
+    color: '#FF6B9D',
     fontWeight: '800',
   },
   templateEmoji: {
