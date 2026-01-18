@@ -271,6 +271,11 @@ export default {
   },
   square: {
     title: '広場',
+    follow: 'フォロー',
+    explore: '発見',
+    nearby: '近く',
+    before: 'BEFORE',
+    searchPlaceholder: '検索...',
     publishToSquare: '広場に投稿',
     publishSuccess: '投稿に成功しました',
     publishSuccessPrompt: '公開しました。広場ページに移動しますか？',

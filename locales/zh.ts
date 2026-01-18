@@ -294,6 +294,11 @@ export default {
   },
   square: {
     title: '广场',
+    follow: '关注',
+    explore: '发现',
+    nearby: '附近',
+    before: '原图',
+    searchPlaceholder: '搜索内容...',
     publishToSquare: '发布到广场',
     publishSuccess: '发布成功',
     publishSuccessPrompt: '发布成功，是否跳转到广场页面？',

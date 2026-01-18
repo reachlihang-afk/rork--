@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Image as ExpoImage } from 'expo-image';
-import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, RefreshControl, Alert, TextInput, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Modal, PanResponder, Animated } from 'react-native';
-import { Heart, MessageSquare, Trash2, MoreHorizontal, Pin, X, AlertTriangle, Download } from 'lucide-react-native';
+import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, RefreshControl, Alert, TextInput, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Modal, PanResponder, Animated, Dimensions } from 'react-native';
+import { Heart, MessageSquare, Trash2, MoreHorizontal, Pin, X, AlertTriangle, Download, Search } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSquare, SquarePost, SquareComment } from '@/contexts/SquareContext';
@@ -10,6 +10,10 @@ import { useAlert } from '@/contexts/AlertContext';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { saveToGallery } from '@/utils/share';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const CARD_GAP = 10;
+const CARD_WIDTH = (SCREEN_WIDTH - CARD_GAP * 3) / 2;
 
 
 type ZoomableImageProps = {
@@ -152,6 +156,7 @@ export default function SquareScreen() {
   const { highlightPostId } = useLocalSearchParams<{ highlightPostId?: string }>();
 
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'follow' | 'explore' | 'nearby'>('explore');
   const [activePopup, setActivePopup] = useState<string | null>(null);
   const [commentingPost, setCommentingPost] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
@@ -161,10 +166,25 @@ export default function SquareScreen() {
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{ uri: string; type: 'reference' | 'verified'; postId: string } | null>(null);
   const [expandedIntros, setExpandedIntros] = useState<Set<string>>(new Set());
+  const [selectedPost, setSelectedPost] = useState<SquarePost | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const postRefs = useRef<Map<string, View>>(new Map());
   const inputRef = useRef<TextInput>(null);
   const insets = useSafeAreaInsets();
+
+  // 将帖子分为左右两列（瀑布流布局）
+  const { leftColumn, rightColumn } = useMemo(() => {
+    const left: SquarePost[] = [];
+    const right: SquarePost[] = [];
+    posts.forEach((post, index) => {
+      if (index % 2 === 0) {
+        left.push(post);
+      } else {
+        right.push(post);
+      }
+    });
+    return { leftColumn: left, rightColumn: right };
+  }, [posts]);
 
   useEffect(() => {
     if (highlightPostId && posts.length > 0) {
@@ -313,7 +333,7 @@ export default function SquareScreen() {
 
       const post = posts.find((p) => p.id === postId);
       const otherUri =
-        type === 'reference' ? post?.editedPhotoUri ?? undefined : post?.referencePhotoUri ?? undefined;
+        type === 'reference' ? post?.resultImageUri ?? undefined : post?.originalImageUri ?? undefined;
 
       if (otherUri) {
         try {
@@ -442,372 +462,430 @@ export default function SquareScreen() {
 
   
 
-  if (!user) {
+  // 渲染画中画卡片
+  const renderPIPCard = (post: SquarePost) => {
+    if (post.postType !== 'outfitChange' || !post.resultImageUri) return null;
+    
+    const isLiked = user ? post.likes.includes(user.userId) : false;
+    
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>{t('square.loginToView')}</Text>
+      <TouchableOpacity
+        key={post.id}
+        style={pipStyles.card}
+        activeOpacity={0.95}
+        onPress={() => setSelectedPost(post)}
+      >
+        {/* 主图（变装结果） */}
+        <View style={pipStyles.imageContainer}>
+          <Image
+            source={{ uri: post.resultImageUri }}
+            style={pipStyles.mainImage}
+            resizeMode="cover"
+          />
+          
+          {/* 左上角原图缩略图 */}
+          {post.originalImageUri && (
+            <View style={pipStyles.beforeBadge}>
+              <Image
+                source={{ uri: post.originalImageUri }}
+                style={pipStyles.beforeImage}
+                resizeMode="cover"
+              />
+              <View style={pipStyles.beforeLabel}>
+                <Text style={pipStyles.beforeLabelText}>{t('square.before')}</Text>
+              </View>
+            </View>
+          )}
+        </View>
+        
+        {/* 描述文字 */}
+        {post.description && (
+          <Text style={pipStyles.description} numberOfLines={2}>
+            {post.description}
+          </Text>
+        )}
+        
+        {/* 用户信息和点赞 */}
+        <View style={pipStyles.footer}>
+          <TouchableOpacity 
+            style={pipStyles.userInfo}
+            onPress={() => {
+              if (user && post.userId !== user.userId) {
+                router.push(`/user-profile/${post.userId}` as any);
+              }
+            }}
+            disabled={!user || post.userId === user?.userId}
+          >
+            {post.userAvatar ? (
+              <Image source={{ uri: post.userAvatar }} style={pipStyles.avatar} />
+            ) : (
+              <View style={pipStyles.avatarPlaceholder}>
+                <Text style={pipStyles.avatarText}>
+                  {post.userNickname.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
+            <Text style={pipStyles.nickname} numberOfLines={1}>{post.userNickname}</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={pipStyles.likeButton}
+            onPress={() => handleLike(post.id)}
+          >
+            <Heart
+              size={14}
+              color={isLiked ? '#EF4444' : '#9CA3AF'}
+              fill={isLiked ? '#EF4444' : 'none'}
+            />
+            <Text style={[pipStyles.likeCount, isLiked && pipStyles.likeCountActive]}>
+              {post.likes.length}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  // 渲染顶部Tab导航
+  const renderHeader = () => (
+    <View style={pipStyles.header}>
+      <View style={pipStyles.tabsContainer}>
         <TouchableOpacity
-          style={styles.loginButton}
-          onPress={() => router.push('/(tabs)/profile')}
+          style={pipStyles.tabItem}
+          onPress={() => setActiveTab('follow')}
         >
-          <Text style={styles.loginButtonText}>{t('profile.login')}</Text>
+          <Text style={[pipStyles.tabText, activeTab === 'follow' && pipStyles.tabTextActive]}>
+            {t('square.follow')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={pipStyles.tabItem}
+          onPress={() => setActiveTab('explore')}
+        >
+          <Text style={[pipStyles.tabText, activeTab === 'explore' && pipStyles.tabTextActive]}>
+            {t('square.explore')}
+          </Text>
+          {activeTab === 'explore' && <View style={pipStyles.tabIndicator} />}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={pipStyles.tabItem}
+          onPress={() => setActiveTab('nearby')}
+        >
+          <Text style={[pipStyles.tabText, activeTab === 'nearby' && pipStyles.tabTextActive]}>
+            {t('square.nearby')}
+          </Text>
         </TouchableOpacity>
       </View>
-    );
-  }
+      <TouchableOpacity style={pipStyles.searchButton}>
+        <Search size={22} color="#1a1a1a" />
+      </TouchableOpacity>
+    </View>
+  );
 
   if (posts.length === 0) {
     return (
-      <ScrollView
-        contentContainerStyle={styles.emptyContainer}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
-        <Text style={styles.emptyText}>{t('square.noPosts')}</Text>
-      </ScrollView>
+      <View style={pipStyles.container}>
+        {renderHeader()}
+        <ScrollView
+          contentContainerStyle={styles.emptyContainer}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1a1a1a" />}
+        >
+          <Text style={styles.emptyText}>{t('square.noPosts')}</Text>
+        </ScrollView>
+      </View>
     );
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={pipStyles.container}>
+      {renderHeader()}
+      
       <ScrollView
         ref={scrollViewRef}
-        style={styles.container}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        keyboardShouldPersistTaps="handled"
-        contentInsetAdjustmentBehavior="automatic"
-        onScrollBeginDrag={() => setActivePopup(null)}
+        style={pipStyles.scrollView}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1a1a1a" />}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={pipStyles.scrollContent}
       >
-          {posts.map(post => (
-        <View 
-          key={post.id} 
-          style={[
-            styles.postCard,
-            highlightedPost === post.id && styles.postCardHighlighted
-          ]}
-          ref={(ref) => {
-            if (ref) {
-              postRefs.current.set(post.id, ref);
-            } else {
-              postRefs.current.delete(post.id);
-            }
-          }}
-        >
-          <View style={styles.postHeader}>
-            <TouchableOpacity 
-              style={styles.userInfo}
-              onPress={() => {
-                if (post.userId !== user.userId) {
-                  router.push(`/user-profile/${post.userId}` as any);
-                }
-              }}
-              disabled={post.userId === user.userId}
-              activeOpacity={0.7}
-            >
-              {post.userAvatar ? (
-                <Image source={{ uri: post.userAvatar }} style={styles.avatar} />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarText}>
-                    {post.userNickname.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
-              )}
-              <View>
-                <Text style={styles.nickname}>{post.userNickname}</Text>
-                <Text style={styles.time}>{formatTime(post.createdAt)}</Text>
-              </View>
-            </TouchableOpacity>
-            {user.userId === post.userId && (
-              <TouchableOpacity onPress={() => handleDelete(post.id)}>
-                <Trash2 size={18} color="#EF4444" />
-              </TouchableOpacity>
-            )}
+        {/* 瀑布流两列布局 */}
+        <View style={pipStyles.masonryContainer}>
+          <View style={pipStyles.column}>
+            {leftColumn.map(post => renderPIPCard(post))}
           </View>
+          <View style={pipStyles.column}>
+            {rightColumn.map(post => renderPIPCard(post))}
+          </View>
+        </View>
+        <View style={{ height: 100 }} />
+      </ScrollView>
 
-          {post.description && (
-            <View style={styles.descriptionSection}>
-              <Text style={styles.descriptionText}>{post.description}</Text>
-            </View>
-          )}
-
-          {post.postType === 'outfitChange' && post.originalImageUri && post.resultImageUri && (
-            <View style={styles.outfitChangeContainer}>
-              <View style={styles.outfitImagesRow}>
-                <View style={styles.outfitImageWrapper}>
-                  <Text style={styles.imageLabel} numberOfLines={1}>{t('history.original')}</Text>
-                  <TouchableOpacity onPress={() => handleImagePress(post.originalImageUri!, 'original', post.id)} activeOpacity={0.9}>
-                    <Image source={{ uri: post.originalImageUri }} style={styles.outfitImage} contentFit="cover" />
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.arrowContainer}>
-                  <Text style={styles.arrowText}>→</Text>
-                </View>
-                <View style={styles.outfitImageWrapper}>
-                  <Text style={styles.imageLabel} numberOfLines={1}>{t('history.result')}</Text>
-                  <TouchableOpacity onPress={() => handleImagePress(post.resultImageUri!, 'verified', post.id)} activeOpacity={0.9}>
-                    <Image source={{ uri: post.resultImageUri }} style={styles.outfitImageResult} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-              <View style={styles.templateBadgeRow}>
-                {post.templateName && (
-                  <View style={[styles.templateBadge, { backgroundColor: getTemplateBadgeColor(post.templateName) }]}>
-                    <Text style={styles.templateIcon}>{getTemplateIcon(post.templateName)}</Text>
-                    <Text style={styles.templateBadgeText}>{post.templateName}</Text>
-                  </View>
-                )}
-                <View style={styles.actionButtonContainer}>
+      {/* 帖子详情弹窗 */}
+      <Modal
+        visible={!!selectedPost}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSelectedPost(null)}
+      >
+        {selectedPost && (
+          <View style={detailStyles.overlay}>
+            <TouchableOpacity 
+              style={detailStyles.backdrop} 
+              activeOpacity={1} 
+              onPress={() => setSelectedPost(null)} 
+            />
+            <View style={detailStyles.container}>
+              <View style={detailStyles.handle} />
+              
+              {/* 关闭按钮 */}
+              <TouchableOpacity
+                style={detailStyles.closeButton}
+                onPress={() => setSelectedPost(null)}
+              >
+                <X size={24} color="#1a1a1a" />
+              </TouchableOpacity>
+              
+              <ScrollView 
+                style={detailStyles.scrollView}
+                showsVerticalScrollIndicator={false}
+              >
+                {/* 图片对比区域 */}
+                <View style={detailStyles.imagesSection}>
+                  {/* 主图（变装结果） */}
                   <TouchableOpacity
-                    style={styles.moreButton}
-                    onPress={() => handleTogglePopup(post.id)}
+                    activeOpacity={0.9}
+                    onPress={() => {
+                      if (selectedPost.resultImageUri) {
+                        setSelectedImage({ uri: selectedPost.resultImageUri, type: 'verified', postId: selectedPost.id });
+                        setImageViewerVisible(true);
+                      }
+                    }}
                   >
-                    <MoreHorizontal size={20} color="#64748B" />
+                    <Image
+                      source={{ uri: selectedPost.resultImageUri }}
+                      style={detailStyles.mainImage}
+                      resizeMode="cover"
+                    />
                   </TouchableOpacity>
                   
-                  {activePopup === post.id && (
-                    <View style={styles.actionPopup}>
-                      <TouchableOpacity
-                        style={styles.popupItem}
-                        onPress={() => handleLikeFromPopup(post.id)}
-                      >
-                        <Heart
-                          size={16}
-                          color={post.likes.includes(user.userId) ? '#EF4444' : '#fff'}
-                          fill={post.likes.includes(user.userId) ? '#EF4444' : 'none'}
-                        />
-                        <Text style={styles.popupText} numberOfLines={1}>
-                          {post.likes.includes(user.userId) ? t('square.unlike') : t('square.like')}
+                  {/* 原图对比 */}
+                  {selectedPost.originalImageUri && (
+                    <TouchableOpacity
+                      style={detailStyles.beforeContainer}
+                      activeOpacity={0.9}
+                      onPress={() => {
+                        if (selectedPost.originalImageUri) {
+                          setSelectedImage({ uri: selectedPost.originalImageUri, type: 'reference', postId: selectedPost.id });
+                          setImageViewerVisible(true);
+                        }
+                      }}
+                    >
+                      <Image
+                        source={{ uri: selectedPost.originalImageUri }}
+                        style={detailStyles.beforeImage}
+                        resizeMode="cover"
+                      />
+                      <View style={detailStyles.beforeLabel}>
+                        <Text style={detailStyles.beforeLabelText}>{t('square.before')}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                </View>
+                
+                {/* 用户信息 */}
+                <View style={detailStyles.userSection}>
+                  <TouchableOpacity 
+                    style={detailStyles.userInfo}
+                    onPress={() => {
+                      if (user && selectedPost.userId !== user.userId) {
+                        setSelectedPost(null);
+                        router.push(`/user-profile/${selectedPost.userId}` as any);
+                      }
+                    }}
+                    disabled={!user || selectedPost.userId === user?.userId}
+                  >
+                    {selectedPost.userAvatar ? (
+                      <Image source={{ uri: selectedPost.userAvatar }} style={detailStyles.avatar} />
+                    ) : (
+                      <View style={detailStyles.avatarPlaceholder}>
+                        <Text style={detailStyles.avatarText}>
+                          {selectedPost.userNickname.charAt(0).toUpperCase()}
                         </Text>
-                      </TouchableOpacity>
-                      <View style={styles.popupDivider} />
-                      <TouchableOpacity
-                        style={styles.popupItem}
-                        onPress={() => handleOpenComments(post.id)}
-                      >
-                        <MessageSquare size={16} color="#fff" />
-                        <Text style={styles.popupText} numberOfLines={1}>{t('square.comment')}</Text>
-                      </TouchableOpacity>
+                      </View>
+                    )}
+                    <View>
+                      <Text style={detailStyles.nickname}>{selectedPost.userNickname}</Text>
+                      <Text style={detailStyles.time}>{formatTime(selectedPost.createdAt)}</Text>
                     </View>
-                  )}
-                </View>
-              </View>
-            </View>
-          )}
-
-          {(post.likes.length > 0 || post.comments.length > 0) && (
-            <View style={styles.interactionArea}>
-              {post.likes.length > 0 && (
-                <View style={styles.likesSection}>
-                  <Heart size={14} color="#EF4444" fill="#EF4444" />
-                  <Text style={styles.likesText} numberOfLines={2}>
-                    {getLikedUserNames(post.likes, posts).join(', ')}
-                  </Text>
-                </View>
-              )}
-              
-              {post.likes.length > 0 && post.comments.length > 0 && (
-                <View style={styles.interactionDivider} />
-              )}
-              
-              {post.comments.length > 0 && (
-                <View style={styles.commentsSection}>
-                  {(() => {
-                    const topLevelComments = post.comments.filter(c => !c.replyToCommentId);
-                    const replyComments = post.comments.filter(c => c.replyToCommentId);
-                    
-                    const organizedComments: SquareComment[] = [];
-                    
-                    const pinnedComment = post.pinnedCommentId 
-                      ? topLevelComments.find(c => c.id === post.pinnedCommentId)
-                      : null;
-                    
-                    const unpinnedTopComments = topLevelComments
-                      .filter(c => c.id !== post.pinnedCommentId)
-                      .sort((a, b) => b.createdAt - a.createdAt);
-                    
-                    const sortedTopComments = pinnedComment 
-                      ? [pinnedComment, ...unpinnedTopComments]
-                      : unpinnedTopComments;
-                    
-                    sortedTopComments.forEach(topComment => {
-                      organizedComments.push(topComment);
-                      const replies = replyComments
-                        .filter(r => r.replyToCommentId === topComment.id)
-                        .sort((a, b) => a.createdAt - b.createdAt);
-                      organizedComments.push(...replies);
-                    });
-                    
-                    const orphanReplies = replyComments.filter(r => 
-                      !topLevelComments.some(t => t.id === r.replyToCommentId) &&
-                      !replyComments.some(rc => rc.id === r.replyToCommentId)
-                    ).sort((a, b) => b.createdAt - a.createdAt);
-                    organizedComments.push(...orphanReplies);
-                    
-                    const displayComments = expandedComments.has(post.id) 
-                      ? organizedComments 
-                      : organizedComments.slice(0, 3);
-                    
-                    return displayComments.map((comment, index) => {
-                      const isReply = !!comment.replyToCommentId;
-                      const isPinned = post.pinnedCommentId === comment.id;
-                      return (
-                        <TouchableOpacity
-                          key={comment.id}
-                          style={[styles.commentRow, isReply && styles.commentRowReply]}
-                          onPress={() => handleCommentPress(post.id, comment, post.userId)}
-                          activeOpacity={0.7}
-                        >
-                          {comment.userAvatar ? (
-                            <Image source={{ uri: comment.userAvatar }} style={styles.commentAvatar} />
-                          ) : (
-                            <View style={styles.commentAvatarPlaceholder}>
-                              <Text style={styles.commentAvatarText}>
-                                {comment.userNickname.charAt(0).toUpperCase()}
-                              </Text>
-                            </View>
-                          )}
-                          <View style={styles.commentContent}>
-                            <Text>
-                              <Text style={styles.commentAuthor}>{comment.userNickname}</Text>
-                              {isPinned && (
-                                <View style={styles.pinnedBadge}>
-                                  <Pin size={10} color="#FF6B35" fill="#FF6B35" />
-                                  <Text style={styles.pinnedText}>{t('square.pinned')}</Text>
-                                </View>
-                              )}
-                              {comment.replyToNickname && (
-                                <Text style={styles.commentText}>
-                                  {` ${t('square.replyTo')} `}
-                                  <Text style={styles.commentAuthor}>{comment.replyToNickname}</Text>
-                                </Text>
-                              )}
-                              <Text style={styles.commentText}>: {comment.content}</Text>
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-                      );
-                    });
-                  })()}
-                  {post.comments.length > 3 && !expandedComments.has(post.id) && (
-                    <TouchableOpacity onPress={() => toggleExpandComments(post.id)}>
-                      <Text style={styles.viewMoreComments}>
-                        {t('square.viewMoreComments', { count: post.comments.length - 3 })}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                  {expandedComments.has(post.id) && post.comments.length > 3 && (
-                    <TouchableOpacity onPress={() => toggleExpandComments(post.id)}>
-                      <Text style={styles.viewMoreComments}>{t('square.collapse')}</Text>
+                  </TouchableOpacity>
+                  
+                  {user && user.userId === selectedPost.userId && (
+                    <TouchableOpacity onPress={() => {
+                      handleDelete(selectedPost.id);
+                      setSelectedPost(null);
+                    }}>
+                      <Trash2 size={20} color="#EF4444" />
                     </TouchableOpacity>
                   )}
                 </View>
-              )}
-            </View>
-          )}
-        </View>
-          ))}
-          <View style={{ height: commentingPost ? 150 : 100 }} />
-        </ScrollView>
-
-        {activePopup && (
-          <TouchableWithoutFeedback onPress={() => setActivePopup(null)}>
-            <View style={styles.popupBackdrop} pointerEvents="box-none">
-              <View style={StyleSheet.absoluteFill} pointerEvents="auto" />
-            </View>
-          </TouchableWithoutFeedback>
-        )}
-
-        {commentingPost && (
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.commentInputOverlay}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-          >
-            <View style={[styles.commentInputWrapper, { paddingBottom: Math.max(8, insets.bottom) }]}>
-              <View style={styles.inputContainer}>
-                {replyTo && (
-                  <View style={styles.replyIndicator}>
-                    <Text style={styles.replyIndicatorText}>
-                      {t('square.replyTo')} {replyTo.nickname}
-                    </Text>
-                    <TouchableOpacity onPress={() => setReplyTo(null)}>
-                      <Text style={styles.replyIndicatorClose}>✕</Text>
-                    </TouchableOpacity>
+                
+                {/* 描述 */}
+                {selectedPost.description && (
+                  <Text style={detailStyles.description}>{selectedPost.description}</Text>
+                )}
+                
+                {/* 模板标签 */}
+                {selectedPost.templateName && (
+                  <View style={[detailStyles.templateBadge, { backgroundColor: getTemplateBadgeColor(selectedPost.templateName) }]}>
+                    <Text style={detailStyles.templateIcon}>{getTemplateIcon(selectedPost.templateName)}</Text>
+                    <Text style={detailStyles.templateText}>{selectedPost.templateName}</Text>
                   </View>
                 )}
-                <TextInput
-                  ref={inputRef}
-                  style={styles.commentInput}
-                  placeholder={replyTo ? t('square.replyPlaceholder', { name: replyTo.nickname }) : t('square.addComment')}
-                  placeholderTextColor="#999"
-                  value={commentText}
-                  onChangeText={setCommentText}
-                  maxLength={200}
-                  multiline
-                  textAlignVertical="top"
-                  editable={true}
-                  selectTextOnFocus={true}
-                  onBlur={() => {
-                    if (!commentText.trim()) {
-                      setCommentingPost(null);
-                      setReplyTo(null);
-                    }
-                  }}
-                />
-              </View>
-              <TouchableOpacity
-                style={[styles.sendButton, !commentText.trim() && styles.sendButtonDisabled]}
-                onPress={handleSendComment}
-                disabled={!commentText.trim()}
-              >
-                <Text style={[styles.sendButtonText, !commentText.trim() && styles.sendButtonTextDisabled]} numberOfLines={1}>
-                  {t('square.send')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </KeyboardAvoidingView>
-        )}
-
-        <Modal
-          visible={imageViewerVisible}
-          transparent
-          animationType="fade"
-          onRequestClose={() => {
-            setImageViewerVisible(false);
-            setSelectedImage(null);
-          }}
-        >
-          <View style={imageViewerStyles.container} pointerEvents={imageViewerVisible ? 'auto' : 'none'}>
-            <TouchableOpacity
-              style={imageViewerStyles.closeButton}
-              onPress={() => {
-                setImageViewerVisible(false);
-                setSelectedImage(null);
-              }}
-              activeOpacity={0.8}
-              testID="square-image-viewer-close"
-            >
-              <X size={28} color="#fff" strokeWidth={2.5} />
-            </TouchableOpacity>
-
-            <View style={imageViewerStyles.content} testID="square-image-viewer-content">
-              {selectedImage && (
-                <>
-                  <View style={imageViewerStyles.labelContainer} pointerEvents="none">
-                    <View style={imageViewerStyles.labelBadge}>
-                      <Text style={imageViewerStyles.labelText}>
-                        {selectedImage.type === 'reference' ? t('square.referencePhoto') : t('square.verifiedPhoto')}
-                      </Text>
+                
+                {/* 互动区域 */}
+                <View style={detailStyles.actionsRow}>
+                  <TouchableOpacity 
+                    style={detailStyles.actionButton}
+                    onPress={() => handleLike(selectedPost.id)}
+                  >
+                    <Heart
+                      size={22}
+                      color={user && selectedPost.likes.includes(user.userId) ? '#EF4444' : '#6B7280'}
+                      fill={user && selectedPost.likes.includes(user.userId) ? '#EF4444' : 'none'}
+                    />
+                    <Text style={[
+                      detailStyles.actionText,
+                      user && selectedPost.likes.includes(user.userId) && detailStyles.actionTextActive
+                    ]}>
+                      {selectedPost.likes.length}
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={detailStyles.actionButton}
+                    onPress={() => {
+                      setCommentingPost(selectedPost.id);
+                      setTimeout(() => inputRef.current?.focus(), 100);
+                    }}
+                  >
+                    <MessageSquare size={22} color="#6B7280" />
+                    <Text style={detailStyles.actionText}>{selectedPost.comments.length}</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {/* 评论区 */}
+                {selectedPost.comments.length > 0 && (
+                  <View style={detailStyles.commentsSection}>
+                    <Text style={detailStyles.commentsTitle}>{t('square.comments')} ({selectedPost.comments.length})</Text>
+                    {selectedPost.comments.slice(0, 5).map(comment => (
+                      <TouchableOpacity
+                        key={comment.id}
+                        style={detailStyles.commentItem}
+                        onPress={() => handleCommentPress(selectedPost.id, comment, selectedPost.userId)}
+                      >
+                        {comment.userAvatar ? (
+                          <Image source={{ uri: comment.userAvatar }} style={detailStyles.commentAvatar} />
+                        ) : (
+                          <View style={detailStyles.commentAvatarPlaceholder}>
+                            <Text style={detailStyles.commentAvatarText}>
+                              {comment.userNickname.charAt(0).toUpperCase()}
+                            </Text>
+                          </View>
+                        )}
+                        <View style={detailStyles.commentContent}>
+                          <Text style={detailStyles.commentAuthor}>{comment.userNickname}</Text>
+                          <Text style={detailStyles.commentText}>{comment.content}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+                
+                <View style={{ height: 100 }} />
+              </ScrollView>
+              
+              {/* 评论输入框 */}
+              {commentingPost === selectedPost.id && (
+                <KeyboardAvoidingView
+                  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                  style={detailStyles.commentInputContainer}
+                >
+                  <View style={detailStyles.commentInputWrapper}>
+                    {replyTo && (
+                      <View style={detailStyles.replyIndicator}>
+                        <Text style={detailStyles.replyText}>{t('square.replyTo')} {replyTo.nickname}</Text>
+                        <TouchableOpacity onPress={() => setReplyTo(null)}>
+                          <X size={16} color="#9CA3AF" />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    <View style={detailStyles.inputRow}>
+                      <TextInput
+                        ref={inputRef}
+                        style={detailStyles.commentInput}
+                        placeholder={t('square.addComment')}
+                        placeholderTextColor="#9CA3AF"
+                        value={commentText}
+                        onChangeText={setCommentText}
+                        maxLength={200}
+                      />
+                      <TouchableOpacity
+                        style={[detailStyles.sendButton, !commentText.trim() && detailStyles.sendButtonDisabled]}
+                        onPress={handleSendComment}
+                        disabled={!commentText.trim()}
+                      >
+                        <Text style={[detailStyles.sendButtonText, !commentText.trim() && detailStyles.sendButtonTextDisabled]}>
+                          {t('square.send')}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
-
-                  <ZoomableImage uri={selectedImage.uri} onClose={() => {}} t={t} />
-                </>
+                </KeyboardAvoidingView>
               )}
             </View>
           </View>
-        </Modal>
-      </View>
+        )}
+      </Modal>
+
+      {/* 图片查看器 */}
+      <Modal
+        visible={imageViewerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setImageViewerVisible(false);
+          setSelectedImage(null);
+        }}
+      >
+        <View style={imageViewerStyles.container} pointerEvents={imageViewerVisible ? 'auto' : 'none'}>
+          <TouchableOpacity
+            style={imageViewerStyles.closeButton}
+            onPress={() => {
+              setImageViewerVisible(false);
+              setSelectedImage(null);
+            }}
+            activeOpacity={0.8}
+          >
+            <X size={28} color="#fff" strokeWidth={2.5} />
+          </TouchableOpacity>
+
+          <View style={imageViewerStyles.content}>
+            {selectedImage && (
+              <>
+                <View style={imageViewerStyles.labelContainer} pointerEvents="none">
+                  <View style={imageViewerStyles.labelBadge}>
+                    <Text style={imageViewerStyles.labelText}>
+                      {selectedImage.type === 'reference' ? t('square.referencePhoto') : t('square.verifiedPhoto')}
+                    </Text>
+                  </View>
+                </View>
+
+                <ZoomableImage uri={selectedImage.uri} onClose={() => {}} t={t} />
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 }
 
@@ -1864,5 +1942,465 @@ const imageViewerStyles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.7)',
     fontSize: 14,
     fontWeight: '500',
+  },
+});
+
+// 画中画瀑布流样式
+const pipStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 24,
+  },
+  tabItem: {
+    paddingVertical: 8,
+    position: 'relative',
+  },
+  tabText: {
+    fontSize: 17,
+    fontWeight: '400',
+    color: '#9CA3AF',
+  },
+  tabTextActive: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  tabIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: '25%',
+    right: '25%',
+    height: 3,
+    backgroundColor: '#EF4444',
+    borderRadius: 1.5,
+  },
+  searchButton: {
+    padding: 8,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: CARD_GAP,
+    paddingTop: CARD_GAP,
+  },
+  masonryContainer: {
+    flexDirection: 'row',
+    gap: CARD_GAP,
+  },
+  column: {
+    flex: 1,
+    gap: CARD_GAP,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  imageContainer: {
+    position: 'relative',
+    width: '100%',
+  },
+  mainImage: {
+    width: '100%',
+    aspectRatio: 0.75,
+    backgroundColor: '#F3F4F6',
+  },
+  beforeBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    width: 56,
+    height: 56,
+    borderRadius: 8,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  beforeImage: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#F3F4F6',
+  },
+  beforeLabel: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingVertical: 2,
+  },
+  beforeLabelText: {
+    color: '#fff',
+    fontSize: 8,
+    fontWeight: '600',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+  description: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#1a1a1a',
+    lineHeight: 18,
+    paddingHorizontal: 10,
+    paddingTop: 10,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+  },
+  avatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+  },
+  avatarPlaceholder: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  nickname: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#6B7280',
+    flex: 1,
+  },
+  likeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingLeft: 8,
+  },
+  likeCount: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    fontWeight: '500',
+  },
+  likeCountActive: {
+    color: '#EF4444',
+  },
+});
+
+// 帖子详情弹窗样式
+const detailStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  container: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '92%',
+    minHeight: '70%',
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    zIndex: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  imagesSection: {
+    position: 'relative',
+    marginHorizontal: 16,
+    marginTop: 8,
+  },
+  mainImage: {
+    width: '100%',
+    aspectRatio: 0.8,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+  },
+  beforeContainer: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  beforeImage: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#F3F4F6',
+  },
+  beforeLabel: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    paddingVertical: 3,
+  },
+  beforeLabelText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+  userSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
+  avatarPlaceholder: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  nickname: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  time: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    marginTop: 2,
+  },
+  description: {
+    fontSize: 15,
+    color: '#1a1a1a',
+    lineHeight: 22,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  templateBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginLeft: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 4,
+  },
+  templateIcon: {
+    fontSize: 16,
+  },
+  templateText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4F46E5',
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+    gap: 24,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    marginTop: 12,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  actionText: {
+    fontSize: 15,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  actionTextActive: {
+    color: '#EF4444',
+  },
+  commentsSection: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  commentsTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 12,
+  },
+  commentItem: {
+    flexDirection: 'row',
+    marginBottom: 12,
+    gap: 10,
+  },
+  commentAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+  },
+  commentAvatarPlaceholder: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  commentAvatarText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  commentContent: {
+    flex: 1,
+  },
+  commentAuthor: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 2,
+  },
+  commentText: {
+    fontSize: 14,
+    color: '#4B5563',
+    lineHeight: 20,
+  },
+  commentInputContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingBottom: 34,
+  },
+  commentInputWrapper: {
+    gap: 8,
+  },
+  replyIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  replyText: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  commentInput: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 15,
+    maxHeight: 80,
+  },
+  sendButton: {
+    backgroundColor: '#1a1a1a',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#E5E7EB',
+  },
+  sendButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  sendButtonTextDisabled: {
+    color: '#9CA3AF',
   },
 });

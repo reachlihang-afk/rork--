@@ -271,6 +271,11 @@ export default {
   },
   square: {
     title: '광장',
+    follow: '팔로우',
+    explore: '탐색',
+    nearby: '주변',
+    before: 'BEFORE',
+    searchPlaceholder: '검색...',
     publishToSquare: '광장에 게시',
     publishSuccess: '게시 성공',
     publishSuccessPrompt: '게시 성공. 광장 페이지로 이동하시겠습니까?',

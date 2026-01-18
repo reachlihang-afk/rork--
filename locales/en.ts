@@ -294,6 +294,11 @@ export default {
   },
   square: {
     title: 'Square',
+    follow: 'Follow',
+    explore: 'Explore',
+    nearby: 'Nearby',
+    before: 'BEFORE',
+    searchPlaceholder: 'Search content...',
     publishToSquare: 'Publish to Square',
     publishSuccess: 'Published successfully',
     publishSuccessPrompt: 'Published successfully. Go to Square page?',
