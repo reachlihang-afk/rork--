@@ -1,30 +1,19 @@
 import React, { useState } from 'react';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { ArrowLeft, Share2, Download, MoreHorizontal, Sparkles, RefreshCw } from 'lucide-react-native';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { ArrowLeft, MoreHorizontal, Sparkles } from 'lucide-react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { useVerification } from '@/contexts/VerificationContext';
-import { useSquare } from '@/contexts/SquareContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { saveToGallery } from '@/utils/share';
 import { useTranslation } from 'react-i18next';
-import { useAlert } from '@/contexts/AlertContext';
 
 export default function OutfitChangeDetailScreen() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { showAlert } = useAlert();
   
   const { outfitChangeHistory, deleteOutfitChange } = useVerification();
-  const { publishPost, posts } = useSquare();
-  const { user } = useAuth();
   
   const [viewMode, setViewMode] = useState<'original' | 'result'>('result');
-  const [isSaving, setIsSaving] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
 
   const outfitItem = outfitChangeHistory.find(item => item.id === id);
 
@@ -40,122 +29,6 @@ export default function OutfitChangeDetailScreen() {
       </View>
     );
   }
-
-  const published = posts.some(
-    p => p.postType === 'outfitChange' && p.outfitChangeId === outfitItem.id
-  );
-
-  const handleDownload = async () => {
-    if (isSaving) return;
-
-    try {
-      setIsSaving(true);
-      const success = await saveToGallery(outfitItem.resultImageUri);
-      if (success) {
-        showAlert({
-          type: 'success',
-          title: t('common.success'),
-          message: t('outfitChange.downloadSuccess')
-        });
-      } else {
-        showAlert({
-          type: 'error',
-          title: t('common.error'),
-          message: t('outfitChange.downloadFailed')
-        });
-      }
-    } catch (error) {
-      console.error('Download failed:', error);
-      showAlert({
-        type: 'error',
-        title: t('common.error'),
-        message: t('outfitChange.downloadFailed')
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleShare = async () => {
-    if (!user) {
-      showAlert({
-        type: 'info',
-        message: t('square.loginRequired')
-      });
-      return;
-    }
-
-    if (!user.nickname) {
-      showAlert({
-        type: 'confirm',
-        title: t('common.tip'),
-        message: t('square.nicknameRequired'),
-        confirmText: t('profile.editProfile'),
-        onConfirm: () => router.push('/edit-profile' as any)
-      });
-      return;
-    }
-
-    if (isPublishing) return;
-
-    if (published) {
-      showAlert({
-        type: 'info',
-        message: t('square.alreadyPublished')
-      });
-      return;
-    }
-
-    showAlert({
-      type: 'confirm',
-      title: t('square.publishToSquare'),
-      message: t('square.publishConfirm'),
-      onConfirm: async () => {
-        try {
-          setIsPublishing(true);
-          await publishPost({
-            postType: 'outfitChange',
-            userId: user.userId,
-            userNickname: user.nickname || user.userId,
-            userAvatar: user.avatar,
-            originalImageUri: outfitItem.originalImageUri,
-            resultImageUri: outfitItem.resultImageUri,
-            templateName: outfitItem.templateName,
-            outfitChangeId: outfitItem.id,
-          });
-          
-          showAlert({
-            type: 'success',
-            message: t('square.publishSuccess')
-          });
-        } catch (error) {
-          console.error('Publish failed:', error);
-          showAlert({
-            type: 'error',
-            message: t('square.publishFailed')
-          });
-        } finally {
-          setIsPublishing(false);
-        }
-      }
-    });
-  };
-
-  const handleRegenerate = () => {
-    Alert.alert(
-      t('outfitChange.regenerate'),
-      t('outfitChange.regenerateConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.confirm'),
-          onPress: () => {
-            router.push('/outfit-change' as any);
-          },
-        },
-      ]
-    );
-  };
 
   const handleMore = () => {
     Alert.alert(
@@ -204,9 +77,14 @@ export default function OutfitChangeDetailScreen() {
       <View style={styles.header}>
         <TouchableOpacity 
           onPress={() => router.back()}
-          style={styles.headerButton}
+          style={styles.backButton}
+          activeOpacity={0.7}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2} />
+          <View style={styles.backButtonInner}>
+            <ArrowLeft size={20} color="#1a1a1a" strokeWidth={2.5} />
+          </View>
+          <Text style={styles.backButtonText}>{t('common.back')}</Text>
         </TouchableOpacity>
         
         <Text style={styles.headerTitle}>
@@ -216,6 +94,7 @@ export default function OutfitChangeDetailScreen() {
         <TouchableOpacity 
           onPress={handleMore}
           style={styles.headerButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <MoreHorizontal size={24} color="#1a1a1a" />
         </TouchableOpacity>
@@ -301,76 +180,6 @@ export default function OutfitChangeDetailScreen() {
         </View>
       </ScrollView>
 
-      {/* Fixed Bottom Actions */}
-      <View style={styles.fixedBottom}>
-        <View style={styles.gradientContainer}>
-          <LinearGradient
-            colors={['rgba(255,255,255,0)', '#ffffff']}
-            style={styles.gradient}
-          />
-        </View>
-        
-        <View style={styles.actionsContainer}>
-          <View style={styles.primaryActions}>
-            <TouchableOpacity
-              style={[styles.shareButton, isPublishing && styles.buttonDisabled]}
-              onPress={handleShare}
-              disabled={isPublishing}
-              activeOpacity={0.9}
-            >
-              <LinearGradient
-                colors={['#1a1a1a', '#000000']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.buttonGradient}
-              >
-                {isPublishing ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <>
-                    <Share2 size={20} color="#fff" strokeWidth={2.5} />
-                    <Text style={styles.shareButtonText}>{t('common.share')}</Text>
-                  </>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.saveButton, isSaving && styles.buttonDisabled]}
-              onPress={handleDownload}
-              disabled={isSaving}
-              activeOpacity={0.9}
-            >
-              {isSaving ? (
-                <ActivityIndicator size="small" color="#1a1a1a" />
-              ) : (
-                <>
-                  <Download size={20} color="#1a1a1a" strokeWidth={2.5} />
-                  <Text style={styles.saveButtonText}>
-                    {t('common.save')}
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity
-            style={styles.regenerateButton}
-            onPress={handleRegenerate}
-            disabled={isRegenerating}
-            activeOpacity={0.7}
-          >
-            <RefreshCw 
-              size={18} 
-              color="#71717a" 
-              strokeWidth={2.5} 
-            />
-            <Text style={styles.regenerateText}>
-              {t('outfitChange.regenerateThisLook').toUpperCase()}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
     </View>
   );
 }
@@ -386,19 +195,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 60 : 24,
-    paddingBottom: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingHorizontal: 12,
+    paddingTop: Platform.OS === 'ios' ? 56 : 20,
+    paddingBottom: 12,
+    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },
-  headerButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 8,
+    paddingRight: 12,
+  },
+  backButtonInner: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  backButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  headerButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f5f5f5',
   },
   headerTitle: {
     fontSize: 14,
@@ -414,7 +244,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     paddingTop: 24,
-    paddingBottom: 200,
+    paddingBottom: 40,
   },
   
   // Toggle
@@ -536,101 +366,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#09090b',
-  },
-  
-  // Fixed Bottom
-  fixedBottom: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: Platform.OS === 'ios' ? 32 : 20,
-  },
-  gradientContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 100,
-    zIndex: -1,
-  },
-  gradient: {
-    flex: 1,
-  },
-  actionsContainer: {
-    gap: 12,
-  },
-  primaryActions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  shareButton: {
-    flex: 1,
-    height: 48,
-    borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  buttonGradient: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  shareButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#ffffff',
-    letterSpacing: 0.5,
-  },
-  saveButton: {
-    flex: 1,
-    height: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  saveButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#09090b',
-    letterSpacing: 0.5,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  regenerateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    height: 40,
-  },
-  regenerateText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#71717a',
-    letterSpacing: 1,
   },
   
   // Empty state
