@@ -26,6 +26,7 @@ export default {
     referencePhotos: '参考照片',
     verificationRecords: '验证记录',
     quickStart: '一键开始',
+    start: '开始',
     recentVerifications: '最近验证',
     outfitHistory: '换装记录',
     viewAll: '查看全部',

@@ -99,7 +99,7 @@ export default function HomeScreen() {
                   colors={['#ffffff', '#f8f8f8']}
                   style={styles.heroStartButtonGradient}
                 >
-                  <Text style={styles.heroStartButtonText}>{t('home.quickStart')}</Text>
+                  <Text style={styles.heroStartButtonText}>{t('home.start')}</Text>
                 </LinearGradient>
               </View>
             </View>
@@ -290,24 +290,27 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   heroStartButton: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   heroStartButtonGradient: {
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 24,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
   },
   heroStartButtonText: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#1a1a1a',
     fontWeight: '700',
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
 
   uploadButtonContainer: {

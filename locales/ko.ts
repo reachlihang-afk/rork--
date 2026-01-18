@@ -26,6 +26,7 @@ export default {
     referencePhotos: '참조 사진',
     verificationRecords: '검증 기록',
     quickStart: '빠른 시작 (2단계)',
+    start: '시작',
     recentVerifications: '최근 검증',
     outfitHistory: '의상 변경 기록',
     viewAll: '모두 보기',

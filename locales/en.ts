@@ -26,6 +26,7 @@ export default {
     referencePhotos: 'Reference Photos',
     verificationRecords: 'Verification Records',
     quickStart: 'Quick Start (2 Steps)',
+    start: 'Start',
     recentVerifications: 'Recent Verifications',
     outfitHistory: 'Outfit Records',
     viewAll: 'View All',
