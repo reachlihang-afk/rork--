@@ -205,13 +205,17 @@ export const [SquareProvider, useSquare] = createContextHook(() => {
       const stringified = JSON.stringify(updated);
       await AsyncStorage.setItem(STORAGE_KEY, stringified);
       
+      // 更新 all_users 存储
       const usersKey = 'all_users';
       const stored = await AsyncStorage.getItem(usersKey);
       const allUsers: {
         userId: string;
         nickname: string;
         avatar?: string;
+        bio?: string;
         phone: string;
+        followingCount?: number;
+        followersCount?: number;
       }[] = stored ? JSON.parse(stored) : [];
       
       const userIndex = allUsers.findIndex(u => u.userId === post.userId);
@@ -227,6 +231,8 @@ export const [SquareProvider, useSquare] = createContextHook(() => {
           nickname: post.userNickname,
           avatar: post.userAvatar,
           phone: '',
+          followingCount: 0,
+          followersCount: 0,
         });
       }
       

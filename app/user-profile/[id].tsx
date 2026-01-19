@@ -1,217 +1,368 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  Image,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
   ScrollView,
+  Platform,
+  Dimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
-import { Users, UserPlus, UserCheck, Clock, Shield, ArrowLeft } from 'lucide-react-native';
-import { useFriends } from '@/contexts/FriendsContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { ArrowLeft, MoreHorizontal, User, MessageCircle } from 'lucide-react-native';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSquare, SquarePost } from '@/contexts/SquareContext';
+import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function UserProfileScreen() {
-  const { id: userId } = useLocalSearchParams();
-  const { t } = useLanguage();
-  const { sendFriendRequest, isFriend, hasPendingRequest } = useFriends();
-  const [profileUser, setProfileUser] = useState<{
-    userId: string;
-    nickname: string;
-    avatar?: string;
-    phone?: string;
-  } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const GRID_GAP = 2;
+const GRID_COLUMNS = 3;
+const ITEM_WIDTH = (SCREEN_WIDTH - GRID_GAP * (GRID_COLUMNS + 1)) / GRID_COLUMNS;
 
+interface ProfileUser {
+  userId: string;
+  nickname: string;
+  avatar?: string;
+  bio?: string;
+  followingCount?: number;
+  followersCount?: number;
+}
+
+export default function UserProfileScreen() {
+  const { t } = useTranslation();
+  const { id: userId } = useLocalSearchParams();
+  const insets = useSafeAreaInsets();
+  const { user, isFollowing, followUser, unfollowUser } = useAuth();
+  const { posts } = useSquare();
+  
+  const [profileUser, setProfileUser] = useState<ProfileUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
+
+  // 获取该用户发布的所有帖子
+  const userPosts = useMemo(() => {
+    return posts.filter(p => p.userId === userId);
+  }, [posts, userId]);
+
+  // 加载用户资料
   const loadUserProfile = useCallback(async () => {
     try {
+      // 从 all_users 存储中查找用户
       const usersKey = 'all_users';
       const stored = await AsyncStorage.getItem(usersKey);
-      const allUsers: {
-        userId: string;
-        nickname: string;
-        avatar?: string;
-        phone: string;
-      }[] = stored ? JSON.parse(stored) : [];
-
+      const allUsers: ProfileUser[] = stored ? JSON.parse(stored) : [];
+      
       const foundUser = allUsers.find(u => u.userId === userId);
-      setProfileUser(foundUser || null);
+      
+      if (foundUser) {
+        setProfileUser(foundUser);
+      } else {
+        // 如果找不到，尝试从帖子中获取用户信息
+        const userPost = posts.find(p => p.userId === userId);
+        if (userPost) {
+          setProfileUser({
+            userId: userPost.userId,
+            nickname: userPost.userNickname,
+            avatar: userPost.userAvatar,
+            bio: undefined,
+            followingCount: 0,
+            followersCount: 0,
+          });
+        }
+      }
     } catch (error) {
       console.error('Failed to load user profile:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [userId, posts]);
 
   useEffect(() => {
     loadUserProfile();
   }, [loadUserProfile]);
 
-  const handleSendRequest = async () => {
-    if (!profileUser) return;
-
+  // 处理关注/取消关注
+  const handleFollowToggle = async () => {
+    if (!profileUser || !user) return;
+    if (isFollowLoading) return;
+    
+    setIsFollowLoading(true);
     try {
-      await sendFriendRequest(
-        profileUser.userId,
-        profileUser.nickname,
-        profileUser.avatar
-      );
-      Alert.alert(t('common.success'), t('friends.requestSent'));
-    } catch (error: any) {
-      if (error.message === 'Already friends') {
-        Alert.alert(t('common.tip'), t('friends.alreadyFriends'));
-      } else if (error.message === 'Request already sent') {
-        Alert.alert(t('common.tip'), t('friends.requestAlreadySent'));
+      if (isFollowing(profileUser.userId)) {
+        await unfollowUser(profileUser.userId);
       } else {
-        Alert.alert(t('common.error'), t('friends.sendRequestFailed'));
+        await followUser(profileUser.userId);
       }
+    } catch (error) {
+      console.error('Follow toggle error:', error);
+    } finally {
+      setIsFollowLoading(false);
     }
   };
 
-  const handleViewHistory = () => {
-    if (!profileUser) return;
-    router.push(`/friend-history/${profileUser.userId}` as any);
+  // 点击帖子查看详情
+  const handlePostPress = (post: SquarePost) => {
+    // 跳转到广场详情页或直接在此展示
+    router.push(`/(tabs)/square?postId=${post.id}` as any);
   };
 
-  const getButtonStatus = () => {
-    if (!profileUser) return null;
-    if (isFriend(profileUser.userId)) return 'friend';
-    if (hasPendingRequest(profileUser.userId)) return 'pending';
-    return 'add';
-  };
-
-  const renderActionButton = () => {
-    const status = getButtonStatus();
-
-    if (!status) return null;
-
-    if (status === 'friend') {
+  // 渲染作品网格
+  const renderPostsGrid = () => {
+    if (userPosts.length === 0) {
       return (
-        <>
-          <View style={[styles.actionButton, styles.friendButton]}>
-            <UserCheck size={20} color="#4CAF50" />
-            <Text style={styles.friendButtonText}>{t('friends.alreadyFriend')}</Text>
-          </View>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.viewHistoryButton]}
-            onPress={handleViewHistory}
-          >
-            <Shield size={20} color="#007AFF" />
-            <Text style={styles.viewHistoryButtonText}>{t('friends.viewHistory')}</Text>
-          </TouchableOpacity>
-        </>
-      );
-    }
-
-    if (status === 'pending') {
-      return (
-        <View style={[styles.actionButton, styles.pendingButton]}>
-          <Clock size={20} color="#FF9800" />
-          <Text style={styles.pendingButtonText}>{t('friends.pending')}</Text>
+        <View style={styles.emptyPostsContainer}>
+          <Text style={styles.emptyPostsIcon}>👗</Text>
+          <Text style={styles.emptyPostsText}>{t('userProfile.noPosts')}</Text>
         </View>
       );
     }
 
     return (
-      <TouchableOpacity
-        style={[styles.actionButton, styles.addButton]}
-        onPress={handleSendRequest}
-      >
-        <UserPlus size={20} color="#fff" />
-        <Text style={styles.addButtonText}>{t('friends.addFriend')}</Text>
-      </TouchableOpacity>
+      <View style={styles.postsGrid}>
+        {userPosts.map((post) => (
+          <TouchableOpacity
+            key={post.id}
+            style={styles.postItem}
+            onPress={() => handlePostPress(post)}
+            activeOpacity={0.8}
+          >
+            <Image
+              source={{ uri: post.editedPhotoUri || post.referencePhotoUri }}
+              style={styles.postImage}
+              contentFit="cover"
+            />
+            {/* 互动数据 */}
+            <View style={styles.postOverlay}>
+              <View style={styles.postStats}>
+                <Text style={styles.postStatText}>❤️ {post.likes?.length || 0}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
     );
   };
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container} edges={['bottom']}>
-        <Stack.Screen options={{
-          title: t('friends.userProfile'),
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ marginLeft: -8, padding: 8 }}
-            >
-              <ArrowLeft size={24} color="#1a1a1a" />
-            </TouchableOpacity>
-          ),
-        }} />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+      <View style={styles.container}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2.5} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('userProfile.title')}</Text>
+          <View style={styles.headerPlaceholder} />
         </View>
-      </SafeAreaView>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#1a1a1a" />
+        </View>
+      </View>
     );
   }
 
   if (!profileUser) {
     return (
-      <SafeAreaView style={styles.container} edges={['bottom']}>
-        <Stack.Screen options={{
-          title: t('friends.userProfile'),
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ marginLeft: -8, padding: 8 }}
-            >
-              <ArrowLeft size={24} color="#1a1a1a" />
-            </TouchableOpacity>
-          ),
-        }} />
-        <View style={styles.emptyContainer}>
-          <Users size={64} color="#ccc" />
-          <Text style={styles.emptyText}>{t('friends.userNotFound')}</Text>
+      <View style={styles.container}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2.5} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('userProfile.title')}</Text>
+          <View style={styles.headerPlaceholder} />
         </View>
-      </SafeAreaView>
+        <View style={styles.emptyContainer}>
+          <User size={64} color="#d1d5db" />
+          <Text style={styles.emptyText}>{t('userProfile.notFound')}</Text>
+        </View>
+      </View>
     );
   }
 
+  const isOwnProfile = user?.userId === profileUser.userId;
+  const following = isFollowing(profileUser.userId);
+
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <Stack.Screen 
-        options={{ 
-          title: t('friends.userProfile'),
-          headerStyle: { backgroundColor: '#fff' },
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ marginLeft: -8, padding: 8 }}
-            >
-              <ArrowLeft size={24} color="#1a1a1a" />
-            </TouchableOpacity>
-          ),
-        }} 
-      />
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.profileCard}>
-          {profileUser.avatar ? (
-            <Image source={{ uri: profileUser.avatar }} style={styles.avatar} />
-          ) : (
-            <View style={[styles.avatar, styles.avatarPlaceholder]}>
-              <Users size={48} color="#666" />
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        >
+          <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2.5} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('userProfile.title').toUpperCase()}</Text>
+        <TouchableOpacity
+          style={styles.moreButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        >
+          <MoreHorizontal size={24} color="#1a1a1a" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* 用户信息区域 */}
+        <View style={styles.profileSection}>
+          {/* 头像 */}
+          <View style={styles.avatarWrapper}>
+            {profileUser.avatar ? (
+              <Image source={{ uri: profileUser.avatar }} style={styles.avatar} contentFit="cover" />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <User size={40} color="#9ca3af" strokeWidth={2} />
+              </View>
+            )}
+            <View style={styles.verifiedBadge}>
+              <Text style={styles.verifiedIcon}>✓</Text>
+            </View>
+          </View>
+
+          {/* 昵称 */}
+          <Text style={styles.nickname}>{profileUser.nickname}</Text>
+
+          {/* 个人介绍 */}
+          {profileUser.bio && (
+            <Text style={styles.bio}>{profileUser.bio}</Text>
+          )}
+
+          {/* 统计数据 */}
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>{profileUser.followingCount || 0}</Text>
+              <Text style={styles.statLabel}>{t('profile.following')}</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>{profileUser.followersCount || 0}</Text>
+              <Text style={styles.statLabel}>{t('profile.followers')}</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>{userPosts.length}</Text>
+              <Text style={styles.statLabel}>{t('profile.swaps')}</Text>
+            </View>
+          </View>
+
+          {/* 操作按钮 */}
+          {!isOwnProfile && user && (
+            <View style={styles.actionsContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.followButton,
+                  following && styles.followingButton,
+                ]}
+                onPress={handleFollowToggle}
+                disabled={isFollowLoading}
+                activeOpacity={0.8}
+              >
+                {isFollowLoading ? (
+                  <ActivityIndicator size="small" color={following ? '#1a1a1a' : '#fff'} />
+                ) : (
+                  <Text style={[
+                    styles.followButtonText,
+                    following && styles.followingButtonText,
+                  ]}>
+                    {following ? t('userProfile.following') : t('userProfile.follow')}
+                  </Text>
+                )}
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.messageButton} activeOpacity={0.8}>
+                <MessageCircle size={20} color="#1a1a1a" strokeWidth={2} />
+              </TouchableOpacity>
             </View>
           )}
-          <Text style={styles.nickname}>{profileUser.nickname}</Text>
-          <Text style={styles.userId}>{profileUser.userId}</Text>
+
+          {isOwnProfile && (
+            <TouchableOpacity
+              style={styles.editProfileButton}
+              onPress={() => router.push('/edit-profile')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.editProfileButtonText}>{t('profile.editProfile')}</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
-        <View style={styles.actionsContainer}>
-          {renderActionButton()}
+        {/* 分隔线 */}
+        <View style={styles.divider} />
+
+        {/* 作品区域 */}
+        <View style={styles.postsSection}>
+          <View style={styles.postsSectionHeader}>
+            <Text style={styles.postsSectionTitle}>{t('userProfile.posts')}</Text>
+            <Text style={styles.postsSectionCount}>{userPosts.length}</Text>
+          </View>
+          {renderPostsGrid()}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#f5f5f5',
+  },
+  headerTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    letterSpacing: 2,
+  },
+  headerPlaceholder: {
+    width: 44,
+  },
+  moreButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 40,
   },
   loadingContainer: {
     flex: 1,
@@ -225,95 +376,231 @@ const styles = StyleSheet.create({
     padding: 32,
   },
   emptyText: {
-    fontSize: 18,
-    color: '#999',
+    fontSize: 16,
+    color: '#9ca3af',
     marginTop: 16,
     textAlign: 'center',
   },
-  content: {
-    padding: 24,
-  },
-  profileCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 32,
+  
+  // Profile Section
+  profileSection: {
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
+  },
+  avatarWrapper: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 16,
+    position: 'relative',
   },
   avatar: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginBottom: 16,
+    borderWidth: 3,
+    borderColor: '#f3f4f6',
   },
   avatarPlaceholder: {
-    backgroundColor: '#f0f0f0',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#e5e7eb',
+  },
+  verifiedBadge: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#3b82f6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+  },
+  verifiedIcon: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '800',
   },
   nickname: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1a1a1a',
+    marginBottom: 6,
+    letterSpacing: -0.5,
+  },
+  bio: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+    textAlign: 'center',
     marginBottom: 8,
+    paddingHorizontal: 20,
+    lineHeight: 20,
   },
-  userId: {
-    fontSize: 16,
-    color: '#999',
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+    gap: 40,
   },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1a1a1a',
+    letterSpacing: -0.5,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#9ca3af',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  
+  // Actions
   actionsContainer: {
-    marginTop: 24,
-    gap: 12,
-  },
-  actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
+    gap: 12,
+    marginTop: 24,
+  },
+  followButton: {
+    flex: 1,
+    backgroundColor: '#1a1a1a',
     borderRadius: 12,
-    gap: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 140,
   },
-  addButton: {
-    backgroundColor: '#007AFF',
+  followingButton: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1.5,
+    borderColor: '#e5e7eb',
   },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  followButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#ffffff',
   },
-  friendButton: {
-    backgroundColor: '#E8F5E9',
+  followingButtonText: {
+    color: '#1a1a1a',
+  },
+  messageButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#4CAF50',
+    borderColor: '#e5e7eb',
   },
-  friendButtonText: {
-    color: '#4CAF50',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  pendingButton: {
-    backgroundColor: '#FFF3E0',
+  editProfileButton: {
+    marginTop: 24,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 40,
     borderWidth: 1,
-    borderColor: '#FF9800',
+    borderColor: '#e5e7eb',
   },
-  pendingButtonText: {
-    color: '#FF9800',
+  editProfileButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  
+  // Divider
+  divider: {
+    height: 8,
+    backgroundColor: '#f3f4f6',
+  },
+  
+  // Posts Section
+  postsSection: {
+    paddingTop: 16,
+  },
+  postsSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  postsSectionTitle: {
     fontSize: 16,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  postsSectionCount: {
+    fontSize: 14,
+    color: '#9ca3af',
     fontWeight: '600',
   },
-  viewHistoryButton: {
-    backgroundColor: '#E3F2FD',
-    borderWidth: 1,
-    borderColor: '#007AFF',
+  postsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: GRID_GAP,
   },
-  viewHistoryButtonText: {
-    color: '#007AFF',
-    fontSize: 16,
+  postItem: {
+    width: ITEM_WIDTH,
+    aspectRatio: 1,
+    marginBottom: GRID_GAP,
+    marginRight: GRID_GAP,
+    borderRadius: 4,
+    overflow: 'hidden',
+    backgroundColor: '#f3f4f6',
+  },
+  postImage: {
+    width: '100%',
+    height: '100%',
+  },
+  postOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  postStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  postStatText: {
+    fontSize: 11,
+    color: '#ffffff',
     fontWeight: '600',
+  },
+  
+  // Empty Posts
+  emptyPostsContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 32,
+  },
+  emptyPostsIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  emptyPostsText: {
+    fontSize: 14,
+    color: '#9ca3af',
+    textAlign: 'center',
   },
 });

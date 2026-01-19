@@ -11,6 +11,7 @@ interface User {
   bio?: string;
   followingCount?: number;
   followersCount?: number;
+  following?: string[]; // 关注的用户ID列表
 }
 
 export const [AuthContext, useAuth] = createContextHook(() => {
@@ -99,6 +100,7 @@ export const [AuthContext, useAuth] = createContextHook(() => {
       bio: !isNewUser && existingUser?.bio ? existingUser.bio : undefined,
       followingCount: !isNewUser && existingUser?.followingCount ? existingUser.followingCount : 0,
       followersCount: !isNewUser && existingUser?.followersCount ? existingUser.followersCount : 0,
+      following: !isNewUser && existingUser?.following ? existingUser.following : [],
     };
     setUser(newUser);
     await AsyncStorage.setItem('user', JSON.stringify(newUser));
@@ -175,6 +177,59 @@ export const [AuthContext, useAuth] = createContextHook(() => {
     return updatedUser;
   }, [user]);
 
+  // 关注用户
+  const followUser = useCallback(async (targetUserId: string) => {
+    if (!user) throw new Error('Not logged in');
+    if (targetUserId === user.userId) throw new Error('Cannot follow yourself');
+    
+    const currentFollowing = user.following || [];
+    if (currentFollowing.includes(targetUserId)) {
+      throw new Error('Already following');
+    }
+    
+    const updatedFollowing = [...currentFollowing, targetUserId];
+    const updatedUser: User = {
+      ...user,
+      following: updatedFollowing,
+      followingCount: updatedFollowing.length,
+    };
+    
+    setUser(updatedUser);
+    await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+    
+    console.log('[AuthContext] Followed user:', targetUserId);
+    return updatedUser;
+  }, [user]);
+
+  // 取消关注用户
+  const unfollowUser = useCallback(async (targetUserId: string) => {
+    if (!user) throw new Error('Not logged in');
+    
+    const currentFollowing = user.following || [];
+    if (!currentFollowing.includes(targetUserId)) {
+      throw new Error('Not following this user');
+    }
+    
+    const updatedFollowing = currentFollowing.filter(id => id !== targetUserId);
+    const updatedUser: User = {
+      ...user,
+      following: updatedFollowing,
+      followingCount: updatedFollowing.length,
+    };
+    
+    setUser(updatedUser);
+    await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+    
+    console.log('[AuthContext] Unfollowed user:', targetUserId);
+    return updatedUser;
+  }, [user]);
+
+  // 检查是否关注了某用户
+  const isFollowing = useCallback((targetUserId: string): boolean => {
+    if (!user) return false;
+    return (user.following || []).includes(targetUserId);
+  }, [user]);
+
   return {
     user,
     isLoading,
@@ -182,5 +237,8 @@ export const [AuthContext, useAuth] = createContextHook(() => {
     login,
     logout,
     updateProfile,
+    followUser,
+    unfollowUser,
+    isFollowing,
   };
 });

@@ -392,6 +392,17 @@ export default {
     historyNotAllowed: '이 사용자는 친구에게 검증 기록 보기를 허용하지 않습니다',
     noHistoryYet: '아직 검증 기록이 없습니다',
   },
+  userProfile: {
+    title: '프로필',
+    notFound: '사용자를 찾을 수 없습니다',
+    noPosts: '아직 착장 작품이 없습니다',
+    posts: '착장 작품',
+    follow: '팔로우',
+    following: '팔로잉',
+    unfollow: '팔로우 취소',
+    message: '메시지',
+    mutualFollow: '맞팔',
+  },
   beauty: {
     title: '스마트 뷰티',
     smartBeauty: '스마트 뷰티',

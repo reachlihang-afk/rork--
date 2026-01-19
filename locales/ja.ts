@@ -392,6 +392,17 @@ export default {
     historyNotAllowed: 'このユーザーは友達に検証記録の表示を許可していません',
     noHistoryYet: '検証記録がまだありません',
   },
+  userProfile: {
+    title: 'プロフィール',
+    notFound: 'ユーザーが見つかりません',
+    noPosts: '着せ替え作品がまだありません',
+    posts: '着せ替え作品',
+    follow: 'フォロー',
+    following: 'フォロー中',
+    unfollow: 'フォロー解除',
+    message: 'メッセージ',
+    mutualFollow: '相互フォロー',
+  },
   beauty: {
     title: 'スマート美顔',
     smartBeauty: 'スマート美顔',

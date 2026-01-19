@@ -424,6 +424,17 @@ export default {
     historyNotAllowed: 'User does not allow friends to view history',
     noHistoryYet: 'No verification history yet',
   },
+  userProfile: {
+    title: 'Profile',
+    notFound: 'User not found',
+    noPosts: 'No outfit swaps yet',
+    posts: 'Outfit Swaps',
+    follow: 'Follow',
+    following: 'Following',
+    unfollow: 'Unfollow',
+    message: 'Message',
+    mutualFollow: 'Mutual',
+  },
   beauty: {
     title: 'Smart Beauty',
     smartBeauty: 'Smart Beauty',

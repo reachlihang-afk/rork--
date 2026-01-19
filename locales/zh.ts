@@ -425,6 +425,17 @@ export default {
     historyNotAllowed: '该用户不允许好友查看验证记录',
     noHistoryYet: '暂无验证记录',
   },
+  userProfile: {
+    title: '个人主页',
+    notFound: '用户不存在',
+    noPosts: '还没有发布换装作品',
+    posts: '换装作品',
+    follow: '关注',
+    following: '已关注',
+    unfollow: '取消关注',
+    message: '私信',
+    mutualFollow: '互相关注',
+  },
   beauty: {
     title: '智能美颜',
     smartBeauty: '智能美颜',
