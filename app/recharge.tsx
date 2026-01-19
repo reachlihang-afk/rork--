@@ -240,8 +240,14 @@ export default function RechargeScreen() {
                       )}
                     </View>
 
-                    {/* Price Button - 统一样式 */}
-                    <View style={styles.priceButton}>
+                    {/* Price Button - 根据套餐等级设置不同颜色 */}
+                    <View style={[
+                      styles.priceButton,
+                      pkg.tier === 'starter' && styles.priceButtonStarter,
+                      pkg.tier === 'popular' && styles.priceButtonPopular,
+                      pkg.tier === 'best' && styles.priceButtonBest,
+                      pkg.tier === 'luxury' && styles.priceButtonLuxury,
+                    ]}>
                       <Text style={styles.priceText}>
                         ${pkg.price.toFixed(2)}
                       </Text>
@@ -485,11 +491,26 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   
-  // Price Button - 统一样式
+  // Price Button - 基础样式
   priceButton: {
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
+  },
+  // Starter - 灰色
+  priceButtonStarter: {
+    backgroundColor: '#9ca3af',
+  },
+  // Popular - 金色
+  priceButtonPopular: {
+    backgroundColor: '#B89B5E',
+  },
+  // Best Value - 深绿色
+  priceButtonBest: {
+    backgroundColor: '#166534',
+  },
+  // Luxury - 黑色
+  priceButtonLuxury: {
     backgroundColor: '#1a1a1a',
   },
   priceText: {
