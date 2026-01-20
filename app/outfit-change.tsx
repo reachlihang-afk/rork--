@@ -365,7 +365,7 @@ export default function OutfitChangeNewScreen() {
   const { user, isLoggedIn } = useAuth();
   const insets = useSafeAreaInsets();
   const { coinBalance, canUseOutfitChange, useOutfitChange, getRemainingFreeCounts } = useCoin();
-  const { addOutfitChangeHistory } = useVerification();
+  const { addOutfitChangeHistory, markAsPublished } = useVerification();
   const { publishPost } = useSquare();
   const { showAlert } = useAlert();
   
@@ -385,6 +385,7 @@ export default function OutfitChangeNewScreen() {
     templateName: string;
     customOutfitImages?: string[];  // 自定义模式下的所有参考服饰图片
     userPhoto?: string;             // 自定义模式下保存的用户照片
+    historyId?: string;             // 历史记录ID
   } | null>(null);
   const [showLargeImage, setShowLargeImage] = useState(false);
   const [largeImageType, setLargeImageType] = useState<'original' | 'result'>('result');
@@ -481,6 +482,16 @@ export default function OutfitChangeNewScreen() {
       });
 
       setIsPublished(true);
+      
+      // 标记历史记录为已发布
+      if (generatedResult.historyId) {
+        try {
+          await markAsPublished(generatedResult.historyId);
+        } catch (e) {
+          console.error('Failed to mark as published:', e);
+        }
+      }
+      
       showAlert({
         type: 'success_confirm',
         title: t('common.success'),
@@ -1036,12 +1047,30 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
         ? customImages[0]  // 使用第一张参考服饰作为原图
         : userImage;
       
+      // 保存到历史记录并获取ID
+      let historyId: string | undefined;
+      try {
+        const historyOriginalImage = selectedTab === 'custom' && customImages.length > 0 
+          ? customImages[0] 
+          : userImage;
+        
+        historyId = await addOutfitChangeHistory(
+          historyOriginalImage,
+          generatedImageUri,
+          selectedTab === 'template' ? selectedTemplate! : 'custom-outfit',
+          templateName
+        );
+      } catch (historyError) {
+        console.error('Failed to save to history:', historyError);
+      }
+      
       setGeneratedResult({
         original: originalImage,
         result: generatedImageUri,
         templateName,
         customOutfitImages: selectedTab === 'custom' ? [...customImages] : undefined,
-        userPhoto: selectedTab === 'custom' ? userImage : undefined,  // 保存用户照片以便需要时使用
+        userPhoto: selectedTab === 'custom' ? userImage : undefined,
+        historyId,
       });
       setIsPublished(false); // 重置发布状态
       
@@ -1056,22 +1085,6 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
           }, 100);
         }
       });
-      
-      // 保存到历史记录
-      try {
-        const historyOriginalImage = selectedTab === 'custom' && customImages.length > 0 
-          ? customImages[0] 
-          : userImage;
-        
-        await addOutfitChangeHistory(
-          historyOriginalImage,
-          generatedImageUri,
-          selectedTab === 'template' ? selectedTemplate! : 'custom-outfit',
-          templateName
-        );
-      } catch (historyError) {
-        console.error('Failed to save to history:', historyError);
-      }
       
     } catch (error: any) {
       console.error('[OutfitChange] Generation error:', error);

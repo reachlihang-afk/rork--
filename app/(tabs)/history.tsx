@@ -213,11 +213,18 @@ export default function HistoryScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.actionButton}
+            style={[
+              styles.actionButton,
+              item.isPublishedToSquare && styles.actionButtonPublished
+            ]}
             onPress={() => handleShare(item)}
             activeOpacity={0.7}
           >
-            <Share2 size={20} color="#374151" strokeWidth={1.5} />
+            <Share2 
+              size={20} 
+              color={item.isPublishedToSquare ? "#10b981" : "#374151"} 
+              strokeWidth={1.5} 
+            />
           </TouchableOpacity>
         </View>
 
@@ -611,5 +618,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  actionButtonPublished: {
+    backgroundColor: '#ecfdf5',
   },
 });
