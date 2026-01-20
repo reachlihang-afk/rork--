@@ -31,7 +31,7 @@ export default function HistoryScreen() {
   const insets = useSafeAreaInsets();
   const { isLoggedIn, user } = useAuth();
   const { showAlert } = useAlert();
-  const { publishPost, deletePost, posts } = useSquare();
+  const { publishPost, deletePostByOutfitChangeId, posts } = useSquare();
   
   const { outfitChangeHistory, deleteOutfitChange, markAsPublished } = useVerification();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -111,6 +111,10 @@ export default function HistoryScreen() {
 
   // 分享到广场或撤回分享
   const handleShare = async (item: any) => {
+    console.log('[handleShare] item:', item.id, 'isPublishedToSquare:', item.isPublishedToSquare);
+    console.log('[handleShare] Current posts count:', posts.length);
+    console.log('[handleShare] Posts with outfitChangeId:', posts.filter(p => p.outfitChangeId).map(p => ({ id: p.id, outfitChangeId: p.outfitChangeId, userId: p.userId })));
+    
     if (!user) {
       showAlert({
         type: 'error',
@@ -132,11 +136,10 @@ export default function HistoryScreen() {
         onConfirm: async () => {
           setSharingId(item.id);
           try {
-            // 找到对应的广场帖子
-            const squarePost = posts.find(p => p.outfitChangeId === item.id);
-            if (squarePost) {
-              await deletePost(squarePost.id);
-            }
+            // 使用更可靠的方法删除帖子（直接在 SquareContext 中查找最新状态）
+            const deleted = await deletePostByOutfitChangeId(item.id, user.userId);
+            console.log('[Withdraw] Delete result:', deleted);
+            
             await markAsPublished(item.id, false);
             showAlert({
               type: 'success',
@@ -165,7 +168,8 @@ export default function HistoryScreen() {
         onConfirm: async () => {
           setSharingId(item.id);
           try {
-            await publishPost({
+            console.log('[Share] Publishing post with outfitChangeId:', item.id, 'userId:', user.userId);
+            const newPostId = await publishPost({
               userId: user.userId,
               userNickname: user.nickname || t('common.anonymousUser'),
               userAvatar: user.avatar,
@@ -177,6 +181,7 @@ export default function HistoryScreen() {
               showOriginal: false, // 默认不展示原图保护隐私
               description: '',
             });
+            console.log('[Share] Post published with id:', newPostId);
             await markAsPublished(item.id, true);
             showAlert({
               type: 'success',

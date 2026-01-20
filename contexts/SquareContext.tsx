@@ -255,6 +255,32 @@ export const [SquareProvider, useSquare] = createContextHook(() => {
     }
   }, [posts]);
 
+  // 根据 outfitChangeId 和 userId 删除帖子（更可靠，避免闭包问题）
+  const deletePostByOutfitChangeId = useCallback(async (outfitChangeId: string, userId: string): Promise<boolean> => {
+    console.log('[deletePostByOutfitChangeId] Looking for:', outfitChangeId, userId);
+    console.log('[deletePostByOutfitChangeId] Current posts:', posts.length);
+    
+    const postToDelete = posts.find(p => p.outfitChangeId === outfitChangeId && p.userId === userId);
+    
+    if (postToDelete) {
+      console.log('[deletePostByOutfitChangeId] Found post:', postToDelete.id);
+      const updated = posts.filter(p => p.id !== postToDelete.id);
+      setPosts(updated);
+      try {
+        const stringified = JSON.stringify(updated);
+        await AsyncStorage.setItem(STORAGE_KEY, stringified);
+        console.log('[deletePostByOutfitChangeId] Post deleted successfully');
+        return true;
+      } catch {
+        console.log('Failed to delete post');
+        return false;
+      }
+    } else {
+      console.log('[deletePostByOutfitChangeId] Post not found');
+      return false;
+    }
+  }, [posts]);
+
   const likePost = useCallback(async (postId: string, userId: string) => {
     const updated = posts.map(post => {
       if (post.id === postId) {
@@ -451,6 +477,7 @@ export const [SquareProvider, useSquare] = createContextHook(() => {
     updatePostDescription,
     isPublished,
     deletePost,
+    deletePostByOutfitChangeId,
     likePost,
     addComment,
     deleteComment,
