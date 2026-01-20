@@ -40,7 +40,7 @@ const COMMON_PROMPT_PREFIX = 'IMPORTANT: Keep face, facial expression, hairstyle
 const TEMPLATES = [
   { id: 'random', name: '随机装', nameEn: 'Random', icon: '🎲', prompt: 'RANDOM_PLACEHOLDER' },
   { id: 'jennie', name: 'Jennie同款', nameEn: 'Jennie', icon: '💖', prompt: 'JENNIE_PLACEHOLDER' },
-  { id: 'bikini', name: '比基尼', nameEn: 'Bikini', icon: '👙', prompt: 'bikini swimsuit' },
+  { id: 'bikini', name: '泳装', nameEn: 'Swimwear', icon: '👙', prompt: 'elegant beach swimwear, summer beach outfit, fashionable beachwear' },
   { id: 'formal', name: '正装', nameEn: 'Formal', icon: '👔', prompt: 'formal business attire' },
   { id: 'sport', name: '运动装', nameEn: 'Sports', icon: '🏃', prompt: 'athletic sportswear' },
   { id: 'fairytale-princess', name: '童话公主装', nameEn: 'Princess', icon: '👸', prompt: 'fairytale princess dress' },
@@ -901,6 +901,10 @@ FINAL RESULT REQUIREMENTS:
             ? '建议：\n1. 只上传1张服饰图片试试\n2. 确保原始照片不要太大\n3. 选择文件大小较小的图片'
             : '建议：\n1. 重新选择更小的照片\n2. 使用裁剪功能减小图片尺寸\n3. 选择文件大小较小的图片';
           throw new Error(`图片数据过大，服务器拒绝处理\n\n${suggestion}`);
+        }
+        
+        if (response.status === 422) {
+          throw new Error('该风格暂时无法处理，请尝试其他风格模板或更换照片');
         }
         
         throw new Error(`生成失败: HTTP ${response.status}`);
