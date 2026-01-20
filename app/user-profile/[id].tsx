@@ -14,7 +14,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, MoreHorizontal, User, MessageCircle } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
+import { useFriends } from '@/contexts/FriendsContext';
 import { useSquare, SquarePost } from '@/contexts/SquareContext';
+import { useAlert } from '@/contexts/AlertContext';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -36,8 +38,10 @@ export default function UserProfileScreen() {
   const { t } = useTranslation();
   const { id: userId } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
-  const { user, isFollowing, followUser, unfollowUser } = useAuth();
+  const { user } = useAuth();
+  const { isFollowing, followUser, unfollowUser } = useFriends();
   const { posts } = useSquare();
+  const { showAlert } = useAlert();
   
   const [profileUser, setProfileUser] = useState<ProfileUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -94,11 +98,26 @@ export default function UserProfileScreen() {
     try {
       if (isFollowing(profileUser.userId)) {
         await unfollowUser(profileUser.userId);
+        showAlert({
+          type: 'success',
+          title: t('common.success'),
+          message: t('square.unfollowed'),
+        });
       } else {
-        await followUser(profileUser.userId);
+        await followUser(profileUser.userId, profileUser.nickname, profileUser.avatar);
+        showAlert({
+          type: 'success',
+          title: t('common.success'),
+          message: t('square.followed'),
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Follow toggle error:', error);
+      showAlert({
+        type: 'error',
+        title: t('common.error'),
+        message: error.message || t('common.operationFailed'),
+      });
     } finally {
       setIsFollowLoading(false);
     }

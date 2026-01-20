@@ -159,6 +159,8 @@ export default function SquareScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'follow' | 'explore'>('explore');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [activePopup, setActivePopup] = useState<string | null>(null);
   const [commentingPost, setCommentingPost] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
@@ -173,6 +175,7 @@ export default function SquareScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const postRefs = useRef<Map<string, View>>(new Map());
   const inputRef = useRef<TextInput>(null);
+  const searchInputRef = useRef<TextInput>(null);
   const insets = useSafeAreaInsets();
 
   // 计算帖子的综合分数（热度 + 时间权重）
@@ -183,22 +186,44 @@ export default function SquareScreen() {
     return hotScore * timeWeight + timeWeight * 10; // 新帖子有基础分
   }, []);
 
-  // 根据activeTab过滤和排序帖子
+  // 根据activeTab和搜索关键词过滤和排序帖子
   const filteredAndSortedPosts = useMemo(() => {
     let filtered: SquarePost[];
     
+    // 先根据Tab过滤
     if (activeTab === 'follow') {
       // 关注Tab：只显示已关注用户的帖子
       filtered = posts.filter(post => followingUserIds.includes(post.userId));
+    } else {
+      // 发现Tab：显示所有帖子
+      filtered = [...posts];
+    }
+    
+    // 再根据搜索关键词过滤
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(post => {
+        // 搜索用户名
+        if (post.userNickname.toLowerCase().includes(query)) return true;
+        // 搜索描述
+        if (post.description?.toLowerCase().includes(query)) return true;
+        // 搜索模板名称
+        if (post.templateName?.toLowerCase().includes(query)) return true;
+        return false;
+      });
+    }
+    
+    // 排序
+    if (activeTab === 'follow') {
       // 按时间排序（最新优先）
       filtered.sort((a, b) => b.createdAt - a.createdAt);
     } else {
-      // 发现Tab：显示所有帖子，按综合分数排序
-      filtered = [...posts].sort((a, b) => calculateScore(b) - calculateScore(a));
+      // 按综合分数排序
+      filtered.sort((a, b) => calculateScore(b) - calculateScore(a));
     }
     
     return filtered;
-  }, [posts, activeTab, followingUserIds, calculateScore]);
+  }, [posts, activeTab, followingUserIds, calculateScore, searchQuery]);
 
   // 将帖子分为左右两列（瀑布流布局）
   const { leftColumn, rightColumn } = useMemo(() => {
@@ -641,34 +666,91 @@ export default function SquareScreen() {
   // 渲染顶部Tab导航
   const renderHeader = () => (
     <View style={pipStyles.header}>
-      <View style={pipStyles.tabsContainer}>
-        <TouchableOpacity
-          style={pipStyles.tabItem}
-          onPress={() => setActiveTab('follow')}
-        >
-          <Text style={[pipStyles.tabText, activeTab === 'follow' && pipStyles.tabTextActive]}>
-            {t('square.follow')}
-          </Text>
-          {activeTab === 'follow' && <View style={pipStyles.tabIndicator} />}
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={pipStyles.tabItem}
-          onPress={() => setActiveTab('explore')}
-        >
-          <Text style={[pipStyles.tabText, activeTab === 'explore' && pipStyles.tabTextActive]}>
-            {t('square.explore')}
-          </Text>
-          {activeTab === 'explore' && <View style={pipStyles.tabIndicator} />}
-        </TouchableOpacity>
-      </View>
-      <TouchableOpacity style={pipStyles.searchButton}>
-        <Search size={22} color="#1a1a1a" />
-      </TouchableOpacity>
+      {isSearching ? (
+        // 搜索模式
+        <View style={pipStyles.searchContainer}>
+          <View style={pipStyles.searchInputWrapper}>
+            <Search size={18} color="#9CA3AF" />
+            <TextInput
+              ref={searchInputRef}
+              style={pipStyles.searchInput}
+              placeholder={t('square.searchPlaceholder')}
+              placeholderTextColor="#9CA3AF"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoFocus
+              returnKeyType="search"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <X size={18} color="#9CA3AF" />
+              </TouchableOpacity>
+            )}
+          </View>
+          <TouchableOpacity 
+            style={pipStyles.cancelButton}
+            onPress={() => {
+              setIsSearching(false);
+              setSearchQuery('');
+            }}
+          >
+            <Text style={pipStyles.cancelButtonText}>{t('common.cancel')}</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        // 正常模式
+        <>
+          <View style={pipStyles.tabsContainer}>
+            <TouchableOpacity
+              style={pipStyles.tabItem}
+              onPress={() => setActiveTab('follow')}
+            >
+              <Text style={[pipStyles.tabText, activeTab === 'follow' && pipStyles.tabTextActive]}>
+                {t('square.follow')}
+              </Text>
+              {activeTab === 'follow' && <View style={pipStyles.tabIndicator} />}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={pipStyles.tabItem}
+              onPress={() => setActiveTab('explore')}
+            >
+              <Text style={[pipStyles.tabText, activeTab === 'explore' && pipStyles.tabTextActive]}>
+                {t('square.explore')}
+              </Text>
+              {activeTab === 'explore' && <View style={pipStyles.tabIndicator} />}
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity 
+            style={pipStyles.searchButton}
+            onPress={() => setIsSearching(true)}
+          >
+            <Search size={22} color="#1a1a1a" />
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
 
   // 渲染空状态
   const renderEmptyState = () => {
+    // 搜索无结果
+    if (searchQuery.trim()) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyIcon}>🔍</Text>
+          <Text style={styles.emptyTitle}>{t('square.noSearchResults')}</Text>
+          <Text style={styles.emptyText}>{t('square.noSearchResultsDesc')}</Text>
+          <TouchableOpacity 
+            style={styles.emptyButton}
+            onPress={() => setSearchQuery('')}
+          >
+            <Text style={styles.emptyButtonText}>{t('square.clearSearch')}</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    
+    // 关注Tab无内容
     if (activeTab === 'follow') {
       return (
         <View style={styles.emptyContainer}>
@@ -684,6 +766,8 @@ export default function SquareScreen() {
         </View>
       );
     }
+    
+    // 发现Tab无内容
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>{t('square.noPosts')}</Text>
@@ -2353,6 +2437,38 @@ const pipStyles = StyleSheet.create({
   },
   searchButton: {
     padding: 8,
+  },
+  // 搜索模式样式
+  searchContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  searchInputWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 40,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1a1a1a',
+    paddingVertical: 0,
+  },
+  cancelButton: {
+    paddingHorizontal: 4,
+    paddingVertical: 8,
+  },
+  cancelButtonText: {
+    fontSize: 15,
+    color: '#1a1a1a',
+    fontWeight: '500',
   },
   scrollView: {
     flex: 1,

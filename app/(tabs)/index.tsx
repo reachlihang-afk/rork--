@@ -169,13 +169,22 @@ export default function HomeScreen() {
           ) : (
             <View style={styles.emptyWorks}>
               <Text style={styles.emptyWorksIcon}>✨</Text>
-              <Text style={styles.emptyWorksText}>精选作品即将上线</Text>
-              <TouchableOpacity 
-                style={styles.tryButton}
-                onPress={() => router.push('/outfit-change' as any)}
-              >
-                <Text style={styles.tryButtonText}>立即体验换装</Text>
-              </TouchableOpacity>
+              <Text style={styles.emptyWorksTitle}>{t('home.featuredComingSoon')}</Text>
+              <Text style={styles.emptyWorksText}>{t('home.featuredComingSoonDesc')}</Text>
+              <View style={styles.emptyWorksActions}>
+                <TouchableOpacity 
+                  style={styles.tryButton}
+                  onPress={() => router.push('/outfit-change' as any)}
+                >
+                  <Text style={styles.tryButtonText}>{t('home.tryOutfitChange')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.exploreButton}
+                  onPress={() => router.push('/(tabs)/square' as any)}
+                >
+                  <Text style={styles.exploreButtonText}>{t('home.goToSquare')}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
         </View>
@@ -390,18 +399,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 48,
+    paddingHorizontal: 24,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
   },
   emptyWorksIcon: { fontSize: 48, marginBottom: 12 },
+  emptyWorksTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 8,
+  },
   emptyWorksText: {
     fontSize: 14,
     color: '#94A3B8',
-    marginBottom: 20,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  emptyWorksActions: {
+    flexDirection: 'row',
+    gap: 12,
   },
   tryButton: {
     backgroundColor: '#0F172A',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 24,
   },
@@ -409,5 +430,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  exploreButton: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  exploreButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#475569',
   },
 });
