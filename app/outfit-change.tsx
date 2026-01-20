@@ -1059,41 +1059,18 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
       
       // 保存到历史记录
       try {
-        // 直接使用原始URI和生成的图片URI保存历史记录
-        // 避免复杂的文件系统操作，在RORK等环境中可能不支持
         const historyOriginalImage = selectedTab === 'custom' && customImages.length > 0 
           ? customImages[0] 
           : userImage;
         
-        // 结果图片使用生成的base64 URI
-        const historyResultImage = generatedImageUri;
-        
-        console.log('[OutfitChange] Saving to history...');
-        console.log('[OutfitChange] - user.userId:', user?.userId);
-        console.log('[OutfitChange] - templateName:', templateName);
-        
-        const historyId = await addOutfitChangeHistory(
+        await addOutfitChangeHistory(
           historyOriginalImage,
-          historyResultImage,
+          generatedImageUri,
           selectedTab === 'template' ? selectedTemplate! : 'custom-outfit',
           templateName
         );
-        console.log('[OutfitChange] History saved successfully, id:', historyId);
-        
-        // 显示保存成功的提示（调试用，确认问题解决后可删除）
-        Alert.alert(
-          '✅ 保存成功',
-          `历史记录已保存\nID: ${historyId}\n用户: ${user?.userId}`,
-          [{ text: '确定' }]
-        );
-      } catch (historyError: any) {
-        console.error('[OutfitChange] Failed to save to history:', historyError);
-        // 显示保存失败的提示
-        Alert.alert(
-          '❌ 历史记录保存失败',
-          `错误: ${historyError?.message || '未知错误'}\n用户ID: ${user?.userId || '未登录'}`,
-          [{ text: '确定' }]
-        );
+      } catch (historyError) {
+        console.error('Failed to save to history:', historyError);
       }
       
     } catch (error: any) {

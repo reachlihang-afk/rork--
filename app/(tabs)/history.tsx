@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { ArrowRight, Download, Share2, Trash2 } from 'lucide-react-native';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -26,25 +26,11 @@ interface GroupedHistory {
 export default function HistoryScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn } = useAuth();
   const { showAlert } = useAlert();
   
   const { outfitChangeHistory, deleteOutfitChange } = useVerification();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
-
-  // 调试：打印历史记录状态
-  useEffect(() => {
-    console.log('[HistoryScreen] Render - isLoggedIn:', isLoggedIn);
-    console.log('[HistoryScreen] Render - userId:', user?.userId);
-    console.log('[HistoryScreen] Render - outfitChangeHistory count:', outfitChangeHistory.length);
-    if (outfitChangeHistory.length > 0) {
-      console.log('[HistoryScreen] First item:', {
-        id: outfitChangeHistory[0].id,
-        templateName: outfitChangeHistory[0].templateName,
-        createdAt: new Date(outfitChangeHistory[0].createdAt).toISOString(),
-      });
-    }
-  }, [isLoggedIn, user?.userId, outfitChangeHistory]);
 
   // 分组历史记录
   const groupedHistory: GroupedHistory = outfitChangeHistory.reduce(
@@ -304,21 +290,6 @@ export default function HistoryScreen() {
           <Text style={styles.emptyText}>
             {t('history.noOutfitChangeHistoryDesc')}
           </Text>
-          {/* 调试信息 - 可以在确认问题解决后删除 */}
-          <View style={styles.debugBox}>
-            <Text style={styles.debugText}>
-              调试信息：
-            </Text>
-            <Text style={styles.debugText}>
-              登录状态: {isLoggedIn ? '已登录' : '未登录'}
-            </Text>
-            <Text style={styles.debugText}>
-              用户ID: {user?.userId || '无'}
-            </Text>
-            <Text style={styles.debugText}>
-              历史记录数: {outfitChangeHistory.length}
-            </Text>
-          </View>
         </View>
       </View>
     );
@@ -411,19 +382,6 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     textAlign: 'center',
     lineHeight: 20,
-  },
-  debugBox: {
-    marginTop: 30,
-    padding: 16,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 12,
-    width: '100%',
-  },
-  debugText: {
-    fontSize: 12,
-    color: '#6b7280',
-    textAlign: 'left',
-    marginBottom: 4,
   },
   
   // Section
