@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { ArrowRight, Download, Share2, Trash2 } from 'lucide-react-native';
+import { ArrowRight, Download, Share2, Trash2, Undo2 } from 'lucide-react-native';
 import { useState, useCallback } from 'react';
 import { 
   StyleSheet, 
@@ -14,6 +14,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useVerification } from '@/contexts/VerificationContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSquare } from '@/contexts/SquareContext';
 import { useTranslation } from 'react-i18next';
 import { useAlert } from '@/contexts/AlertContext';
 import { saveToGallery } from '@/utils/share';
@@ -28,11 +29,13 @@ export default function HistoryScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const { showAlert } = useAlert();
+  const { publishPost, deletePost, posts } = useSquare();
   
-  const { outfitChangeHistory, deleteOutfitChange } = useVerification();
+  const { outfitChangeHistory, deleteOutfitChange, markAsPublished } = useVerification();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [sharingId, setSharingId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   // 下拉刷新
@@ -106,7 +109,97 @@ export default function HistoryScreen() {
     }
   };
 
-  const handleShare = (item: any) => {
+  // 分享到广场或撤回分享
+  const handleShare = async (item: any) => {
+    if (!user) {
+      showAlert({
+        type: 'error',
+        title: t('common.error'),
+        message: t('common.pleaseLogin'),
+      });
+      return;
+    }
+    
+    if (sharingId) return; // 防止重复操作
+    
+    if (item.isPublishedToSquare) {
+      // 已分享 - 显示撤回确认
+      showAlert({
+        type: 'confirm',
+        title: t('history.withdrawShare'),
+        message: t('history.withdrawShareConfirm'),
+        confirmText: t('common.confirm'),
+        onConfirm: async () => {
+          setSharingId(item.id);
+          try {
+            // 找到对应的广场帖子
+            const squarePost = posts.find(p => p.outfitChangeId === item.id);
+            if (squarePost) {
+              await deletePost(squarePost.id);
+            }
+            await markAsPublished(item.id, false);
+            showAlert({
+              type: 'success',
+              title: t('common.success'),
+              message: t('history.withdrawSuccess'),
+            });
+          } catch (error: any) {
+            console.error('Withdraw share error:', error);
+            showAlert({
+              type: 'error',
+              title: t('common.error'),
+              message: error.message || t('common.operationFailed'),
+            });
+          } finally {
+            setSharingId(null);
+          }
+        },
+      });
+    } else {
+      // 未分享 - 显示分享确认
+      showAlert({
+        type: 'confirm',
+        title: t('history.shareToSquare'),
+        message: t('history.shareToSquareConfirm'),
+        confirmText: t('common.share'),
+        onConfirm: async () => {
+          setSharingId(item.id);
+          try {
+            await publishPost({
+              userId: user.userId,
+              userNickname: user.nickname || t('common.anonymousUser'),
+              userAvatar: user.avatar,
+              postType: 'outfitChange',
+              outfitChangeId: item.id,
+              originalImageUri: item.originalImageUri,
+              resultImageUri: item.resultImageUri,
+              templateName: item.templateName,
+              showOriginal: false, // 默认不展示原图保护隐私
+              description: '',
+            });
+            await markAsPublished(item.id, true);
+            showAlert({
+              type: 'success',
+              title: t('common.success'),
+              message: t('history.shareSuccess'),
+            });
+          } catch (error: any) {
+            console.error('Share to square error:', error);
+            showAlert({
+              type: 'error',
+              title: t('common.error'),
+              message: error.message || t('common.operationFailed'),
+            });
+          } finally {
+            setSharingId(null);
+          }
+        },
+      });
+    }
+  };
+
+  // 查看详情
+  const handleViewDetail = (item: any) => {
     router.push(`/outfit-change-detail/${item.id}` as any);
   };
 
@@ -218,13 +311,22 @@ export default function HistoryScreen() {
               item.isPublishedToSquare && styles.actionButtonPublished
             ]}
             onPress={() => handleShare(item)}
+            disabled={sharingId === item.id}
             activeOpacity={0.7}
           >
-            <Share2 
-              size={20} 
-              color={item.isPublishedToSquare ? "#10b981" : "#374151"} 
-              strokeWidth={1.5} 
-            />
+            {item.isPublishedToSquare ? (
+              <Undo2 
+                size={20} 
+                color="#10b981"
+                strokeWidth={1.5} 
+              />
+            ) : (
+              <Share2 
+                size={20} 
+                color="#374151" 
+                strokeWidth={1.5} 
+              />
+            )}
           </TouchableOpacity>
         </View>
 

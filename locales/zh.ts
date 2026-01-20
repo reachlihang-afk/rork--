@@ -90,6 +90,12 @@ export default {
     new: '新',
     transformations: '次转换',
     noRecords: '暂无记录',
+    shareToSquare: '分享到广场',
+    shareToSquareConfirm: '确定要将这个换装作品分享到广场吗？',
+    shareSuccess: '分享成功',
+    withdrawShare: '撤回分享',
+    withdrawShareConfirm: '确定要从广场撤回这个作品吗？',
+    withdrawSuccess: '已撤回分享',
   },
   profile: {
     title: '我的',

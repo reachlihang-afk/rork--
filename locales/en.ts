@@ -90,6 +90,12 @@ export default {
     new: 'New',
     transformations: 'Transformations',
     noRecords: 'No Records',
+    shareToSquare: 'Share to Square',
+    shareToSquareConfirm: 'Share this outfit change to the Square?',
+    shareSuccess: 'Shared successfully',
+    withdrawShare: 'Withdraw Share',
+    withdrawShareConfirm: 'Withdraw this post from the Square?',
+    withdrawSuccess: 'Share withdrawn',
   },
   profile: {
     title: 'Profile',
