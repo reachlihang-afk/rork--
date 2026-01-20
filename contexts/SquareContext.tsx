@@ -20,6 +20,7 @@ export interface SquarePost {
   resultImageUri?: string;
   templateName?: string;
   customOutfitImages?: string[];  // 自定义穿搭模式下的参考服饰图片
+  showOriginal?: boolean;  // 是否展示原图对比，默认false保护隐私
   // 通用字段
   description?: string;
   createdAt: number;

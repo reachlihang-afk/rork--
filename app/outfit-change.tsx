@@ -19,7 +19,7 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { Camera, Sparkles, Lock, X, ArrowLeft, Download, Share2, Check } from 'lucide-react-native';
+import { Camera, Sparkles, Lock, X, ArrowLeft, Download, Share2, Check, Eye, Shield } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -494,6 +494,8 @@ export default function OutfitChangeNewScreen() {
   // 发布到广场状态
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [showOriginalInPost, setShowOriginalInPost] = useState(false); // 默认不展示原图
 
   const getWritableDirectory = () => {
     const fsAny = FileSystem as unknown as {
@@ -503,15 +505,23 @@ export default function OutfitChangeNewScreen() {
     return fsAny.documentDirectory ?? fsAny.cacheDirectory ?? '';
   };
 
-  // 发布到广场
-  const handlePublishToSquare = async () => {
+  // 打开发布弹窗
+  const handleOpenPublishModal = () => {
     if (!generatedResult || !user) {
       if (!user) {
         Alert.alert(t('common.tip'), t('square.loginRequired'));
       }
       return;
     }
+    setShowOriginalInPost(false); // 重置开关为默认关闭
+    setShowPublishModal(true);
+  };
 
+  // 确认发布到广场
+  const handleConfirmPublish = async () => {
+    if (!generatedResult || !user) return;
+
+    setShowPublishModal(false);
     setIsPublishing(true);
     try {
       await publishPost({
@@ -524,6 +534,7 @@ export default function OutfitChangeNewScreen() {
         resultImageUri: generatedResult.result,
         templateName: generatedResult.templateName,
         customOutfitImages: generatedResult.customOutfitImages,
+        showOriginal: showOriginalInPost, // 传递是否展示原图的选项
         pinnedCommentId: undefined,
       });
 
@@ -1652,7 +1663,7 @@ FINAL RESULT REQUIREMENTS:
                   styles.resultActionButton, 
                   isPublished && styles.resultActionButtonDisabled
                 ]}
-                onPress={handlePublishToSquare}
+                onPress={handleOpenPublishModal}
                 disabled={isPublishing || isPublished}
               >
                 {isPublishing ? (
@@ -1670,6 +1681,68 @@ FINAL RESULT REQUIREMENTS:
 
         <View style={{ height: 120 }} />
       </ScrollView>
+
+      {/* 发布确认弹窗 */}
+      <Modal
+        visible={showPublishModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowPublishModal(false)}
+      >
+        <View style={styles.publishModalOverlay}>
+          <View style={styles.publishModalContent}>
+            <Text style={styles.publishModalTitle}>{t('square.publishToSquare')}</Text>
+            
+            {/* 展示原图开关 */}
+            <View style={styles.publishOptionRow}>
+              <View style={styles.publishOptionInfo}>
+                <View style={styles.publishOptionHeader}>
+                  <Eye size={20} color="#1a1a1a" />
+                  <Text style={styles.publishOptionTitle}>{t('square.showOriginalOption')}</Text>
+                </View>
+                <Text style={styles.publishOptionDesc}>{t('square.showOriginalDesc')}</Text>
+              </View>
+              <TouchableOpacity
+                style={[
+                  styles.publishSwitch,
+                  showOriginalInPost && styles.publishSwitchActive
+                ]}
+                onPress={() => setShowOriginalInPost(!showOriginalInPost)}
+                activeOpacity={0.8}
+              >
+                <View style={[
+                  styles.publishSwitchThumb,
+                  showOriginalInPost && styles.publishSwitchThumbActive
+                ]} />
+              </TouchableOpacity>
+            </View>
+            
+            {/* 隐私提示 */}
+            <View style={styles.publishPrivacyHint}>
+              <Shield size={14} color="#9ca3af" />
+              <Text style={styles.publishPrivacyText}>
+                {showOriginalInPost ? t('square.originalWillShow') : t('square.originalWillHide')}
+              </Text>
+            </View>
+            
+            {/* 按钮 */}
+            <View style={styles.publishModalButtons}>
+              <TouchableOpacity
+                style={styles.publishCancelButton}
+                onPress={() => setShowPublishModal(false)}
+              >
+                <Text style={styles.publishCancelText}>{t('common.cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.publishConfirmButton}
+                onPress={handleConfirmPublish}
+              >
+                <Text style={styles.publishConfirmText}>{t('square.confirmPublish')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* 大图查看Modal */}
       <Modal
@@ -2611,5 +2684,123 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  
+  // 发布确认弹窗样式
+  publishModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  publishModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 340,
+  },
+  publishModalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  publishOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  publishOptionInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  publishOptionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  publishOptionTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  publishOptionDesc: {
+    fontSize: 12,
+    color: '#6b7280',
+    lineHeight: 16,
+  },
+  publishSwitch: {
+    width: 52,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#e5e7eb',
+    padding: 2,
+    justifyContent: 'center',
+  },
+  publishSwitchActive: {
+    backgroundColor: '#1a1a1a',
+  },
+  publishSwitchThumb: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  publishSwitchThumbActive: {
+    alignSelf: 'flex-end',
+  },
+  publishPrivacyHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  publishPrivacyText: {
+    fontSize: 12,
+    color: '#9ca3af',
+    flex: 1,
+  },
+  publishModalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  publishCancelButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#f3f4f6',
+    alignItems: 'center',
+  },
+  publishCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+  publishConfirmButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#1a1a1a',
+    alignItems: 'center',
+  },
+  publishConfirmText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
   },
 });

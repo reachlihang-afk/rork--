@@ -167,6 +167,7 @@ export default function SquareScreen() {
   const [selectedImage, setSelectedImage] = useState<{ uri: string; type: 'reference' | 'verified'; postId: string } | null>(null);
   const [expandedIntros, setExpandedIntros] = useState<Set<string>>(new Set());
   const [selectedPost, setSelectedPost] = useState<SquarePost | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
   const postRefs = useRef<Map<string, View>>(new Map());
   const inputRef = useRef<TextInput>(null);
@@ -473,7 +474,10 @@ export default function SquareScreen() {
         key={post.id}
         style={pipStyles.card}
         activeOpacity={0.95}
-        onPress={() => setSelectedPost(post)}
+        onPress={() => {
+          setCurrentImageIndex(0);
+          setSelectedPost(post);
+        }}
       >
         {/* 主图（变装结果） */}
         <View style={pipStyles.imageContainer}>
@@ -482,20 +486,6 @@ export default function SquareScreen() {
             style={pipStyles.mainImage}
             resizeMode="cover"
           />
-          
-          {/* 左上角原图缩略图 */}
-          {post.originalImageUri && (
-            <View style={pipStyles.beforeBadge}>
-              <Image
-                source={{ uri: post.originalImageUri }}
-                style={pipStyles.beforeImage}
-                resizeMode="cover"
-              />
-              <View style={pipStyles.beforeLabel}>
-                <Text style={pipStyles.beforeLabelText}>{t('square.before')}</Text>
-              </View>
-            </View>
-          )}
         </View>
         
         {/* 描述文字 */}
@@ -697,50 +687,81 @@ export default function SquareScreen() {
               showsVerticalScrollIndicator={false}
               bounces={true}
             >
-              {/* 主图区域 */}
-              <TouchableOpacity
-                activeOpacity={0.95}
-                onPress={() => {
-                  if (selectedPost.resultImageUri) {
-                    setSelectedImage({ uri: selectedPost.resultImageUri, type: 'verified', postId: selectedPost.id });
-                    setImageViewerVisible(true);
-                  }
-                }}
-              >
-                <Image
-                  source={{ uri: selectedPost.resultImageUri }}
-                  style={detailStyles.mainImage}
-                  resizeMode="cover"
-                />
-                
-                {/* 原图小缩略图 */}
-                {selectedPost.originalImageUri && (
+              {/* 主图区域 - 可左右滑动查看结果图和原图 */}
+              <View style={detailStyles.imageCarouselContainer}>
+                <ScrollView
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  bounces={false}
+                  onScroll={(e) => {
+                    const offsetX = e.nativeEvent.contentOffset.x;
+                    const width = e.nativeEvent.layoutMeasurement.width;
+                    const currentIndex = Math.round(offsetX / width);
+                    setCurrentImageIndex(currentIndex);
+                  }}
+                  scrollEventThrottle={16}
+                >
+                  {/* 结果图 */}
                   <TouchableOpacity
-                    style={detailStyles.beforeThumbnail}
-                    activeOpacity={0.9}
+                    activeOpacity={0.95}
                     onPress={() => {
-                      if (selectedPost.originalImageUri) {
-                        setSelectedImage({ uri: selectedPost.originalImageUri, type: 'reference', postId: selectedPost.id });
+                      if (selectedPost.resultImageUri) {
+                        setSelectedImage({ uri: selectedPost.resultImageUri, type: 'verified', postId: selectedPost.id });
                         setImageViewerVisible(true);
                       }
                     }}
+                    style={detailStyles.carouselImageWrapper}
                   >
                     <Image
-                      source={{ uri: selectedPost.originalImageUri }}
-                      style={detailStyles.beforeThumbnailImage}
+                      source={{ uri: selectedPost.resultImageUri }}
+                      style={detailStyles.mainImage}
                       resizeMode="cover"
                     />
-                    <View style={detailStyles.beforeThumbnailLabel}>
-                      <Text style={detailStyles.beforeThumbnailLabelText}>{t('square.before')}</Text>
+                    <View style={detailStyles.imageLabel}>
+                      <Text style={detailStyles.imageLabelText}>{t('square.after')}</Text>
                     </View>
                   </TouchableOpacity>
+                  
+                  {/* 原图 - 仅当用户允许展示时显示 */}
+                  {selectedPost.originalImageUri && selectedPost.showOriginal && (
+                    <TouchableOpacity
+                      activeOpacity={0.95}
+                      onPress={() => {
+                        if (selectedPost.originalImageUri) {
+                          setSelectedImage({ uri: selectedPost.originalImageUri, type: 'reference', postId: selectedPost.id });
+                          setImageViewerVisible(true);
+                        }
+                      }}
+                      style={detailStyles.carouselImageWrapper}
+                    >
+                      <Image
+                        source={{ uri: selectedPost.originalImageUri }}
+                        style={detailStyles.mainImage}
+                        resizeMode="cover"
+                      />
+                      <View style={detailStyles.imageLabel}>
+                        <Text style={detailStyles.imageLabelText}>{t('square.before')}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                </ScrollView>
+                
+                {/* 图片页码指示器 - 仅当有原图且允许展示时显示 */}
+                {selectedPost.originalImageUri && selectedPost.showOriginal && (
+                  <View style={detailStyles.paginationDots}>
+                    <View style={[detailStyles.dot, currentImageIndex === 0 && detailStyles.dotActive]} />
+                    <View style={[detailStyles.dot, currentImageIndex === 1 && detailStyles.dotActive]} />
+                  </View>
                 )}
                 
-                {/* 图片数量指示器 */}
-                <View style={detailStyles.imageCounter}>
-                  <Text style={detailStyles.imageCounterText}>1/1</Text>
-                </View>
-              </TouchableOpacity>
+                {/* 滑动提示 - 仅当有原图且允许展示时显示 */}
+                {selectedPost.originalImageUri && selectedPost.showOriginal && currentImageIndex === 0 && (
+                  <View style={detailStyles.swipeHint}>
+                    <Text style={detailStyles.swipeHintText}>← {t('square.swipeToSeeOriginal')}</Text>
+                  </View>
+                )}
+              </View>
               
               {/* 内容区域 */}
               <View style={detailStyles.contentSection}>
@@ -2449,11 +2470,70 @@ const detailStyles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  // 图片轮播容器
+  imageCarouselContainer: {
+    position: 'relative',
+  },
+  carouselImageWrapper: {
+    width: Dimensions.get('window').width,
+    position: 'relative',
+  },
   // 主图
   mainImage: {
-    width: '100%',
+    width: Dimensions.get('window').width,
     aspectRatio: 0.85,
     backgroundColor: '#f5f5f5',
+  },
+  // 图片标签（原图/结果）
+  imageLabel: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  imageLabelText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  // 分页指示点
+  paginationDots: {
+    position: 'absolute',
+    bottom: 16,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+  },
+  dotActive: {
+    backgroundColor: '#fff',
+    width: 24,
+  },
+  // 滑动提示
+  swipeHint: {
+    position: 'absolute',
+    bottom: 40,
+    right: 16,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  swipeHintText: {
+    fontSize: 11,
+    color: '#fff',
+    fontWeight: '500',
   },
   beforeThumbnail: {
     position: 'absolute',
