@@ -59,7 +59,6 @@ const TEMPLATES = [
   { id: 'outdoor', name: '户外装', nameEn: 'Outdoor', icon: '🏔️', prompt: 'outdoor adventure clothing' },
   { id: 'flight-attendant', name: '空姐装', nameEn: 'Flight', icon: '✈️', prompt: 'flight attendant uniform' },
   { id: 'god-of-wealth', name: '财神装', nameEn: 'Wealth God', icon: '💸', prompt: 'Chinese God of Wealth costume' },
-  { id: 'jennie', name: 'Jennie同款', nameEn: 'Jennie', icon: '💖', prompt: 'JENNIE_PLACEHOLDER' },
 ];
 
 // 随机风格库 - 完整版157种风格
@@ -350,63 +349,6 @@ const NEO_DIGITAL_STYLES = [
 function getRandomNeoDigitalStyle(): string {
   const randomIndex = Math.floor(Math.random() * NEO_DIGITAL_STYLES.length);
   return NEO_DIGITAL_STYLES[randomIndex];
-}
-
-// Jennie完整场景库 - 24种经典街拍/舞台场景（姿态+服饰+背景完整重现）
-const JENNIE_SCENE_STYLES = [
-  'Jennie Chanel airport scene: Incheon Airport departure hall with bright terminal lighting and glass windows, confident walking pose pulling designer luggage, luxury Chanel tweed jacket with mini skirt and pearl accessories, oversized sunglasses, candid paparazzi-style street photography with natural motion blur',
-  
-  'Jennie casual airport fashion: Modern airport terminal background with travelers and flight boards, relaxed leaning pose against glass wall, oversized blazer over crop top with high-waisted jeans, designer bag and sunglasses, effortless chic candid photography',
-  
-  'Jennie concert stage performance: Large concert stage with dramatic purple and pink lighting, dynamic performance pose with microphone in hand, crystal embellished bodysuit with thigh-high boots, confident stage presence, professional concert photography with smoke effects',
-  
-  'Jennie Coachella festival moment: Outdoor music festival with desert landscape and sunset sky, casual standing pose with arms raised, colorful bohemian crop top with denim shorts and flower crown, festival wristbands, warm golden hour photography',
-  
-  'Jennie pink Paris street: Parisian street with Haussmann buildings and cafe terraces, elegant walking pose on cobblestone, all-pink outfit with oversized blazer and mini dress, pastel aesthetic, soft European street photography',
-  
-  'Jennie leather night Seoul: Neon-lit Seoul street (Gangnam) at night with Korean signs glowing, confident standing pose against brick wall, black leather jacket with leather pants or skirt, urban night photography with vibrant city lights',
-  
-  'Jennie preppy campus look: Modern university campus with contemporary architecture, sitting casually on concrete steps, pleated mini skirt with cardigan and white sneakers, youthful student vibe, bright daylight photography',
-  
-  'Jennie tennis club elegance: Luxury tennis court with net and green surface, athletic pose holding tennis racket, white tennis dress or skirt with polo shirt, sporty yet fashionable, bright outdoor natural lighting',
-  
-  'Jennie CEO office power: Modern glass office building lobby with marble floors, powerful standing pose in front of windows, tailored oversized designer suit with crop top underneath, boss energy, professional architectural photography',
-  
-  'Jennie 90s retro cafe: Vintage themed cafe interior with neon signs and retro decor, casual sitting pose at small round table, vintage crop top with low-rise jeans, Y2K aesthetic, warm cozy indoor lighting with film grain',
-  
-  'Jennie Seoul street casual: Busy Gangnam street with Korean shops and pedestrians, candid walking pose with coffee cup, oversized hoodie with bike shorts and chunky sneakers, everyday K-pop star off-duty style, natural street photography',
-  
-  'Jennie red carpet glamour: Luxury event venue with red carpet and step-and-repeat backdrop, elegant standing pose for cameras, sparkling evening gown with jewelry, Hollywood premiere atmosphere, professional event photography with flashes',
-  
-  'Jennie denim downtown: Urban downtown area with modern high-rise buildings, leaning casually against luxury car, denim-on-denim look with jacket and jeans, cool street style, golden hour warm lighting',
-  
-  'Jennie minimal studio: Clean white photography studio with professional lighting equipment visible, high fashion editorial pose, classic black and white color-blocked outfit, timeless minimalist aesthetic, professional studio lighting setup',
-  
-  'Jennie poolside luxury: Infinity pool at luxury hotel with ocean view, confident standing pose by pool edge, designer crop top with high-waisted bottoms and sunglasses, summer vacation glamour, bright tropical sunlight',
-  
-  'Jennie Celine boutique: High-end Celine store interior with modern minimalist design, elegant shopping pose holding designer bag, sophisticated Celine pieces in neutral tones, luxury retail atmosphere, soft boutique lighting',
-  
-  'Jennie grunge warehouse: Urban warehouse with graffiti walls and industrial elements, rebellious leaning pose with attitude, ripped jeans with band tee and leather jacket with chains, underground music scene vibe, moody dramatic lighting',
-  
-  'Jennie garden photoshoot: Lush flower garden with blooming roses and greenery, graceful standing pose among flowers, romantic floral mini dress, feminine spring aesthetic, soft natural diffused sunlight',
-  
-  'Jennie gym athleisure: Modern luxury gym with mirrors and equipment, workout pose mid-exercise, designer sports bra with matching leggings, high-end athletic brand styling, bright gym fluorescent lighting',
-  
-  'Jennie runway power: Fashion show runway with audience and cameras, confident runway walk pose mid-stride, oversized blazer worn as dress with belt, powerful fashion statement, dramatic runway spotlights',
-  
-  'Jennie tropical beach: White sand beach with turquoise water and palm trees, relaxed beach pose with wind in hair, breezy summer dress with straw sun hat, vacation paradise vibes, warm sunset golden hour',
-  
-  'Jennie winter Seoul: Snowy Seoul street with Christmas lights and winter decorations, elegant walking pose in snow, luxury fur coat or long wool coat with designer boots and scarf, winter wonderland scene, soft snow-reflected lighting',
-  
-  'Jennie nightclub party: Upscale nightclub interior with colorful disco lights and DJ booth, dancing pose with energy, sparkly sequin mini dress or metallic top with leather pants, glamorous nightlife, dynamic colored club lighting',
-  
-  'Jennie K-fashion street: Trendy Seoul Garosu-gil street with boutiques and cafes, confident walking pose, layered Korean street fashion with oversized pieces and unique accessories, K-pop idol off-duty style, vibrant urban street photography',
-];
-
-// 随机选择一种Jennie完整场景
-function getRandomJennieScene(): string {
-  const randomIndex = Math.floor(Math.random() * JENNIE_SCENE_STYLES.length);
-  return JENNIE_SCENE_STYLES[randomIndex];
 }
 
 export default function OutfitChangeNewScreen() {
@@ -852,36 +794,6 @@ KEY VISUAL ELEMENTS:
 - SILHOUETTE: Architectural construction, exaggerated sculptural shoulders, asymmetric deconstruction, exoskeleton-like external framework details
 
 Create a cutting-edge cyberpunk meets high fashion look. The outfit should appear to glow and shimmer with futuristic technology embedded in the fabric. Professional sci-fi fashion editorial quality.`;
-      } else if (template.id === 'jennie') {
-        const jennieScene = getRandomJennieScene();
-        return `Transform this person into a Jennie from BLACKPINK inspired photoshoot. Use the reference style images to recreate the iconic Jennie aesthetic.
-
-WHAT TO KEEP FROM THE ORIGINAL PERSON:
-1. FACE IDENTITY: Keep the person's exact facial features, face structure, eye shape, nose, mouth shape, facial bone structure - this person's face MUST remain 100% recognizable
-2. BODY SHAPE: Keep the person's exact body proportions, height, build, and figure
-
-WHAT TO TRANSFORM TO JENNIE STYLE (based on reference images):
-1. FACIAL EXPRESSION: Transform to Jennie's signature expressions - confident, cool, slightly mysterious gaze, subtle smile or pout
-2. MAKEUP STYLE: Apply Jennie's iconic makeup - cat-eye liner, soft pink/nude lips, glowing dewy skin, subtle contour, natural yet glamorous
-3. HAIRSTYLE: Transform to Jennie's hairstyle shown in the reference style
-4. POSE & GESTURE: Transform to match the confident, fashionable pose from the scene description
-5. OUTFIT: Complete wardrobe transformation to Jennie's signature style from the scene
-6. ACCESSORIES: Add all accessories, jewelry, bags shown in the scene description
-7. BACKGROUND: Replace with the complete scene environment described
-8. LIGHTING & ATMOSPHERE: Match the professional K-pop idol photography lighting
-9. PHOTOGRAPHY STYLE: Professional fashion photography quality with natural depth
-10. NO WATERMARKS: Generate a completely clean image without any watermarks, text overlays, logos, "小红书" (Xiaohongshu/RED) marks, or any branding elements
-
-SCENE TO RECREATE:
-${jennieScene}
-
-FINAL RESULT REQUIREMENTS:
-- The person's face should be instantly recognizable as the original person
-- The body proportions should match the original person exactly  
-- Everything else (expression, styling, pose, clothes, background) should look like a professional Jennie-inspired photoshoot
-- The image should feel like this person was professionally styled and photographed in Jennie's iconic fashion aesthetic
-- Photo-realistic quality with natural lighting and authentic K-pop idol photography feel
-- Completely clean output with NO watermarks, text, or logos of any kind`;
       } else {
         return COMMON_PROMPT_PREFIX + `Change the outfit to ${template.prompt}`;
       }

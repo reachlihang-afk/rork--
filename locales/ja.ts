@@ -468,7 +468,6 @@ export default {
       random: 'ランダムスタイル',
       frontier: '最先端ファッション',
       'neo-digital': 'ネオデジタル',
-      jennie: 'ジェニースタイル',
       bikini: '水着',
       formal: 'フォーマル',
       'fairytale-princess': 'おとぎ話のプリンセス',
