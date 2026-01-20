@@ -731,9 +731,9 @@ export default function OutfitChangeNewScreen() {
         // 强制压缩所有图片以避免413错误
         if (compress) {
           console.log('[convertToBase64] Compressing image...');
-          // 极度激进的压缩参数以确保请求体不会太大
-          const maxWidth = isMainImage ? 480 : 360;
-          const quality = isMainImage ? 0.45 : 0.35;
+          // 适度压缩参数：平衡清晰度和API成功率
+          const maxWidth = isMainImage ? 800 : 640;
+          const quality = isMainImage ? 0.7 : 0.6;
           blob = await compressImageWeb(blob, maxWidth, quality);
           console.log('[convertToBase64] After first compression:', blob.size, 'bytes');
         }
@@ -749,10 +749,10 @@ export default function OutfitChangeNewScreen() {
             // 如果base64数据仍然太大（>400KB），进行二次压缩
             if (compress && base64Data.length > 400000) {
               console.log('[convertToBase64] Data still too large (', sizeInKB, 'KB), applying aggressive secondary compression...');
-              // 重新压缩为更小的尺寸和更低质量
+              // 二次压缩：如果首次压缩后仍太大，进一步降低尺寸
               fetch(uri)
                 .then(res => res.blob())
-                .then(newBlob => compressImageWeb(newBlob, isMainImage ? 360 : 280, 0.25))
+                .then(newBlob => compressImageWeb(newBlob, isMainImage ? 640 : 480, 0.5))
                 .then(finalBlob => {
                   const finalReader = new FileReader();
                   finalReader.onloadend = () => {
