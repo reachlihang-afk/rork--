@@ -71,7 +71,7 @@ export default function HomeScreen() {
                 )}
               </View>
               <Text style={styles.workUserName} numberOfLines={1}>
-                {work.userNickname || '用户'}
+                {work.userNickname || t('common.anonymousUser')}
               </Text>
             </View>
             <View style={styles.workStats}>
@@ -145,15 +145,15 @@ export default function HomeScreen() {
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* 精选效果 - 瀑布流 */}
+        {/* Featured Effects - Waterfall */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleRow}>
               <Sparkles size={18} color="#f59e0b" strokeWidth={2.5} />
-              <Text style={styles.sectionTitle}>精选效果</Text>
+              <Text style={styles.sectionTitle}>{t('home.featuredEffects')}</Text>
             </View>
             <TouchableOpacity onPress={() => router.push('/(tabs)/square' as any)}>
-              <Text style={styles.viewAllLink}>查看更多</Text>
+              <Text style={styles.viewAllLink}>{t('home.viewAll')}</Text>
             </TouchableOpacity>
           </View>
 

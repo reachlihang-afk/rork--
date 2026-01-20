@@ -231,7 +231,7 @@ export default function RechargeScreen() {
                         {pkg.coins.toLocaleString()}
                       </Text>
                       <Text style={styles.coinsLabel}>
-                        钻石
+                        {t('recharge.diamonds')}
                       </Text>
                       {pkg.bonus && (
                         <Text style={styles.bonusText}>

@@ -203,7 +203,7 @@ export default function ProfileScreen() {
                 <Text style={styles.diamondIcon}>💎</Text>
               </View>
               <View>
-                <Text style={styles.coinLabel}>我的钻石</Text>
+                <Text style={styles.coinLabel}>{t('profile.myDiamonds')}</Text>
                 <Text style={styles.coinBalance}>{coinBalance}</Text>
               </View>
             </View>

@@ -1,4 +1,9 @@
 export default {
+  notFound: {
+    title: 'ページが見つかりません',
+    pageNotExist: 'このページは存在しません',
+    backToHome: 'ホームに戻る',
+  },
   common: {
     back: '戻る',
     confirm: '確認',
@@ -13,6 +18,11 @@ export default {
     error: 'エラー',
     tip: 'ヒント',
     or: 'または',
+    notice: 'お知らせ',
+    pleaseLogin: 'ログインしてください',
+    share: '共有',
+    anonymousUser: 'ユーザー',
+    operationFailed: '操作に失敗しました',
   },
   home: {
     title: 'スタイルスター',
@@ -34,6 +44,7 @@ export default {
     featuredComingSoonDesc: '今すぐ着せ替えを体験して、最初のクリエイターになろう！',
     tryOutfitChange: '今すぐ体験',
     goToSquare: '広場を見る',
+    featuredEffects: '注目の効果',
     manageReferencePhotos: '参照写真を管理',
     uploadReferencePhotos: '参照写真をアップロード',
     uploadClearPhoto: '鮮明な参照写真をアップロード',
@@ -142,6 +153,10 @@ export default {
     profileUpdated: 'プロフィールを更新しました',
     updateFailed: '更新に失敗しました。もう一度お試しください',
     cameraPermissionRequired: 'カメラの権限が必要です',
+    imageSelectFailed: '画像の選択に失敗しました',
+    nicknameTaken: 'ニックネームは使用されています',
+    nicknameTakenDesc: 'このニックネームは既に使用されています。別のニックネームを選んでください',
+    myDiamonds: 'マイダイヤモンド',
     addBio: '自己紹介を追加',
     bio: '自己紹介',
     bioPlaceholder: '自己紹介を入力...',
@@ -276,6 +291,7 @@ export default {
     title: 'コインをチャージ',
     currentBalance: '現在の残高',
     coins: 'コイン',
+    diamonds: 'ダイヤモンド',
     selectAmount: '金額を選択',
     customAmount: 'カスタム金額',
     pay: '支払う',
@@ -490,6 +506,8 @@ export default {
     mediaLibraryPermission: 'メディアライブラリへのアクセス許可が必要です',
     showMore: 'もっと見る',
     showLess: '閉じる',
+    useThisStyle: 'このスタイルを使用',
+    selectStyleFirst: 'スタイルを選択してください',
     templates: {
       random: 'ランダムスタイル',
       frontier: '最先端ファッション',

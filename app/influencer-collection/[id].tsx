@@ -216,7 +216,7 @@ export default function InfluencerCollectionScreen() {
 
   const handleUseStyle = () => {
     if (!selectedLookId) {
-      Alert.alert(t('common.tip'), '请先选择一个造型');
+      Alert.alert(t('common.tip'), t('outfitChange.selectStyleFirst'));
       return;
     }
 
@@ -406,7 +406,7 @@ export default function InfluencerCollectionScreen() {
             <Text style={styles.useStyleButtonText}>
               {selectedLookId 
                 ? t('outfitChange.useThisStyle')
-                : '请选择一个造型'
+                : t('outfitChange.selectStyleFirst')
               }
             </Text>
           </LinearGradient>

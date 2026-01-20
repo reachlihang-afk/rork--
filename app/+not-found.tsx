@@ -1,14 +1,17 @@
 import { Link, Stack } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 export default function NotFoundScreen() {
+  const { t } = useTranslation();
+  
   return (
     <>
-      <Stack.Screen options={{ title: '页面未找到' }} />
+      <Stack.Screen options={{ title: t('notFound.title') }} />
       <View style={styles.container}>
-        <Text style={styles.title}>页面不存在</Text>
+        <Text style={styles.title}>{t('notFound.pageNotExist')}</Text>
         <Link href="/" style={styles.link}>
-          <Text style={styles.linkText}>返回首页</Text>
+          <Text style={styles.linkText}>{t('notFound.backToHome')}</Text>
         </Link>
       </View>
     </>

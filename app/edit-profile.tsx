@@ -40,7 +40,7 @@ export default function EditProfileScreen() {
       if (Platform.OS !== 'web') {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-          Alert.alert('提示', '需要相册访问权限');
+          Alert.alert(t('common.notice'), t('profile.cameraPermissionRequired'));
           return;
         }
       }
@@ -76,9 +76,9 @@ export default function EditProfileScreen() {
       }
     } catch (error) {
       console.error('[EditProfile] Pick image error:', error);
-      Alert.alert('错误', '选择图片失败');
+      Alert.alert(t('common.error'), t('profile.imageSelectFailed'));
     }
-  }, []);
+  }, [t]);
 
   const handleNicknameChange = useCallback((text: string) => {
     console.log('[EditProfile] Nickname changing to:', text);
@@ -117,7 +117,7 @@ export default function EditProfileScreen() {
     const trimmedNickname = nickname.trim();
 
     if (!trimmedNickname) {
-      Alert.alert('提示', '请输入昵称');
+      Alert.alert(t('common.notice'), t('profile.nicknameRequired'));
       return;
     }
 
@@ -135,9 +135,9 @@ export default function EditProfileScreen() {
     } catch (error: any) {
       console.error('[EditProfile] Save error:', error);
       if (error.message === 'NICKNAME_TAKEN') {
-        Alert.alert('昵称已被使用', '该昵称已被其他用户使用，请重新设置昵称');
+        Alert.alert(t('profile.nicknameTaken'), t('profile.nicknameTakenDesc'));
       } else {
-        Alert.alert('错误', '更新失败，请重试');
+        Alert.alert(t('common.error'), t('profile.updateFailed'));
       }
     } finally {
       setIsSubmitting(false);
@@ -152,15 +152,15 @@ export default function EditProfileScreen() {
         <SafeAreaView style={styles.safeArea} edges={['top']}>
           <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#1a1a1a" />
-          <Text style={styles.loadingText}>加载中...</Text>
+          <Text style={styles.loadingText}>{t('common.loading')}</Text>
           </View>
         </SafeAreaView>
       ) : !user ? (
         <SafeAreaView style={styles.safeArea} edges={['top']}>
           <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>请先登录</Text>
+          <Text style={styles.loadingText}>{t('common.pleaseLogin')}</Text>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>返回</Text>
+            <Text style={styles.backButtonText}>{t('common.back')}</Text>
           </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -204,7 +204,7 @@ export default function EditProfileScreen() {
                 <Camera size={14} color="#fff" />
               </View>
             </TouchableOpacity>
-            <Text style={styles.avatarHint}>点击更换头像</Text>
+            <Text style={styles.avatarHint}>{t('profile.tapToChangeAvatar')}</Text>
           </View>
 
           <View style={styles.inputGroup}>
@@ -284,7 +284,7 @@ export default function EditProfileScreen() {
               ) : (
                 <>
                   <Check size={18} color="#fff" />
-                  <Text style={styles.saveButtonText}>保存</Text>
+                  <Text style={styles.saveButtonText}>{t('common.save')}</Text>
                 </>
               )}
             </TouchableOpacity>

@@ -1,4 +1,9 @@
 export default {
+  notFound: {
+    title: '페이지를 찾을 수 없습니다',
+    pageNotExist: '이 페이지는 존재하지 않습니다',
+    backToHome: '홈으로 돌아가기',
+  },
   common: {
     back: '뒤로',
     confirm: '확인',
@@ -13,6 +18,11 @@ export default {
     error: '오류',
     tip: '팁',
     or: '또는',
+    notice: '알림',
+    pleaseLogin: '먼저 로그인해주세요',
+    share: '공유',
+    anonymousUser: '사용자',
+    operationFailed: '작업 실패',
   },
   home: {
     title: '스타일 스타',
@@ -34,6 +44,7 @@ export default {
     featuredComingSoonDesc: '지금 바로 착장을 체험하고 첫 번째 크리에이터가 되세요!',
     tryOutfitChange: '지금 체험',
     goToSquare: '광장 구경하기',
+    featuredEffects: '추천 효과',
     manageReferencePhotos: '참조 사진 관리',
     uploadReferencePhotos: '참조 사진 업로드',
     uploadClearPhoto: '선명한 참조 사진을 업로드하세요',
@@ -142,6 +153,10 @@ export default {
     profileUpdated: '프로필이 업데이트되었습니다',
     updateFailed: '업데이트 실패, 다시 시도하세요',
     cameraPermissionRequired: '카메라 권한이 필요합니다',
+    imageSelectFailed: '이미지 선택 실패',
+    nicknameTaken: '닉네임이 사용 중입니다',
+    nicknameTakenDesc: '이 닉네임은 이미 사용 중입니다. 다른 닉네임을 선택하세요',
+    myDiamonds: '내 다이아몬드',
     addBio: '자기소개 추가',
     bio: '자기소개',
     bioPlaceholder: '자기소개를 입력하세요...',
@@ -276,6 +291,7 @@ export default {
     title: '코인 충전',
     currentBalance: '현재 잔액',
     coins: '코인',
+    diamonds: '다이아몬드',
     selectAmount: '금액 선택',
     customAmount: '사용자 정의 금액',
     pay: '결제',
@@ -490,6 +506,8 @@ export default {
     mediaLibraryPermission: '미디어 라이브러리 액세스 권한이 필요합니다',
     showMore: '더 보기',
     showLess: '접기',
+    useThisStyle: '이 스타일 사용',
+    selectStyleFirst: '먼저 스타일을 선택하세요',
     templates: {
       random: '랜덤 스타일',
       frontier: '트렌드 패션',
