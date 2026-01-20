@@ -524,8 +524,9 @@ export default {
     showLess: '收起',
     templates: {
       random: '随机装',
+      frontier: '前沿穿搭',
       jennie: 'Jennie同款',
-      bikini: '比基尼',
+      bikini: '泳装',
       formal: '正装',
       'fairytale-princess': '童话公主装',
       'starbucks-barista': '咖啡师-星巴克',

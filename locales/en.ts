@@ -520,8 +520,9 @@ export default {
     showLess: 'Show Less',
     templates: {
       random: 'Random Style',
+      frontier: 'Frontier Fashion',
       jennie: 'Jennie Style',
-      bikini: 'Bikini',
+      bikini: 'Swimwear',
       formal: 'Formal',
       'fairytale-princess': 'Fairytale Princess',
       'starbucks-barista': 'Starbucks Barista',

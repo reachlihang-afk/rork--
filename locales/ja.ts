@@ -459,8 +459,9 @@ export default {
     showLess: '閉じる',
     templates: {
       random: 'ランダムスタイル',
+      frontier: '最先端ファッション',
       jennie: 'ジェニースタイル',
-      bikini: 'ビキニ',
+      bikini: '水着',
       formal: 'フォーマル',
       'fairytale-princess': 'おとぎ話のプリンセス',
       'starbucks-barista': 'スターバックス・バリスタ',

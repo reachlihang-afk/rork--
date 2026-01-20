@@ -36,9 +36,10 @@ type TabType = 'template' | 'custom' | 'pro';
 // AI Prompt前缀
 const COMMON_PROMPT_PREFIX = 'IMPORTANT: Keep face, facial expression, hairstyle, pose, and photo framing EXACTLY as in original. Only change clothing in the EXACT visible areas. If only partial clothing is visible, apply only to that partial area. Do NOT extend or complete the image. ';
 
-// 20个精选模板
+// 21个精选模板（含前沿穿搭）
 const TEMPLATES = [
   { id: 'random', name: '随机装', nameEn: 'Random', icon: '🎲', prompt: 'RANDOM_PLACEHOLDER' },
+  { id: 'frontier', name: '前沿穿搭', nameEn: 'Frontier', icon: '✨', prompt: 'FRONTIER_PLACEHOLDER' },
   { id: 'jennie', name: 'Jennie同款', nameEn: 'Jennie', icon: '💖', prompt: 'JENNIE_PLACEHOLDER' },
   { id: 'bikini', name: '泳装', nameEn: 'Swimwear', icon: '👙', prompt: 'elegant beach swimwear, summer beach outfit, fashionable beachwear' },
   { id: 'formal', name: '正装', nameEn: 'Formal', icon: '👔', prompt: 'formal business attire' },
@@ -183,6 +184,134 @@ const RANDOM_OUTFIT_STYLES = [
 function getRandomOutfitStyle(): string {
   const randomIndex = Math.floor(Math.random() * RANDOM_OUTFIT_STYLES.length);
   return RANDOM_OUTFIT_STYLES[randomIndex];
+}
+
+// ========== 2026前沿穿搭风格库 - 100种最前沿时尚趋势 ==========
+// 基于 WGSN、Vogue Runway、SSENSE、NET-A-PORTER 等前沿时尚网站的2026趋势预测
+const FRONTIER_FASHION_STYLES = [
+  // ===== A. 2026色彩趋势 (10种) =====
+  'Transformative Teal ensemble - deep teal blazer with matching wide-leg trousers, minimalist silver accessories, 2026 WGSN color of the year',
+  'Dusty Blue monochrome - powder blue silk blouse with dusty blue midi skirt, soft elegance, tonal dressing',
+  'Butter Yellow soft gradient - cream to yellow ombre knit dress, delicate gold jewelry, warm sunshine aesthetic',
+  'Electric Coral statement - bold coral structured dress with architectural shoulders, confident power dressing',
+  'Mocha Earth tones - rich brown cashmere coat over camel turtleneck, sophisticated neutral palette',
+  'Lavender Haze dreamy - lilac organza layered outfit with iridescent details, ethereal romantic style',
+  'Neon Volt accent - black tailored suit with neon yellow belt and accessories, bold contrast pop',
+  'Forest Moss green - olive linen jumpsuit with botanical embroidery, nature-inspired sustainable chic',
+  'Sunset Ombre dramatic - gradient dress from orange to deep magenta, flowing silhouette, artistic statement',
+  'Pewter Metallic shimmer - gunmetal satin dress with reflective finish, futuristic luxury evening wear',
+
+  // ===== B. 廓形与剪裁趋势 (15种) =====
+  'Balloon Pants silhouette - ultra-wide sculptural pants with fitted crop top, dramatic volume contrast',
+  'Hyper-Volume puff sleeves - oversized statement sleeves on structured bodice, architectural drama',
+  'Sculptural Asymmetric dress - one-shoulder gown with abstract draping, gallery-worthy fashion art',
+  'Puddle Hem pants - extra-long trouser pooling at ankles, relaxed tailoring with platform shoes',
+  'Cocoon Coat oversized - enveloping wool coat with soft rounded shoulders, effortless luxury',
+  'Micro Mini with maxi coat - contrast of ultra-short hemline with floor-length outerwear',
+  'Barrel Silhouette jacket - curved structured jacket cinched at waist, bold 3D shape',
+  'Dropped Waist revival - 1920s inspired low waistline with pleated skirt, vintage modernized',
+  'Cape Blazer hybrid - tailored jacket with flowing cape back, elegant movement',
+  'Bubble Hem cocktail dress - sculptural puffed hemline with fitted bodice, playful sophistication',
+  'Deconstructed Tailoring - asymmetric blazer with exposed seams, avant-garde reconstruction',
+  'Column Dress minimal - sleek floor-length sheath, ultra-minimal Greek goddess simplicity',
+  'Trapeze A-line modern - structured swing silhouette, 60s mod updated for 2026',
+  'Corseted Outerwear - blazer with visible corset boning, structure meets sensuality',
+  'Tiered Ruffles cascading - dramatic layered dress with romantic movement, red carpet worthy',
+
+  // ===== C. 材质与工艺趋势 (15种) =====
+  'Sheer Organza layers - transparent fabric layered over structured base, ethereal visibility',
+  'Liquid Metal satin - molten silver or gold fabric dress, high-shine liquid effect',
+  'Crinkled Tissue texture - intentionally wrinkled lightweight fabric, artistic imperfection',
+  '3D Floral appliqué - hand-sewn dimensional flowers on structured dress, couture craft',
+  'Laser-Cut precision - geometric cut-out patterns in leather or fabric, futuristic detail',
+  'Hand-Knit chunky - oversized artisanal cable knit sweater, slow fashion luxury',
+  'Feather Trim delicate - ostrich or marabou feather hem and cuffs, romantic glamour',
+  'Sequin Gradient ombre - sequins transitioning colors across garment, disco modernized',
+  'Sustainable Recycled couture - upcycled vintage fabrics remade into contemporary design',
+  'Pleated Issey Miyake style - architectural micro-pleating throughout, sculptural fabric',
+  'Velvet Burnout pattern - devore technique with sheer and velvet contrast, textured luxury',
+  'Patent Leather accent - high-gloss vinyl or leather details on minimal base',
+  'Faux Fur statement - ethical luxury fluffy texture in bold colors, cozy glamour',
+  'Woven Raffia natural - straw and natural fiber integrated into structured clothing',
+  'Holographic Iridescent - color-shifting fabrics catching light, futuristic fantasy',
+
+  // ===== D. 前沿街头风格 (15种) =====
+  'Quiet Luxury SSENSE - minimal cashmere, no logos, understated expensive elegance',
+  'Gorpcore elevated - technical outdoor gear styled with luxury accessories, function meets fashion',
+  'Blokecore sporty - oversized football jersey with tailored trousers, ironic sporty',
+  'Indie Sleaze revival - 2000s party girl: mini skirt, tank top, messy glamour returned',
+  'Mob Wife aesthetic - leopard print fur, oversized gold jewelry, bold confidence',
+  'Office Siren corporate - fitted pencil skirt, silk blouse unbuttoned, powerful sexy',
+  'Coquette feminine - bows, ribbons, lace, ultra-girly romantic soft aesthetic',
+  'Clean Girl polish - slicked bun, minimal jewelry, polished natural beauty style',
+  'Coastal Grandmother ease - linen pants, cashmere cardigan, seaside old money',
+  'Tomato Girl summer - red sundress, espadrilles, Mediterranean vacation energy',
+  'Eclectic Grandpa vintage - oversized cardigans, pleated trousers, cozy intellectual',
+  'Balletcore romantic - tulle skirt, wrap top, ballet flats, dancer-inspired grace',
+  'Tenniscore athletic - pleated mini skirt, polo shirt, sporty preppy fusion',
+  'Motorcycle Moto edge - leather jacket, boots, jeans, rebellious cool minimalist',
+  'Normcore upgraded - basic elevated with premium fabrics, intentionally ordinary chic',
+
+  // ===== E. 性别流动与中性风 (10种) =====
+  'Androgynous Power suit - oversized unisex blazer, wide trousers, gender-neutral tailoring',
+  'Fluid Silk set - unisex silk shirt and pants set, soft draping, no gender boundaries',
+  'Boyfriend Blazer oversized - borrowed-from-him proportions, relaxed shoulder, rolled sleeves',
+  'Gender-neutral Jumpsuit - utilitarian one-piece in neutral tones, universal design',
+  'Masc-Fem fusion - structured blazer over flowing skirt, masculine meets feminine',
+  'Unisex Streetwear layers - oversized hoodie, baggy pants, sneakers, universal urban',
+  'Soft Tailoring neutral - deconstructed suit in beige, relaxed gender-fluid elegance',
+  'Menswear for Her - pinstripe vest, wide trousers, oxford shoes, borrowed masculinity',
+  'Fluid Proportion play - cropped top with extra-wide pants, proportion experimentation',
+  'Neo-Dandy refined - waistcoat, high-waisted trousers, pocket square, modern dandy',
+
+  // ===== F. 复古融合趋势 (10种) =====
+  'Y2K Metallic revival - low-rise silver pants, butterfly top, early 2000s nostalgia updated',
+  '70s Disco Glam return - bell-bottom jumpsuit, platform heels, Saturday Night Fever energy',
+  '90s Minimalism reimagined - slip dress, thin straps, minimal jewelry, CK era updated',
+  '60s Mod geometric - shift dress with bold color blocks, Twiggy-inspired modern',
+  '80s Power Dressing now - strong shoulders, bold colors, executive glamour contemporary',
+  'Regencycore Bridgerton - empire waist gown, puff sleeves, romantic period drama style',
+  'Medieval Fantasy modern - corseted bodice, long sleeves, fantasy renaissance fusion',
+  'Victorian Goth romantic - high collar, lace details, dark romantic elegance',
+  'Art Deco 20s flapper - beaded fringe dress, headband, geometric patterns, jazz age',
+  'Space Age 60s futurism - white go-go boots, geometric dress, retro-future optimism',
+
+  // ===== G. 戏剧与高定感 (10种) =====
+  'Castlecore Medieval drama - velvet cape, crown jewelry, dramatic royalty aesthetic',
+  'Red Carpet sculptural - architectural gown with dramatic train, award-show worthy',
+  'Opera Glamour evening - full-length velvet with statement jewelry, theatrical elegance',
+  'Avant-Garde experimental - deconstructed asymmetric design, fashion as art statement',
+  'Couture Feathered gown - all-over feather dress, luxury craftsmanship, showstopper',
+  'Statement Shoulder drama - extreme padded or sculpted shoulders, power silhouette',
+  'Floor-Length Cape dramatic - flowing cape coat over minimal dress, regal presence',
+  'Crystal Embellished luxury - beaded and crystal detailed dress, sparkling opulence',
+  'Dramatic Train gown - dress with extended train, ceremonial fashion moment',
+  'Theatrical Ruffle explosion - layers of ruffles in gradient colors, maximalist romance',
+
+  // ===== H. 可持续时尚 (5种) =====
+  'Zero-Waste design - pattern-cut to eliminate waste, sustainable construction elegance',
+  'Upcycled Vintage remix - repurposed vintage pieces combined into contemporary design',
+  'Organic Natural fibers - hemp, organic cotton, linen blend, earth-conscious luxury',
+  'Carbon-Neutral fashion - sustainably produced with minimal environmental impact, conscious chic',
+  'Repair-Visible mending - Japanese Boro-inspired visible repairs as design feature',
+
+  // ===== I. 场景主题穿搭 (10种) =====
+  'Milan Fashion Week street - designer layering, bold accessories, photographed-worthy style',
+  'Copenhagen minimalist - Scandi design, clean lines, muted colors, effortless cool',
+  'Tokyo Harajuku experimental - bold color mixing, avant-garde layers, fearless creativity',
+  'Paris Left Bank intellectual - striped shirt, beret, cigarette pants, literary chic',
+  'New York Power Woman - sharp tailoring, heels, confident stride, Manhattan energy',
+  'London Punk-meets-Posh - tartan, leather, mixing high and low, British irreverence',
+  'Seoul K-Fashion blend - oversized layers, gender-neutral, trendy streetwear innovation',
+  'Los Angeles Laid-Back luxe - relaxed fits, premium basics, California ease with wealth',
+  'Berlin Techno minimal - all black, functional fashion, underground cool aesthetic',
+  'Sydney Beach-to-Bar transition - resort wear that works for cocktails, effortless versatility',
+];
+
+// 随机选择一种前沿风格的函数
+function getRandomFrontierStyle(): string {
+  const randomIndex = Math.floor(Math.random() * FRONTIER_FASHION_STYLES.length);
+  return FRONTIER_FASHION_STYLES[randomIndex];
 }
 
 // Jennie完整场景库 - 24种经典街拍/舞台场景（姿态+服饰+背景完整重现）
@@ -661,6 +790,9 @@ export default function OutfitChangeNewScreen() {
       if (template.id === 'random') {
         const style = getRandomOutfitStyle();
         return COMMON_PROMPT_PREFIX + `Change the outfit to: ${style}`;
+      } else if (template.id === 'frontier') {
+        const frontierStyle = getRandomFrontierStyle();
+        return COMMON_PROMPT_PREFIX + `Transform into cutting-edge 2026 fashion trend. Style: ${frontierStyle}. Create a high-fashion editorial look with professional styling, modern silhouettes, and trend-forward aesthetic. The result should look like it belongs in Vogue or SSENSE editorial.`;
       } else if (template.id === 'jennie') {
         const jennieScene = getRandomJennieScene();
         return `Transform this person into a Jennie from BLACKPINK inspired photoshoot. Use the reference style images to recreate the iconic Jennie aesthetic.
