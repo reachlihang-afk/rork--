@@ -79,24 +79,14 @@ export const [VerificationProvider, useVerification] = createContextHook(() => {
       allowSquarePublish,
     };
     
-    // 限制历史记录数量为3条，防止存储溢出
-    const updated = [historyItem, ...outfitChangeHistory].slice(0, 3);
+    // 添加新记录到历史列表
+    const updated = [historyItem, ...outfitChangeHistory];
     setOutfitChangeHistory(updated);
     
     try {
       await AsyncStorage.setItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY, JSON.stringify(updated));
     } catch (error) {
       console.error('Failed to save history:', error);
-      // 如果保存失败，只保留最新的1条记录
-      const minimal = [historyItem];
-      setOutfitChangeHistory(minimal);
-      try {
-        await AsyncStorage.setItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY, JSON.stringify(minimal));
-      } catch (minimalError) {
-        console.error('Even minimal save failed:', minimalError);
-        setOutfitChangeHistory([]);
-        await AsyncStorage.removeItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY);
-      }
     }
     
     return historyItem.id;

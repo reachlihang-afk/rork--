@@ -1,16 +1,17 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { ArrowRight, Download, Share2, Trash2 } from 'lucide-react-native';
-import { useState } from 'react';
+import { ArrowLeft, ArrowRight, Download, Share2, Trash2 } from 'lucide-react-native';
+import { useState, useCallback } from 'react';
 import { 
   StyleSheet, 
   Text, 
   View, 
   ScrollView, 
   TouchableOpacity, 
-  Alert, 
-  Platform 
+  Platform,
+  RefreshControl
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useVerification } from '@/contexts/VerificationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -26,11 +27,22 @@ interface GroupedHistory {
 export default function HistoryScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { isLoggedIn } = useAuth();
   const { showAlert } = useAlert();
   
   const { outfitChangeHistory, deleteOutfitChange } = useVerification();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // 下拉刷新
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    // 模拟刷新延迟
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 500);
+  }, []);
 
   // 分组历史记录
   const groupedHistory: GroupedHistory = outfitChangeHistory.reduce(
@@ -40,15 +52,15 @@ export default function HistoryScreen() {
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
 
-      // 重置时间到0点用于比较日期
       const resetTime = (date: Date) => {
-        date.setHours(0, 0, 0, 0);
-        return date;
+        const newDate = new Date(date);
+        newDate.setHours(0, 0, 0, 0);
+        return newDate;
       };
 
-      const itemDay = resetTime(new Date(itemDate));
-      const todayDay = resetTime(new Date(today));
-      const yesterdayDay = resetTime(new Date(yesterday));
+      const itemDay = resetTime(itemDate);
+      const todayDay = resetTime(today);
+      const yesterdayDay = resetTime(yesterday);
 
       if (itemDay.getTime() === todayDay.getTime()) {
         acc.today.push(item);
@@ -95,7 +107,6 @@ export default function HistoryScreen() {
   };
 
   const handleShare = (item: any) => {
-    // 跳转到详情页，详情页有分享功能
     router.push(`/outfit-change-detail/${item.id}` as any);
   };
 
@@ -127,15 +138,12 @@ export default function HistoryScreen() {
   };
 
   const renderHistoryItem = (item: any) => (
-    <View 
-      key={item.id}
-      style={styles.historyCard}
-    >
+    <View key={item.id} style={styles.historyCard}>
       {/* Header */}
       <View style={styles.cardHeader}>
         <View style={styles.cardHeaderLeft}>
-          <Text style={styles.cardTitle}>
-            {item.templateName}
+          <Text style={styles.cardTitle} numberOfLines={1}>
+            {item.templateName || 'Outfit Change'}
           </Text>
           <Text style={styles.cardTime}>
             {formatTime(item.createdAt)}
@@ -143,9 +151,7 @@ export default function HistoryScreen() {
         </View>
         {isNew(item.createdAt) && (
           <View style={styles.newBadge}>
-            <Text style={styles.newBadgeText}>
-              {t('history.new').toUpperCase()}
-            </Text>
+            <Text style={styles.newBadgeText}>New</Text>
           </View>
         )}
       </View>
@@ -154,7 +160,7 @@ export default function HistoryScreen() {
       <TouchableOpacity
         style={styles.imagesContainer}
         onPress={() => router.push(`/outfit-change-detail/${item.id}` as any)}
-        activeOpacity={0.95}
+        activeOpacity={0.9}
       >
         {/* Original Image */}
         <View style={styles.imageWrapper}>
@@ -163,22 +169,18 @@ export default function HistoryScreen() {
               source={{ uri: item.originalImageUri }}
               style={styles.image}
               contentFit="cover"
+              placeholder={require('@/assets/images/icon.png')}
+              transition={200}
             />
             <View style={styles.imageLabel}>
-              <Text style={styles.imageLabelText}>
-                {t('history.original').toUpperCase()}
-              </Text>
+              <Text style={styles.imageLabelText}>ORIGINAL</Text>
             </View>
           </View>
         </View>
 
         {/* Arrow */}
         <View style={styles.arrowContainer}>
-          <ArrowRight 
-            size={14} 
-            color="#d1d5db" 
-            strokeWidth={2.5}
-          />
+          <ArrowRight size={16} color="#9ca3af" strokeWidth={2} />
         </View>
 
         {/* Result Image */}
@@ -188,11 +190,11 @@ export default function HistoryScreen() {
               source={{ uri: item.resultImageUri }}
               style={styles.image}
               contentFit="cover"
+              placeholder={require('@/assets/images/icon.png')}
+              transition={200}
             />
             <View style={[styles.imageLabel, styles.imageLabelResult]}>
-              <Text style={styles.imageLabelText}>
-                {t('history.result').toUpperCase()}
-              </Text>
+              <Text style={styles.imageLabelText}>RESULT</Text>
             </View>
           </View>
         </View>
@@ -205,35 +207,26 @@ export default function HistoryScreen() {
             style={styles.actionButton}
             onPress={() => handleDownload(item.id, item.resultImageUri)}
             disabled={downloadingId === item.id}
+            activeOpacity={0.7}
           >
-            <Download 
-              size={22} 
-              color="#111827" 
-              strokeWidth={2}
-            />
+            <Download size={20} color="#374151" strokeWidth={1.5} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => handleShare(item)}
+            activeOpacity={0.7}
           >
-            <Share2 
-              size={22} 
-              color="#111827" 
-              strokeWidth={2}
-            />
+            <Share2 size={20} color="#374151" strokeWidth={1.5} />
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity
           style={styles.actionButton}
           onPress={() => handleDelete(item.id)}
+          activeOpacity={0.7}
         >
-          <Trash2 
-            size={22} 
-            color="#9ca3af" 
-            strokeWidth={2}
-          />
+          <Trash2 size={20} color="#9ca3af" strokeWidth={1.5} />
         </TouchableOpacity>
       </View>
     </View>
@@ -242,17 +235,14 @@ export default function HistoryScreen() {
   const renderSection = (title: string, count: number, items: any[]) => {
     if (items.length === 0) return null;
 
+    const transformationText = count === 1 ? 'TRANSFORMATION' : 'TRANSFORMATIONS';
+
     return (
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>
-            {title.toUpperCase()}
-          </Text>
-          <Text style={styles.sectionCount}>
-            {count} {t('history.transformations').toUpperCase()}
-          </Text>
+          <Text style={styles.sectionTitle}>{title.toUpperCase()}</Text>
+          <Text style={styles.sectionCount}>{count} {transformationText}</Text>
         </View>
-
         <View style={styles.sectionContent}>
           {items.map(item => renderHistoryItem(item))}
         </View>
@@ -260,10 +250,22 @@ export default function HistoryScreen() {
     );
   };
 
-  // 未登录时显示登录提示（必须先检查登录状态，因为未登录时历史记录会为空）
+  // 未登录时显示登录提示
   if (!isLoggedIn) {
     return (
       <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+          >
+            <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>History</Text>
+          <View style={styles.headerRight} />
+        </View>
+        
         <View style={styles.loginRequiredContainer}>
           <Text style={styles.loginRequiredIcon}>📋</Text>
           <Text style={styles.loginRequiredTitle}>{t('history.loginRequired')}</Text>
@@ -271,6 +273,7 @@ export default function HistoryScreen() {
           <TouchableOpacity 
             style={styles.loginButton}
             onPress={() => router.push('/profile')}
+            activeOpacity={0.8}
           >
             <Text style={styles.loginButtonText}>{t('common.login')}</Text>
           </TouchableOpacity>
@@ -279,28 +282,64 @@ export default function HistoryScreen() {
     );
   }
 
+  // 无历史记录
   if (outfitChangeHistory.length === 0) {
     return (
       <View style={styles.container}>
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyIcon}>🕐</Text>
-          <Text style={styles.emptyTitle}>
-            {t('history.noOutfitChangeHistory')}
-          </Text>
-          <Text style={styles.emptyText}>
-            {t('history.noOutfitChangeHistoryDesc')}
-          </Text>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+          >
+            <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>History</Text>
+          <View style={styles.headerRight} />
         </View>
+        
+        <ScrollView
+          contentContainerStyle={styles.emptyScrollContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyIcon}>🕐</Text>
+            <Text style={styles.emptyTitle}>
+              {t('history.noOutfitChangeHistory')}
+            </Text>
+            <Text style={styles.emptyText}>
+              {t('history.noOutfitChangeHistoryDesc')}
+            </Text>
+          </View>
+        </ScrollView>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+          activeOpacity={0.7}
+        >
+          <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>History</Text>
+        <View style={styles.headerRight} />
+      </View>
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         {renderSection(t('history.today'), groupedHistory.today.length, groupedHistory.today)}
         {renderSection(t('history.yesterday'), groupedHistory.yesterday.length, groupedHistory.yesterday)}
@@ -315,6 +354,35 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
+  
+  // Header
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'ios' ? 50 : 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+    backgroundColor: '#ffffff',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  headerRight: {
+    width: 40,
+  },
+  
+  // Login Required
   loginRequiredContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -326,7 +394,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   loginRequiredTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
     color: '#1a1a1a',
     marginBottom: 8,
@@ -342,7 +410,7 @@ const styles = StyleSheet.create({
   loginButton: {
     backgroundColor: '#1a1a1a',
     paddingHorizontal: 48,
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderRadius: 24,
   },
   loginButtonText: {
@@ -358,6 +426,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 100,
   },
+  emptyScrollContent: {
+    flexGrow: 1,
+  },
   
   // Empty State
   emptyContainer: {
@@ -365,7 +436,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 40,
-    marginTop: 100,
   },
   emptyIcon: {
     fontSize: 64,
@@ -374,8 +444,9 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#000000',
+    color: '#1a1a1a',
     marginBottom: 8,
+    textAlign: 'center',
   },
   emptyText: {
     fontSize: 14,
@@ -395,30 +466,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     backgroundColor: '#f9fafb',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
   },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#4b5563',
-    letterSpacing: 1.5,
-  },
-  sectionCount: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: '#9ca3af',
+    fontWeight: '600',
+    color: '#6b7280',
     letterSpacing: 1,
   },
+  sectionCount: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#9ca3af',
+    letterSpacing: 0.5,
+  },
   sectionContent: {
-    paddingHorizontal: 0,
-    paddingVertical: 0,
+    backgroundColor: '#ffffff',
   },
   
   // History Card
   historyCard: {
     backgroundColor: '#ffffff',
-    paddingVertical: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },
@@ -428,42 +497,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     marginBottom: 12,
   },
   cardHeaderLeft: {
     flex: 1,
+    marginRight: 12,
   },
   cardTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#111827',
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
     marginBottom: 2,
   },
   cardTime: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: '400',
     color: '#9ca3af',
   },
   newBadge: {
     backgroundColor: '#1a1a1a',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 12,
   },
   newBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '600',
     color: '#ffffff',
-    letterSpacing: 0.5,
   },
   
   // Images Container
   imagesContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    gap: 12,
+    paddingHorizontal: 20,
+    gap: 8,
   },
   imageWrapper: {
     flex: 1,
@@ -478,11 +547,11 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 2,
+        elevation: 3,
       },
     }),
   },
@@ -494,26 +563,25 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     left: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 6,
   },
   imageLabelResult: {
     left: 'auto',
     right: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
   imageLabelText: {
     fontSize: 9,
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: '#374151',
     letterSpacing: 0.5,
   },
   arrowContainer: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
@@ -524,17 +592,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    marginTop: 16,
+    paddingHorizontal: 16,
+    marginTop: 12,
   },
   actionsLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
   },
   actionButton: {
-    padding: 10,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#f9fafb',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
