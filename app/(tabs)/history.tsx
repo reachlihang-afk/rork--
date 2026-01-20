@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, ArrowRight, Download, Share2, Trash2 } from 'lucide-react-native';
+import { ArrowRight, Download, Share2, Trash2 } from 'lucide-react-native';
 import { useState, useCallback } from 'react';
 import { 
   StyleSheet, 
@@ -261,19 +261,6 @@ export default function HistoryScreen() {
   if (!isLoggedIn) {
     return (
       <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-          activeOpacity={0.6}
-        >
-          <ArrowLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>History</Text>
-        <View style={styles.headerRight} />
-      </View>
-        
         <View style={styles.loginRequiredContainer}>
           <Text style={styles.loginRequiredIcon}>📋</Text>
           <Text style={styles.loginRequiredTitle}>{t('history.loginRequired')}</Text>
@@ -294,19 +281,6 @@ export default function HistoryScreen() {
   if (outfitChangeHistory.length === 0) {
     return (
       <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-          activeOpacity={0.6}
-        >
-          <ArrowLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>History</Text>
-        <View style={styles.headerRight} />
-      </View>
-        
         <ScrollView
           contentContainerStyle={styles.emptyScrollContent}
           refreshControl={
@@ -329,20 +303,6 @@ export default function HistoryScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-          activeOpacity={0.6}
-        >
-          <ArrowLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>History</Text>
-        <View style={styles.headerRight} />
-      </View>
-
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -363,34 +323,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
-  },
-  
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 50 : 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-    backgroundColor: '#ffffff',
-  },
-  backButton: {
-    width: 48,
-    height: 48,
-    marginLeft: -8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#1a1a1a',
-  },
-  headerRight: {
-    width: 40,
   },
   
   // Login Required

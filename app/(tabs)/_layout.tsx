@@ -63,8 +63,15 @@ export default function TabLayout() {
         name="history"
         options={{
           title: t('history.title'),
-          headerShown: false,
           tabBarIcon: ({ color }) => <Clock size={22} color={color} strokeWidth={2} />,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ marginLeft: 16 }}
+            >
+              <ArrowLeft size={24} color="#0F172A" />
+            </TouchableOpacity>
+          ),
         }}
       />
 
