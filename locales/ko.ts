@@ -460,6 +460,7 @@ export default {
     templates: {
       random: '랜덤 스타일',
       frontier: '트렌드 패션',
+      'neo-digital': '네오 디지털',
       jennie: '제니 스타일',
       bikini: '수영복',
       formal: '정장',

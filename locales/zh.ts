@@ -525,6 +525,7 @@ export default {
     templates: {
       random: '随机装',
       frontier: '前沿穿搭',
+      'neo-digital': '数字霓虹',
       jennie: 'Jennie同款',
       bikini: '泳装',
       formal: '正装',

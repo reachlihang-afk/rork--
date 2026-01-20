@@ -521,6 +521,7 @@ export default {
     templates: {
       random: 'Random Style',
       frontier: 'Frontier Fashion',
+      'neo-digital': 'Neo-Digital',
       jennie: 'Jennie Style',
       bikini: 'Swimwear',
       formal: 'Formal',

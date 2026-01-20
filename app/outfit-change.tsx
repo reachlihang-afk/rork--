@@ -40,7 +40,7 @@ const COMMON_PROMPT_PREFIX = 'IMPORTANT: Keep face, facial expression, hairstyle
 const TEMPLATES = [
   { id: 'random', name: '随机装', nameEn: 'Random', icon: '🎲', prompt: 'RANDOM_PLACEHOLDER' },
   { id: 'frontier', name: '前沿穿搭', nameEn: 'Frontier', icon: '✨', prompt: 'FRONTIER_PLACEHOLDER' },
-  { id: 'jennie', name: 'Jennie同款', nameEn: 'Jennie', icon: '💖', prompt: 'JENNIE_PLACEHOLDER' },
+  { id: 'neo-digital', name: '数字霓虹', nameEn: 'Neo-Digital', icon: '🌈', prompt: 'NEO_DIGITAL_PLACEHOLDER' },
   { id: 'bikini', name: '泳装', nameEn: 'Swimwear', icon: '👙', prompt: 'elegant beach swimwear, summer beach outfit, fashionable beachwear' },
   { id: 'formal', name: '正装', nameEn: 'Formal', icon: '👔', prompt: 'formal business attire' },
   { id: 'sport', name: '运动装', nameEn: 'Sports', icon: '🏃', prompt: 'athletic sportswear' },
@@ -59,6 +59,7 @@ const TEMPLATES = [
   { id: 'outdoor', name: '户外装', nameEn: 'Outdoor', icon: '🏔️', prompt: 'outdoor adventure clothing' },
   { id: 'flight-attendant', name: '空姐装', nameEn: 'Flight', icon: '✈️', prompt: 'flight attendant uniform' },
   { id: 'god-of-wealth', name: '财神装', nameEn: 'Wealth God', icon: '💸', prompt: 'Chinese God of Wealth costume' },
+  { id: 'jennie', name: 'Jennie同款', nameEn: 'Jennie', icon: '💖', prompt: 'JENNIE_PLACEHOLDER' },
 ];
 
 // 随机风格库 - 完整版157种风格
@@ -312,6 +313,43 @@ const FRONTIER_FASHION_STYLES = [
 function getRandomFrontierStyle(): string {
   const randomIndex = Math.floor(Math.random() * FRONTIER_FASHION_STYLES.length);
   return FRONTIER_FASHION_STYLES[randomIndex];
+}
+
+// ========== Neo-Digital 数字霓虹风格库 - 20种未来科技感穿搭 ==========
+const NEO_DIGITAL_STYLES = [
+  // 色彩主导款
+  'Digital Lavender holographic bodysuit with iridescent shimmer, glowing seams, futuristic silhouette emitting soft purple light',
+  'Cyber Lime neon ensemble - electric green transparent TPU jacket over liquid metal silver bodycon, self-luminous fabric effect',
+  'Iridescent rainbow shift dress with color-changing holographic surface, prismatic light reflection, ethereal glow',
+  'Aurora Borealis gradient outfit - flowing colors from digital lavender to cyber lime, light-emitting fiber accents',
+  'Chromatic silver liquid metal gown with pooling reflective fabric, mirror-like surface catching all light',
+  
+  // 材质科技款
+  'Transparent TPU sculptural coat with visible 3D-printed internal structure, cicada-wing translucent aesthetic',
+  'Liquid metal satin dress flowing like mercury, high-shine chrome finish with organic draping',
+  'Fiber optic woven top with embedded light channels glowing softly, paired with structural metallic pants',
+  '3D-printed exoskeleton bodice with geometric lattice structure over sheer base layer, architectural fashion',
+  'Holographic PVC trench coat with rainbow refraction, transparent yet color-shifting material',
+  
+  // 建筑剪裁款
+  'Architectural shoulder statement - extreme padded geometric shoulders in silver metallic, deconstructed asymmetric silhouette',
+  'Exoskeleton-style structured jacket with external ribbing detail, cyber armor aesthetic in chrome and lavender',
+  'Asymmetric deconstructed dress with one dramatic sculptural sleeve, exposed structural seams, avant-garde construction',
+  'Origami-fold metallic mini dress with sharp geometric pleats, 3D angular silhouette, futuristic precision',
+  'Cage-structure outer layer over iridescent inner garment, skeletal framework fashion, see-through architecture',
+  
+  // 融合未来款
+  'Neo-Tokyo street style - oversized cyber jacket with LED trim, holographic accessories, digital age urban',
+  'Metaverse-ready outfit - reflective bodysuit with augmented reality-inspired graphic overlays, virtual fashion aesthetic',
+  'Blade Runner inspired ensemble - sleek black with neon accent lighting, dystopian luxury, rain-slick metallic finish',
+  'Tron legacy suit - form-fitting with glowing circuit patterns, electric blue light lines on black base',
+  'Space age couture - silver bubble silhouette with transparent helmet-inspired collar, astronaut meets high fashion',
+];
+
+// 随机选择一种 Neo-Digital 风格的函数
+function getRandomNeoDigitalStyle(): string {
+  const randomIndex = Math.floor(Math.random() * NEO_DIGITAL_STYLES.length);
+  return NEO_DIGITAL_STYLES[randomIndex];
 }
 
 // Jennie完整场景库 - 24种经典街拍/舞台场景（姿态+服饰+背景完整重现）
@@ -793,6 +831,16 @@ export default function OutfitChangeNewScreen() {
       } else if (template.id === 'frontier') {
         const frontierStyle = getRandomFrontierStyle();
         return COMMON_PROMPT_PREFIX + `Transform into cutting-edge 2026 fashion trend. Style: ${frontierStyle}. Create a high-fashion editorial look with professional styling, modern silhouettes, and trend-forward aesthetic. The result should look like it belongs in Vogue or SSENSE editorial.`;
+      } else if (template.id === 'neo-digital') {
+        const neoDigitalStyle = getRandomNeoDigitalStyle();
+        return COMMON_PROMPT_PREFIX + `Transform into Neo-Digital futuristic fashion. Style: ${neoDigitalStyle}. 
+        
+KEY VISUAL ELEMENTS:
+- COLORS: Digital Lavender, Cyber Lime, Iridescent holographic, self-luminous glow effect like light emanating from a screen
+- MATERIALS: Liquid metal satin, transparent TPU (cicada-wing translucent plastic), fiber optic glowing threads, 3D-printed structural elements
+- SILHOUETTE: Architectural construction, exaggerated sculptural shoulders, asymmetric deconstruction, exoskeleton-like external framework details
+
+Create a cutting-edge cyberpunk meets high fashion look. The outfit should appear to glow and shimmer with futuristic technology embedded in the fabric. Professional sci-fi fashion editorial quality.`;
       } else if (template.id === 'jennie') {
         const jennieScene = getRandomJennieScene();
         return `Transform this person into a Jennie from BLACKPINK inspired photoshoot. Use the reference style images to recreate the iconic Jennie aesthetic.
