@@ -1,10 +1,9 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Heart, Sparkles } from 'lucide-react-native';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCoin } from '@/contexts/CoinContext';
 import { useSquare } from '@/contexts/SquareContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo } from 'react';
@@ -13,7 +12,6 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user, isLoggedIn } = useAuth();
-  const { coinBalance } = useCoin();
   const { posts } = useSquare();
 
   // 获取热门作品
@@ -38,14 +36,6 @@ export default function HomeScreen() {
   const getCardHeight = (index: number, isLeft: boolean) => {
     const heights = isLeft ? [200, 260, 180, 240] : [240, 180, 260, 200];
     return heights[index % heights.length];
-  };
-
-  const handleCoinClick = () => {
-    if (isLoggedIn) {
-      router.push('/recharge' as any);
-    } else {
-      router.push('/(tabs)/profile' as any);
-    }
   };
 
   const renderWorkCard = (work: typeof featuredWorks[0], index: number, isLeft: boolean) => {
@@ -105,18 +95,6 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 顶部标题栏 */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('app.name', '百变星君')}</Text>
-        <TouchableOpacity 
-          style={styles.coinBadge}
-          onPress={handleCoinClick}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.coinBadgeText}>💎 {coinBalance}</Text>
-        </TouchableOpacity>
-      </View>
-
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.content}
@@ -211,37 +189,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FAFAFA',
   },
-  // 顶部标题栏
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 56 : 16,
-    paddingBottom: 12,
-    backgroundColor: '#FAFAFA',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#0F172A',
-  },
-  // 钻石余额徽章
-  coinBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  coinBadgeText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#475569',
-  },
   scrollView: { flex: 1 },
   content: {
+    paddingTop: 16,
     paddingHorizontal: 16,
     paddingBottom: 40,
   },

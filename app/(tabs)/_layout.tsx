@@ -1,8 +1,52 @@
 import { Tabs, useRouter } from "expo-router";
 import { Home, Clock, User, ArrowLeft, Grid3x3 } from "lucide-react-native";
 import React from "react";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
+import { useCoin } from "@/contexts/CoinContext";
+import { useAuth } from "@/contexts/AuthContext";
+
+// 首页header右侧的钻石组件
+function HeaderCoinBadge() {
+  const { coinBalance } = useCoin();
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
+
+  const handlePress = () => {
+    if (isLoggedIn) {
+      router.push('/recharge' as any);
+    } else {
+      router.push('/(tabs)/profile' as any);
+    }
+  };
+
+  return (
+    <TouchableOpacity
+      style={headerStyles.coinBadge}
+      onPress={handlePress}
+      activeOpacity={0.7}
+    >
+      <Text style={headerStyles.coinText}>💎 {coinBalance}</Text>
+    </TouchableOpacity>
+  );
+}
+
+const headerStyles = StyleSheet.create({
+  coinBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 16,
+  },
+  coinText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#475569',
+  },
+});
 
 export default function TabLayout() {
   const { t } = useTranslation();
@@ -42,6 +86,7 @@ export default function TabLayout() {
         options={{
           title: t('home.title'),
           tabBarIcon: ({ color }) => <Home size={22} color={color} strokeWidth={2} />,
+          headerRight: () => <HeaderCoinBadge />,
         }}
       />
       <Tabs.Screen
