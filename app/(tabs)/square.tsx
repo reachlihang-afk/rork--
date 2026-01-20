@@ -239,6 +239,15 @@ export default function SquareScreen() {
     return { leftColumn: left, rightColumn: right };
   }, [filteredAndSortedPosts]);
 
+  // 瀑布流卡片高度 - 左右列交错显示不同高度
+  const getCardImageHeight = useCallback((index: number, isLeft: boolean) => {
+    // 左列: 高-矮-高-矮 / 右列: 矮-高-矮-高
+    const leftHeights = [220, 160, 200, 180, 240, 170];
+    const rightHeights = [170, 210, 160, 230, 180, 200];
+    const heights = isLeft ? leftHeights : rightHeights;
+    return heights[index % heights.length];
+  }, []);
+
   // 处理关注/取消关注
   const handleFollowToggle = useCallback(async (targetUserId: string, targetNickname: string, targetAvatar?: string) => {
     if (!user) {
@@ -551,11 +560,12 @@ export default function SquareScreen() {
 
   
 
-  // 渲染画中画卡片
-  const renderPIPCard = (post: SquarePost) => {
+  // 渲染画中画卡片 - 支持瀑布流不同高度
+  const renderPIPCard = (post: SquarePost, index: number, isLeft: boolean) => {
     if (post.postType !== 'outfitChange' || !post.resultImageUri) return null;
     
     const isLiked = user ? post.likes.includes(user.userId) : false;
+    const imageHeight = getCardImageHeight(index, isLeft);
     
     return (
       <TouchableOpacity
@@ -567,11 +577,11 @@ export default function SquareScreen() {
           setSelectedPost(post);
         }}
       >
-        {/* 主图（变装结果） */}
-        <View style={pipStyles.imageContainer}>
+        {/* 主图（变装结果） - 瀑布流高度 */}
+        <View style={[pipStyles.imageContainer, { height: imageHeight }]}>
           <Image
             source={{ uri: post.resultImageUri }}
-            style={pipStyles.mainImage}
+            style={pipStyles.mainImageWaterfall}
             resizeMode="cover"
           />
         </View>
@@ -790,13 +800,13 @@ export default function SquareScreen() {
           renderEmptyState()
         ) : (
           <>
-            {/* 瀑布流两列布局 */}
+            {/* 瀑布流两列布局 - 高度交错 */}
             <View style={pipStyles.masonryContainer}>
               <View style={pipStyles.column}>
-                {leftColumn.map(post => renderPIPCard(post))}
+                {leftColumn.map((post, index) => renderPIPCard(post, index, true))}
               </View>
               <View style={pipStyles.column}>
-                {rightColumn.map(post => renderPIPCard(post))}
+                {rightColumn.map((post, index) => renderPIPCard(post, index, false))}
               </View>
             </View>
             <View style={{ height: 100 }} />
@@ -2487,13 +2497,13 @@ const pipStyles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   imageContainer: {
     position: 'relative',
@@ -2502,6 +2512,11 @@ const pipStyles = StyleSheet.create({
   mainImage: {
     width: '100%',
     aspectRatio: 0.75,
+    backgroundColor: '#F3F4F6',
+  },
+  mainImageWaterfall: {
+    width: '100%',
+    height: '100%',
     backgroundColor: '#F3F4F6',
   },
   beforeBadge: {
