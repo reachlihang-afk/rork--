@@ -4,11 +4,20 @@ import { useState, useEffect, useCallback } from 'react';
 import { Friend, FriendRequest, FriendPrivacySettings } from '@/types/friends';
 import { useAuth } from './AuthContext';
 
+// 关注的用户类型
+export interface FollowingUser {
+  userId: string;
+  nickname: string;
+  avatar?: string;
+  followedAt: string;
+}
+
 export const [FriendsContext, useFriends] = createContextHook(() => {
   const { user } = useAuth();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [sentRequests, setSentRequests] = useState<FriendRequest[]>([]);
+  const [following, setFollowing] = useState<FollowingUser[]>([]); // 关注列表
   const [privacySettings, setPrivacySettings] = useState<FriendPrivacySettings>({
     allowFriendsViewHistory: true,
     historyVisibility: 'friends_only',
@@ -21,6 +30,7 @@ export const [FriendsContext, useFriends] = createContextHook(() => {
       setFriends([]);
       setFriendRequests([]);
       setSentRequests([]);
+      setFollowing([]);
       setIsLoading(false);
       return;
     }
@@ -30,12 +40,14 @@ export const [FriendsContext, useFriends] = createContextHook(() => {
       const requestsKey = `friend_requests_${user.userId}`;
       const sentRequestsKey = `sent_requests_${user.userId}`;
       const privacyKey = `privacy_settings_${user.userId}`;
+      const followingKey = `following_${user.userId}`;
 
-      const [friendsData, requestsData, sentRequestsData, privacyData] = await Promise.all([
+      const [friendsData, requestsData, sentRequestsData, privacyData, followingData] = await Promise.all([
         AsyncStorage.getItem(friendsKey),
         AsyncStorage.getItem(requestsKey),
         AsyncStorage.getItem(sentRequestsKey),
         AsyncStorage.getItem(privacyKey),
+        AsyncStorage.getItem(followingKey),
       ]);
 
       if (friendsData) {
@@ -49,6 +61,9 @@ export const [FriendsContext, useFriends] = createContextHook(() => {
       }
       if (privacyData) {
         setPrivacySettings(JSON.parse(privacyData));
+      }
+      if (followingData) {
+        setFollowing(JSON.parse(followingData));
       }
     } catch (error) {
       console.error('Failed to load friends data:', error);
@@ -276,6 +291,59 @@ export const [FriendsContext, useFriends] = createContextHook(() => {
 
   const pendingRequestsCount = friendRequests.filter(r => r.status === 'pending').length;
 
+  // 关注用户
+  const followUser = useCallback(async (targetUserId: string, targetNickname: string, targetAvatar?: string) => {
+    if (!user) {
+      throw new Error('Not logged in');
+    }
+
+    if (targetUserId === user.userId) {
+      throw new Error('Cannot follow yourself');
+    }
+
+    // 检查是否已关注
+    const alreadyFollowing = following.some(f => f.userId === targetUserId);
+    if (alreadyFollowing) {
+      throw new Error('Already following');
+    }
+
+    const newFollowing: FollowingUser = {
+      userId: targetUserId,
+      nickname: targetNickname,
+      avatar: targetAvatar,
+      followedAt: new Date().toISOString(),
+    };
+
+    const updatedFollowing = [...following, newFollowing];
+    setFollowing(updatedFollowing);
+
+    const followingKey = `following_${user.userId}`;
+    await AsyncStorage.setItem(followingKey, JSON.stringify(updatedFollowing));
+
+    return newFollowing;
+  }, [user, following]);
+
+  // 取消关注
+  const unfollowUser = useCallback(async (targetUserId: string) => {
+    if (!user) {
+      throw new Error('Not logged in');
+    }
+
+    const updatedFollowing = following.filter(f => f.userId !== targetUserId);
+    setFollowing(updatedFollowing);
+
+    const followingKey = `following_${user.userId}`;
+    await AsyncStorage.setItem(followingKey, JSON.stringify(updatedFollowing));
+  }, [user, following]);
+
+  // 检查是否已关注某用户
+  const isFollowing = useCallback((targetUserId: string): boolean => {
+    return following.some(f => f.userId === targetUserId);
+  }, [following]);
+
+  // 获取关注列表中的用户ID数组
+  const followingUserIds = following.map(f => f.userId);
+
   const getFilteredHistory = useCallback(async (targetUserId: string, allHistory: any[]): Promise<any[]> => {
     const privacyKey = `privacy_settings_${targetUserId}`;
     const privacyData = await AsyncStorage.getItem(privacyKey);
@@ -301,6 +369,8 @@ export const [FriendsContext, useFriends] = createContextHook(() => {
     friends,
     friendRequests: friendRequests.filter(r => r.status === 'pending'),
     sentRequests,
+    following,
+    followingUserIds,
     privacySettings,
     isLoading,
     pendingRequestsCount,
@@ -314,5 +384,8 @@ export const [FriendsContext, useFriends] = createContextHook(() => {
     hasPendingRequest,
     canViewHistory,
     getFilteredHistory,
+    followUser,
+    unfollowUser,
+    isFollowing,
   };
 });

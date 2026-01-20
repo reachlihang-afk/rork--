@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSquare, SquarePost, SquareComment } from '@/contexts/SquareContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAlert } from '@/contexts/AlertContext';
+import { useFriends } from '@/contexts/FriendsContext';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { saveToGallery } from '@/utils/share';
@@ -153,10 +154,11 @@ export default function SquareScreen() {
   const { posts, likePost, deletePost, addComment, deleteComment, pinComment } = useSquare();
   const { user } = useAuth();
   const { showAlert } = useAlert();
+  const { followingUserIds, followUser, unfollowUser, isFollowing } = useFriends();
   const { highlightPostId } = useLocalSearchParams<{ highlightPostId?: string }>();
 
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'follow' | 'explore' | 'nearby'>('explore');
+  const [activeTab, setActiveTab] = useState<'follow' | 'explore'>('explore');
   const [activePopup, setActivePopup] = useState<string | null>(null);
   const [commentingPost, setCommentingPost] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
@@ -173,11 +175,36 @@ export default function SquareScreen() {
   const inputRef = useRef<TextInput>(null);
   const insets = useSafeAreaInsets();
 
+  // 计算帖子的综合分数（热度 + 时间权重）
+  const calculateScore = useCallback((post: SquarePost) => {
+    const hotScore = post.likes.length + post.comments.length * 2;
+    const hoursAgo = (Date.now() - post.createdAt) / (1000 * 60 * 60);
+    const timeWeight = 1 / (1 + hoursAgo / 24); // 24小时内权重最高
+    return hotScore * timeWeight + timeWeight * 10; // 新帖子有基础分
+  }, []);
+
+  // 根据activeTab过滤和排序帖子
+  const filteredAndSortedPosts = useMemo(() => {
+    let filtered: SquarePost[];
+    
+    if (activeTab === 'follow') {
+      // 关注Tab：只显示已关注用户的帖子
+      filtered = posts.filter(post => followingUserIds.includes(post.userId));
+      // 按时间排序（最新优先）
+      filtered.sort((a, b) => b.createdAt - a.createdAt);
+    } else {
+      // 发现Tab：显示所有帖子，按综合分数排序
+      filtered = [...posts].sort((a, b) => calculateScore(b) - calculateScore(a));
+    }
+    
+    return filtered;
+  }, [posts, activeTab, followingUserIds, calculateScore]);
+
   // 将帖子分为左右两列（瀑布流布局）
   const { leftColumn, rightColumn } = useMemo(() => {
     const left: SquarePost[] = [];
     const right: SquarePost[] = [];
-    posts.forEach((post, index) => {
+    filteredAndSortedPosts.forEach((post, index) => {
       if (index % 2 === 0) {
         left.push(post);
       } else {
@@ -185,7 +212,43 @@ export default function SquareScreen() {
       }
     });
     return { leftColumn: left, rightColumn: right };
-  }, [posts]);
+  }, [filteredAndSortedPosts]);
+
+  // 处理关注/取消关注
+  const handleFollowToggle = useCallback(async (targetUserId: string, targetNickname: string, targetAvatar?: string) => {
+    if (!user) {
+      showAlert({
+        type: 'info',
+        title: t('common.notice'),
+        message: t('common.loginRequired'),
+      });
+      return;
+    }
+
+    try {
+      if (isFollowing(targetUserId)) {
+        await unfollowUser(targetUserId);
+        showAlert({
+          type: 'success',
+          title: t('common.success'),
+          message: t('square.unfollowed'),
+        });
+      } else {
+        await followUser(targetUserId, targetNickname, targetAvatar);
+        showAlert({
+          type: 'success',
+          title: t('common.success'),
+          message: t('square.followed'),
+        });
+      }
+    } catch (error: any) {
+      showAlert({
+        type: 'error',
+        title: t('common.error'),
+        message: error.message || t('common.operationFailed'),
+      });
+    }
+  }, [user, isFollowing, followUser, unfollowUser, showAlert, t]);
 
   useEffect(() => {
     if (highlightPostId && posts.length > 0) {
@@ -497,26 +560,48 @@ export default function SquareScreen() {
         
         {/* 用户信息和点赞 */}
         <View style={pipStyles.footer}>
-          <TouchableOpacity 
-            style={pipStyles.userInfo}
-            onPress={() => {
-              if (user && post.userId !== user.userId) {
-                router.push(`/user-profile/${post.userId}` as any);
-              }
-            }}
-            disabled={!user || post.userId === user?.userId}
-          >
-            {post.userAvatar ? (
-              <Image source={{ uri: post.userAvatar }} style={pipStyles.avatar} />
-            ) : (
-              <View style={pipStyles.avatarPlaceholder}>
-                <Text style={pipStyles.avatarText}>
-                  {post.userNickname.charAt(0).toUpperCase()}
+          <View style={pipStyles.userInfoContainer}>
+            <TouchableOpacity 
+              style={pipStyles.userInfo}
+              onPress={() => {
+                if (user && post.userId !== user.userId) {
+                  router.push(`/user-profile/${post.userId}` as any);
+                }
+              }}
+              disabled={!user || post.userId === user?.userId}
+            >
+              {post.userAvatar ? (
+                <Image source={{ uri: post.userAvatar }} style={pipStyles.avatar} />
+              ) : (
+                <View style={pipStyles.avatarPlaceholder}>
+                  <Text style={pipStyles.avatarText}>
+                    {post.userNickname.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+              )}
+              <Text style={pipStyles.nickname} numberOfLines={1}>{post.userNickname}</Text>
+            </TouchableOpacity>
+            {/* 关注按钮 - 只对非自己的帖子显示 */}
+            {user && post.userId !== user.userId && (
+              <TouchableOpacity
+                style={[
+                  pipStyles.followBadge,
+                  isFollowing(post.userId) && pipStyles.followBadgeActive
+                ]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleFollowToggle(post.userId, post.userNickname, post.userAvatar);
+                }}
+              >
+                <Text style={[
+                  pipStyles.followBadgeText,
+                  isFollowing(post.userId) && pipStyles.followBadgeTextActive
+                ]}>
+                  {isFollowing(post.userId) ? t('square.following') : t('square.followUser')}
                 </Text>
-              </View>
+              </TouchableOpacity>
             )}
-            <Text style={pipStyles.nickname} numberOfLines={1}>{post.userNickname}</Text>
-          </TouchableOpacity>
+          </View>
           
           <TouchableOpacity 
             style={pipStyles.likeButton}
@@ -564,6 +649,7 @@ export default function SquareScreen() {
           <Text style={[pipStyles.tabText, activeTab === 'follow' && pipStyles.tabTextActive]}>
             {t('square.follow')}
           </Text>
+          {activeTab === 'follow' && <View style={pipStyles.tabIndicator} />}
         </TouchableOpacity>
         <TouchableOpacity
           style={pipStyles.tabItem}
@@ -574,14 +660,6 @@ export default function SquareScreen() {
           </Text>
           {activeTab === 'explore' && <View style={pipStyles.tabIndicator} />}
         </TouchableOpacity>
-        <TouchableOpacity
-          style={pipStyles.tabItem}
-          onPress={() => setActiveTab('nearby')}
-        >
-          <Text style={[pipStyles.tabText, activeTab === 'nearby' && pipStyles.tabTextActive]}>
-            {t('square.nearby')}
-          </Text>
-        </TouchableOpacity>
       </View>
       <TouchableOpacity style={pipStyles.searchButton}>
         <Search size={22} color="#1a1a1a" />
@@ -589,19 +667,29 @@ export default function SquareScreen() {
     </View>
   );
 
-  if (posts.length === 0) {
+  // 渲染空状态
+  const renderEmptyState = () => {
+    if (activeTab === 'follow') {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyIcon}>👥</Text>
+          <Text style={styles.emptyTitle}>{t('square.noFollowingPosts')}</Text>
+          <Text style={styles.emptyText}>{t('square.noFollowingPostsDesc')}</Text>
+          <TouchableOpacity 
+            style={styles.emptyButton}
+            onPress={() => setActiveTab('explore')}
+          >
+            <Text style={styles.emptyButtonText}>{t('square.goExplore')}</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
     return (
-      <View style={pipStyles.container}>
-        {renderHeader()}
-        <ScrollView
-          contentContainerStyle={styles.emptyContainer}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1a1a1a" />}
-        >
-          <Text style={styles.emptyText}>{t('square.noPosts')}</Text>
-        </ScrollView>
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>{t('square.noPosts')}</Text>
       </View>
     );
-  }
+  };
 
   return (
     <View style={pipStyles.container}>
@@ -614,16 +702,22 @@ export default function SquareScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={pipStyles.scrollContent}
       >
-        {/* 瀑布流两列布局 */}
-        <View style={pipStyles.masonryContainer}>
-          <View style={pipStyles.column}>
-            {leftColumn.map(post => renderPIPCard(post))}
-          </View>
-          <View style={pipStyles.column}>
-            {rightColumn.map(post => renderPIPCard(post))}
-          </View>
-        </View>
-        <View style={{ height: 100 }} />
+        {filteredAndSortedPosts.length === 0 ? (
+          renderEmptyState()
+        ) : (
+          <>
+            {/* 瀑布流两列布局 */}
+            <View style={pipStyles.masonryContainer}>
+              <View style={pipStyles.column}>
+                {leftColumn.map(post => renderPIPCard(post))}
+              </View>
+              <View style={pipStyles.column}>
+                {rightColumn.map(post => renderPIPCard(post))}
+              </View>
+            </View>
+            <View style={{ height: 100 }} />
+          </>
+        )}
       </ScrollView>
 
       {/* 帖子详情弹窗 - 小红书风格 */}
@@ -1198,12 +1292,36 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: 40,
+    minHeight: 300,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 8,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#64748B',
     marginBottom: 20,
+    textAlign: 'center',
+  },
+  emptyButton: {
+    backgroundColor: '#1a1a1a',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
+    marginTop: 8,
+  },
+  emptyButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   loginButton: {
     backgroundColor: '#0066FF',
@@ -2319,11 +2437,34 @@ const pipStyles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
   },
+  userInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 6,
+  },
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     flex: 1,
+  },
+  followBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    backgroundColor: '#FF2442',
+  },
+  followBadgeActive: {
+    backgroundColor: '#F3F4F6',
+  },
+  followBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  followBadgeTextActive: {
+    color: '#6B7280',
   },
   avatar: {
     width: 24,
@@ -2347,7 +2488,7 @@ const pipStyles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     color: '#6B7280',
-    flex: 1,
+    maxWidth: 60,
   },
   likeButton: {
     flexDirection: 'row',
