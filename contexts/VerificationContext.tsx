@@ -31,30 +31,35 @@ export const [VerificationProvider, useVerification] = createContextHook(() => {
   }, [user?.userId]);
 
   const loadData = async (userId: string) => {
+    console.log('[VerificationContext] loadData called for user:', userId);
     try {
       const STORAGE_KEYS = getStorageKeys(userId);
       
       const outfitChangeData = await AsyncStorage.getItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY);
+      console.log('[VerificationContext] Raw data from storage:', outfitChangeData ? `${outfitChangeData.length} chars` : 'null');
 
       if (outfitChangeData) {
         try {
           const parsed = JSON.parse(outfitChangeData);
           if (Array.isArray(parsed)) {
+            console.log('[VerificationContext] Loaded history count:', parsed.length);
             setOutfitChangeHistory(parsed);
           } else {
+            console.warn('[VerificationContext] History data is not an array, clearing');
             await AsyncStorage.removeItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY);
             setOutfitChangeHistory([]);
           }
         } catch (error) {
-          console.error('Failed to parse outfit change history:', error);
+          console.error('[VerificationContext] Failed to parse outfit change history:', error);
           await AsyncStorage.removeItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY);
           setOutfitChangeHistory([]);
         }
       } else {
+        console.log('[VerificationContext] No history data found in storage');
         setOutfitChangeHistory([]);
       }
     } catch (error) {
-      console.error('Failed to load data:', error);
+      console.error('[VerificationContext] Failed to load data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -67,9 +72,18 @@ export const [VerificationProvider, useVerification] = createContextHook(() => {
     templateName: string,
     allowSquarePublish: boolean = true
   ): Promise<string> => {
+    console.log('[VerificationContext] addOutfitChangeHistory called');
+    console.log('[VerificationContext] - templateId:', templateId);
+    console.log('[VerificationContext] - templateName:', templateName);
+    console.log('[VerificationContext] - originalImageUri length:', originalImageUri?.length || 0);
+    console.log('[VerificationContext] - resultImageUri length:', resultImageUri?.length || 0);
+    
     if (!user?.userId) {
+      console.error('[VerificationContext] User not logged in, cannot save history');
       throw new Error('User not logged in');
     }
+    console.log('[VerificationContext] - userId:', user.userId);
+    
     const STORAGE_KEYS = getStorageKeys(user.userId);
     const historyItem: OutfitChangeHistory = {
       id: `outfit_${Date.now()}`,
@@ -83,11 +97,14 @@ export const [VerificationProvider, useVerification] = createContextHook(() => {
     
     // 限制历史记录数量为5条，防止存储溢出（每条记录包含大量base64图片数据）
     const updated = [historyItem, ...outfitChangeHistory].slice(0, 5);
+    console.log('[VerificationContext] Updating state with', updated.length, 'items');
     setOutfitChangeHistory(updated);
     
     try {
-      await AsyncStorage.setItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY, JSON.stringify(updated));
-      console.log('[VerificationContext] Outfit change history saved, total:', updated.length);
+      const jsonData = JSON.stringify(updated);
+      console.log('[VerificationContext] JSON data size:', Math.round(jsonData.length / 1024), 'KB');
+      await AsyncStorage.setItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY, jsonData);
+      console.log('[VerificationContext] Outfit change history saved successfully, total:', updated.length);
     } catch (error) {
       console.error('[VerificationContext] Failed to save history, storage quota exceeded:', error);
       // 如果保存失败（存储溢出），只保留最新的1条记录

@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { ArrowRight, Download, Share2, Trash2 } from 'lucide-react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -26,11 +26,25 @@ interface GroupedHistory {
 export default function HistoryScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const { showAlert } = useAlert();
   
   const { outfitChangeHistory, deleteOutfitChange } = useVerification();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  // 调试：打印历史记录状态
+  useEffect(() => {
+    console.log('[HistoryScreen] Render - isLoggedIn:', isLoggedIn);
+    console.log('[HistoryScreen] Render - userId:', user?.userId);
+    console.log('[HistoryScreen] Render - outfitChangeHistory count:', outfitChangeHistory.length);
+    if (outfitChangeHistory.length > 0) {
+      console.log('[HistoryScreen] First item:', {
+        id: outfitChangeHistory[0].id,
+        templateName: outfitChangeHistory[0].templateName,
+        createdAt: new Date(outfitChangeHistory[0].createdAt).toISOString(),
+      });
+    }
+  }, [isLoggedIn, user?.userId, outfitChangeHistory]);
 
   // 分组历史记录
   const groupedHistory: GroupedHistory = outfitChangeHistory.reduce(
@@ -260,23 +274,7 @@ export default function HistoryScreen() {
     );
   };
 
-  if (outfitChangeHistory.length === 0) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyIcon}>🕐</Text>
-          <Text style={styles.emptyTitle}>
-            {t('history.noOutfitChangeHistory')}
-          </Text>
-          <Text style={styles.emptyText}>
-            {t('history.noOutfitChangeHistoryDesc')}
-          </Text>
-        </View>
-      </View>
-    );
-  }
-
-  // 未登录时显示登录提示
+  // 未登录时显示登录提示（必须先检查登录状态，因为未登录时历史记录会为空）
   if (!isLoggedIn) {
     return (
       <View style={styles.container}>
@@ -290,6 +288,26 @@ export default function HistoryScreen() {
           >
             <Text style={styles.loginButtonText}>{t('common.login')}</Text>
           </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  if (outfitChangeHistory.length === 0) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyIcon}>🕐</Text>
+          <Text style={styles.emptyTitle}>
+            {t('history.noOutfitChangeHistory')}
+          </Text>
+          <Text style={styles.emptyText}>
+            {t('history.noOutfitChangeHistoryDesc')}
+          </Text>
+          {/* 调试信息 - 可以在确认问题解决后删除 */}
+          <Text style={styles.debugText}>
+            用户ID: {user?.userId || '未登录'}
+          </Text>
         </View>
       </View>
     );
@@ -382,6 +400,12 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     textAlign: 'center',
     lineHeight: 20,
+  },
+  debugText: {
+    fontSize: 11,
+    color: '#9ca3af',
+    textAlign: 'center',
+    marginTop: 20,
   },
   
   // Section

@@ -1061,7 +1061,10 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
       try {
         // 在原生平台上，将结果保存到本地文件，避免AsyncStorage存储过大的base64导致失败
         let savedResultUri = generatedImageUri;
+        let savedOriginalUri = userImage;
+        
         if (Platform.OS !== 'web') {
+          // 保存结果图片到文件
           try {
             const baseDir = getWritableDirectory();
             if (!baseDir) {
@@ -1077,12 +1080,50 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
           } catch (fileError) {
             console.warn('[OutfitChange] Failed to save result to file, falling back to base64:', fileError);
           }
+          
+          // 保存原图到文件（避免原图URI失效）
+          if (userImage && !userImage.startsWith('file://')) {
+            try {
+              const baseDir = getWritableDirectory();
+              if (baseDir) {
+                const originalFilename = `outfit_original_${Date.now()}.jpg`;
+                const originalFilepath = `${baseDir}${originalFilename}`;
+                // 复制原图到应用目录
+                await FileSystem.copyAsync({
+                  from: userImage,
+                  to: originalFilepath
+                });
+                savedOriginalUri = originalFilepath;
+                console.log('[OutfitChange] Copied original to local file:', originalFilepath);
+              }
+            } catch (copyError) {
+              console.warn('[OutfitChange] Failed to copy original image:', copyError);
+              // 保持原始URI
+            }
+          }
+        } else {
+          // Web平台上，将blob URL转换为base64
+          if (userImage && !userImage.startsWith('data:')) {
+            try {
+              console.log('[OutfitChange] Converting original image to base64 for web storage...');
+              const originalBase64 = await convertToBase64(userImage, true, false);
+              savedOriginalUri = `data:image/jpeg;base64,${originalBase64}`;
+              console.log('[OutfitChange] Original image converted, size:', Math.round(originalBase64.length / 1024), 'KB');
+            } catch (convertError) {
+              console.warn('[OutfitChange] Failed to convert original image to base64:', convertError);
+            }
+          }
         }
         
         // 自定义模式下，历史记录的originalImageUri应该是参考服饰，而不是用户照片
         const historyOriginalImage = selectedTab === 'custom' && customImages.length > 0 
           ? customImages[0] 
-          : userImage;
+          : savedOriginalUri;
+        
+        console.log('[OutfitChange] Saving to history...');
+        console.log('[OutfitChange] - user.userId:', user?.userId);
+        console.log('[OutfitChange] - historyOriginalImage:', historyOriginalImage?.substring(0, 50));
+        console.log('[OutfitChange] - savedResultUri:', savedResultUri?.substring(0, 50));
         
         await addOutfitChangeHistory(
           historyOriginalImage,
@@ -1090,8 +1131,15 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
           selectedTab === 'template' ? selectedTemplate! : 'custom-outfit',
           templateName
         );
-      } catch (historyError) {
-        console.error('Failed to save to history:', historyError);
+        console.log('[OutfitChange] History saved successfully');
+      } catch (historyError: any) {
+        console.error('[OutfitChange] Failed to save to history:', historyError);
+        // 在移动端显示保存失败的提示
+        showAlert({
+          type: 'error',
+          title: '历史记录保存失败',
+          message: historyError?.message || '请稍后重试'
+        });
       }
       
     } catch (error: any) {
