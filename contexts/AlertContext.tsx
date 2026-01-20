@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { CheckCircle2, XCircle, AlertCircle, Info, X } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
+import { useTranslation } from 'react-i18next';
 
 type AlertType = 'success' | 'error' | 'info' | 'confirm' | 'success_confirm';
 
@@ -166,6 +167,7 @@ export const AlertProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 };
 
 const AlertContent = ({ options, getIcon, onConfirm, onCancel, hideAlert }: any) => {
+  const { t } = useTranslation();
   const isConfirmType = options?.type === 'confirm' || options?.type === 'success_confirm';
   return (
     <View style={styles.content}>
@@ -192,7 +194,7 @@ const AlertContent = ({ options, getIcon, onConfirm, onCancel, hideAlert }: any)
             onPress={onCancel}
           >
             <Text style={styles.cancelButtonText}>
-              {options.cancelText || '取消'}
+              {options.cancelText || t('common.cancel')}
             </Text>
           </TouchableOpacity>
         )}
@@ -205,7 +207,7 @@ const AlertContent = ({ options, getIcon, onConfirm, onCancel, hideAlert }: any)
           onPress={onConfirm}
         >
           <Text style={(options?.type === 'confirm' || options?.type === 'success_confirm') ? styles.confirmButtonText : styles.okButtonText}>
-            {options?.confirmText || ((options?.type === 'confirm' || options?.type === 'success_confirm') ? '确定' : '知道了')}
+            {options?.confirmText || ((options?.type === 'confirm' || options?.type === 'success_confirm') ? t('common.confirm') : t('common.gotIt'))}
           </Text>
         </TouchableOpacity>
       </View>

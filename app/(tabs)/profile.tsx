@@ -7,7 +7,7 @@ import { useCoin } from '@/contexts/CoinContext';
 import { useLanguage, Language, languageNames } from '@/contexts/LanguageContext';
 import { useFriends } from '@/contexts/FriendsContext';
 import { useAlert } from '@/contexts/AlertContext';
-import { useVerification } from '@/contexts/VerificationContext';
+import { useVerification } from '@/contexts/VerificationContext'
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 

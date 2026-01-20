@@ -1037,8 +1037,9 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
       // 使用换装次数（可能消耗免费次数或金币）
       await useOutfitChange();
 
+      const template = selectedTab === 'template' ? TEMPLATES.find(t => t.id === selectedTemplate) : null;
       const templateName = selectedTab === 'template' 
-        ? TEMPLATES.find(t => t.id === selectedTemplate)?.name || '自定义'
+        ? (template ? getTemplateName(template) : t('outfitChange.customOutfit'))
         : selectedTab === 'custom' ? t('outfitChange.customOutfit') : 'Pro Style';
 
       // 显示结果在页面上（不跳转）
@@ -1189,12 +1190,12 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
           <View style={styles.coinBalanceLeft}>
             <Text style={styles.coinIcon}>💎</Text>
             <View>
-              <Text style={styles.coinBalanceLabel}>钻石余额</Text>
+              <Text style={styles.coinBalanceLabel}>{t('outfitChange.diamondBalance')}</Text>
               <Text style={styles.coinBalanceValue}>{coinBalance}</Text>
             </View>
           </View>
           <View style={styles.rechargeButton}>
-            <Text style={styles.rechargeButtonText}>充值</Text>
+            <Text style={styles.rechargeButtonText}>{t('profile.recharge')}</Text>
           </View>
         </TouchableOpacity>
 
@@ -1306,7 +1307,7 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
                 <View style={styles.freeAttemptsTag}>
                   <Sparkles size={14} color="#1a1a1a" />
                   <Text style={styles.freeAttemptsText}>
-                    免费次数: {freeOutfitChangeCount}/5
+                    {t('outfitChange.freeAttemptsCount', { current: freeOutfitChangeCount, total: 5 })}
                   </Text>
                 </View>
               </View>
