@@ -12,7 +12,7 @@ import {
 import { CheckCircle2, XCircle, AlertCircle, Info, X } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 
-type AlertType = 'success' | 'error' | 'info' | 'confirm';
+type AlertType = 'success' | 'error' | 'info' | 'confirm' | 'success_confirm';
 
 interface AlertOptions {
   title?: string;
@@ -99,6 +99,7 @@ export const AlertProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const size = 48;
     switch (options?.type) {
       case 'success':
+      case 'success_confirm':
         return <CheckCircle2 size={size} color="#10b981" strokeWidth={1.5} />;
       case 'error':
         return <XCircle size={size} color="#ef4444" strokeWidth={1.5} />;
@@ -123,7 +124,7 @@ export const AlertProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             <TouchableOpacity 
               activeOpacity={1} 
               style={styles.backdropClick} 
-              onPress={options?.type !== 'confirm' ? hideAlert : undefined} 
+              onPress={options?.type !== 'confirm' && options?.type !== 'success_confirm' ? hideAlert : undefined} 
             />
           </Animated.View>
 
@@ -165,9 +166,10 @@ export const AlertProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 };
 
 const AlertContent = ({ options, getIcon, onConfirm, onCancel, hideAlert }: any) => {
+  const isConfirmType = options?.type === 'confirm' || options?.type === 'success_confirm';
   return (
     <View style={styles.content}>
-      {options?.type !== 'confirm' && (
+      {!isConfirmType && (
         <TouchableOpacity style={styles.closeButton} onPress={hideAlert}>
           <X size={20} color="#94a3b8" />
         </TouchableOpacity>
@@ -184,7 +186,7 @@ const AlertContent = ({ options, getIcon, onConfirm, onCancel, hideAlert }: any)
       <Text style={styles.message}>{options?.message}</Text>
 
       <View style={styles.buttonContainer}>
-        {options?.type === 'confirm' && (
+        {(options?.type === 'confirm' || options?.type === 'success_confirm') && (
           <TouchableOpacity 
             style={[styles.button, styles.cancelButton]} 
             onPress={onCancel}
@@ -194,16 +196,16 @@ const AlertContent = ({ options, getIcon, onConfirm, onCancel, hideAlert }: any)
             </Text>
           </TouchableOpacity>
         )}
-        
+
         <TouchableOpacity 
           style={[
             styles.button, 
-            options?.type === 'confirm' ? styles.confirmButton : styles.okButton
+            (options?.type === 'confirm' || options?.type === 'success_confirm') ? styles.confirmButton : styles.okButton
           ]} 
           onPress={onConfirm}
         >
-          <Text style={options?.type === 'confirm' ? styles.confirmButtonText : styles.okButtonText}>
-            {options?.confirmText || (options?.type === 'confirm' ? '确定' : '知道了')}
+          <Text style={(options?.type === 'confirm' || options?.type === 'success_confirm') ? styles.confirmButtonText : styles.okButtonText}>
+            {options?.confirmText || ((options?.type === 'confirm' || options?.type === 'success_confirm') ? '确定' : '知道了')}
           </Text>
         </TouchableOpacity>
       </View>

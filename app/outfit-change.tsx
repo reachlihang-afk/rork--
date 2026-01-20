@@ -482,7 +482,7 @@ export default function OutfitChangeNewScreen() {
 
       setIsPublished(true);
       showAlert({
-        type: 'confirm',
+        type: 'success_confirm',
         title: t('common.success'),
         message: t('square.publishSuccessPrompt'),
         confirmText: t('common.confirm'),
