@@ -20,44 +20,9 @@ const CARD_WIDTH = (SCREEN_WIDTH - CARD_GAP * 3) / 2;
 type ZoomableImageProps = {
   uri: string;
   onClose: () => void;
-  t: any;
 };
 
-function ZoomableImage({ uri, t }: ZoomableImageProps) {
-  const [saving, setSaving] = useState(false);
-  const { showAlert } = useAlert();
-
-  const handleDownload = async () => {
-    if (saving) return;
-    
-    try {
-      setSaving(true);
-      const success = await saveToGallery(uri);
-      if (success) {
-        showAlert({
-          type: 'success',
-          title: t('common.success'),
-          message: t('outfitChange.downloadSuccess')
-        });
-      } else {
-        showAlert({
-          type: 'error',
-          title: t('common.error'),
-          message: t('outfitChange.downloadFailed')
-        });
-      }
-    } catch (error) {
-      console.error('Download failed:', error);
-      showAlert({
-        type: 'error',
-        title: t('common.error'),
-        message: t('outfitChange.downloadFailed')
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
+function ZoomableImage({ uri }: ZoomableImageProps) {
   return (
     <View style={[zoomStyles.container, { backgroundColor: 'rgba(0, 0, 0, 0.95)' }]}>
       <View
@@ -69,24 +34,7 @@ function ZoomableImage({ uri, t }: ZoomableImageProps) {
         }}
       >
         <ExpoImage source={{ uri }} style={zoomStyles.image} contentFit="contain" />
-        {saving && (
-          <View style={zoomStyles.savingOverlay}>
-            <Text style={zoomStyles.savingText}>{t('common.saving')}...</Text>
-          </View>
-        )}
       </View>
-      
-      <TouchableOpacity
-        style={zoomStyles.downloadButton}
-        onPress={handleDownload}
-        disabled={saving}
-        activeOpacity={0.8}
-      >
-        <View style={zoomStyles.downloadButtonInner}>
-          <Download size={20} color="#fff" strokeWidth={2.5} />
-          <Text style={zoomStyles.downloadButtonText}>{t('common.save')}</Text>
-        </View>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -1305,12 +1253,12 @@ export default function SquareScreen() {
                 <View style={imageViewerStyles.labelContainer} pointerEvents="none">
                   <View style={imageViewerStyles.labelBadge}>
                     <Text style={imageViewerStyles.labelText}>
-                      {selectedImage.type === 'reference' ? t('square.referencePhoto') : t('square.verifiedPhoto')}
+                      {selectedImage.type === 'reference' ? t('square.before') : t('square.after')}
                     </Text>
                   </View>
                 </View>
 
-                <ZoomableImage uri={selectedImage.uri} onClose={() => {}} t={t} />
+                <ZoomableImage uri={selectedImage.uri} onClose={() => {}} />
               </>
             )}
           </View>
