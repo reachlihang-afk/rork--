@@ -244,7 +244,7 @@ export default function HistoryScreen() {
         </View>
         {isNew(item.createdAt) && (
           <View style={styles.newBadge}>
-            <Text style={styles.newBadgeText}>New</Text>
+            <Text style={styles.newBadgeText}>{t('history.new')}</Text>
           </View>
         )}
       </View>
@@ -266,7 +266,7 @@ export default function HistoryScreen() {
               transition={200}
             />
             <View style={styles.imageLabel}>
-              <Text style={styles.imageLabelText}>ORIGINAL</Text>
+              <Text style={styles.imageLabelText}>{t('history.original').toUpperCase()}</Text>
             </View>
           </View>
         </View>
@@ -287,7 +287,7 @@ export default function HistoryScreen() {
               transition={200}
             />
             <View style={[styles.imageLabel, styles.imageLabelResult]}>
-              <Text style={styles.imageLabelText}>RESULT</Text>
+              <Text style={styles.imageLabelText}>{t('history.result').toUpperCase()}</Text>
             </View>
           </View>
         </View>
@@ -344,13 +344,11 @@ export default function HistoryScreen() {
   const renderSection = (title: string, count: number, items: any[]) => {
     if (items.length === 0) return null;
 
-    const transformationText = count === 1 ? 'TRANSFORMATION' : 'TRANSFORMATIONS';
-
     return (
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{title.toUpperCase()}</Text>
-          <Text style={styles.sectionCount}>{count} {transformationText}</Text>
+          <Text style={styles.sectionCount}>{count} {t('history.transformations').toUpperCase()}</Text>
         </View>
         <View style={styles.sectionContent}>
           {items.map(item => renderHistoryItem(item))}
