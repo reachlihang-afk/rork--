@@ -1290,7 +1290,8 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
+            {/* Pro Style Tab - 暂时隐藏，功能待完善 */}
+            {/* <TouchableOpacity
               style={[styles.tab, selectedTab === 'pro' && styles.tabActive]}
               onPress={() => setSelectedTab('pro')}
             >
@@ -1300,7 +1301,7 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
               ]}>
                 {t('outfitChange.proStyle')}
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           {/* Template Swap内容 */}
@@ -1420,11 +1421,10 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
             </View>
           )}
 
-          {/* Pro Style内容 */}
+          {/* Pro Style内容 - 暂时隐藏，功能待完善
           {selectedTab === 'pro' && (
             <View style={styles.tabContent}>
               {selectedLookPrompt ? (
-                // 已选择Look
                 <View style={styles.selectedLookContainer}>
                   <View style={styles.selectedLookCard}>
                     <View style={styles.selectedLookHeader}>
@@ -1446,13 +1446,10 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
                   </View>
                 </View>
               ) : (
-                // 未选择Look,显示达人列表
                 <>
                   <Text style={styles.proTitle}>
                     {t('outfitChange.selectInfluencer')}
                   </Text>
-                  
-                  {/* Jennie示例卡片 */}
                   <TouchableOpacity
                     style={styles.influencerCard}
                     onPress={() => router.push('/influencer-collection/jennie' as any)}
@@ -1480,12 +1477,12 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
                       </View>
                     </View>
                   </TouchableOpacity>
-
                   <Text style={styles.comingSoon}>更多达人即将上线...</Text>
                 </>
               )}
             </View>
           )}
+          */}
         </View>
 
         {/* 生成结果展示区域 */}
