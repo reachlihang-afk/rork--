@@ -105,12 +105,24 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+      {/* 顶部标题栏 */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>{t('app.name', '百变星君')}</Text>
+        <TouchableOpacity 
+          style={styles.coinBadge}
+          onPress={handleCoinClick}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.coinBadgeText}>💎 {coinBalance}</Text>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero Card - 包含钻石余额 */}
+        {/* Hero Card */}
         <TouchableOpacity 
           style={styles.heroCard}
           onPress={() => router.push('/outfit-change' as any)}
@@ -122,18 +134,6 @@ export default function HomeScreen() {
             end={{ x: 1, y: 1 }}
             style={styles.heroGradient}
           >
-            {/* 钻石余额 - 右上角 */}
-            <TouchableOpacity 
-              style={styles.coinBadge}
-              onPress={(e) => {
-                e.stopPropagation();
-                handleCoinClick();
-              }}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.coinBadgeText}>💎 {coinBalance}</Text>
-            </TouchableOpacity>
-
             <View style={styles.heroContent}>
               <View style={styles.heroLeft}>
                 <Text style={styles.heroTitle}>{t('home.oneClickOutfit')}</Text>
@@ -211,9 +211,37 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FAFAFA',
   },
+  // 顶部标题栏
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'ios' ? 56 : 16,
+    paddingBottom: 12,
+    backgroundColor: '#FAFAFA',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  // 钻石余额徽章
+  coinBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  coinBadgeText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#475569',
+  },
   scrollView: { flex: 1 },
   content: {
-    paddingTop: Platform.OS === 'ios' ? 60 : 24,
     paddingHorizontal: 16,
     paddingBottom: 40,
   },
@@ -231,31 +259,12 @@ const styles = StyleSheet.create({
   },
   heroGradient: {
     padding: 24,
-    paddingTop: 20,
     minHeight: 200,
-    position: 'relative',
-  },
-  // 钻石余额徽章
-  coinBadge: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    zIndex: 10,
-  },
-  coinBadgeText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
   heroContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginTop: 24,
     marginBottom: 16,
   },
   heroLeft: { flex: 1, paddingRight: 16 },
@@ -272,14 +281,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   heroImageContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
+    width: 52,
+    height: 52,
+    borderRadius: 26,  // 正圆形
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    transform: [{ rotate: '3deg' }],
+    borderColor: 'rgba(255, 255, 255, 0.25)',
     backgroundColor: '#1E293B',
+    // 去掉倾斜效果
   },
   heroImagePlaceholder: {
     width: '100%',
