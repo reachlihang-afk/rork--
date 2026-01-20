@@ -254,17 +254,18 @@ export default function HistoryScreen() {
   if (!isLoggedIn) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => router.back()}
-            activeOpacity={0.7}
-          >
-            <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>History</Text>
-          <View style={styles.headerRight} />
-        </View>
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          activeOpacity={0.6}
+        >
+          <ArrowLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>History</Text>
+        <View style={styles.headerRight} />
+      </View>
         
         <View style={styles.loginRequiredContainer}>
           <Text style={styles.loginRequiredIcon}>📋</Text>
@@ -286,17 +287,18 @@ export default function HistoryScreen() {
   if (outfitChangeHistory.length === 0) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => router.back()}
-            activeOpacity={0.7}
-          >
-            <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>History</Text>
-          <View style={styles.headerRight} />
-        </View>
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          activeOpacity={0.6}
+        >
+          <ArrowLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>History</Text>
+        <View style={styles.headerRight} />
+      </View>
         
         <ScrollView
           contentContainerStyle={styles.emptyScrollContent}
@@ -325,9 +327,10 @@ export default function HistoryScreen() {
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => router.back()}
-          activeOpacity={0.7}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          activeOpacity={0.6}
         >
-          <ArrowLeft size={24} color="#1a1a1a" strokeWidth={2} />
+          <ArrowLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>History</Text>
         <View style={styles.headerRight} />
@@ -368,8 +371,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 48,
+    height: 48,
+    marginLeft: -8,
     alignItems: 'center',
     justifyContent: 'center',
   },
