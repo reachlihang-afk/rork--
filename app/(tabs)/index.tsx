@@ -1,64 +1,116 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Camera } from 'lucide-react-native';
+import { Heart, Sparkles } from 'lucide-react-native';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCoin } from '@/contexts/CoinContext';
+import { useSquare } from '@/contexts/SquareContext';
 import { LinearGradient } from 'expo-linear-gradient';
-
-// 最新的4个模板
-const LATEST_TEMPLATES = [
-  { id: 'jennie', icon: '💖', badge: 'HOT' },
-  { id: 'fairytale-princess', icon: '👸', badge: null },
-  { id: 'random', icon: '✨', isSpecial: true, badge: null },
-  { id: 'starbucks-barista', icon: '☕', badge: null },
-];
+import { useMemo } from 'react';
 
 export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user, isLoggedIn } = useAuth();
   const { coinBalance } = useCoin();
+  const { posts } = useSquare();
 
-  // 获取模板的翻译名称和副标题
-  const getTemplateName = (id: string) => {
-    return t(`outfitChange.templates.${id}`, id);
+  // 获取热门作品
+  const featuredWorks = useMemo(() => {
+    return [...posts]
+      .filter(post => post.resultImageUri)
+      .sort((a, b) => b.likes.length - a.likes.length)
+      .slice(0, 8);
+  }, [posts]);
+
+  // 瀑布流分列
+  const { leftColumn, rightColumn } = useMemo(() => {
+    const left: typeof featuredWorks = [];
+    const right: typeof featuredWorks = [];
+    featuredWorks.forEach((work, index) => {
+      if (index % 2 === 0) left.push(work);
+      else right.push(work);
+    });
+    return { leftColumn: left, rightColumn: right };
+  }, [featuredWorks]);
+
+  const getCardHeight = (index: number, isLeft: boolean) => {
+    const heights = isLeft ? [200, 260, 180, 240] : [240, 180, 260, 200];
+    return heights[index % heights.length];
   };
 
-  // 点击钻石的处理
   const handleCoinClick = () => {
     if (isLoggedIn) {
-      // 已登录,跳转到充值页面
       router.push('/recharge' as any);
     } else {
-      // 未登录,跳转到个人中心(登录页面)
       router.push('/(tabs)/profile' as any);
     }
   };
 
+  const renderWorkCard = (work: typeof featuredWorks[0], index: number, isLeft: boolean) => {
+    const height = getCardHeight(index, isLeft);
+    return (
+      <TouchableOpacity
+        key={work.id}
+        style={[styles.workCard, { marginBottom: 12 }]}
+        onPress={() => router.push('/(tabs)/square' as any)}
+        activeOpacity={0.9}
+      >
+        <View style={[styles.workImageContainer, { height }]}>
+          <Image
+            source={{ uri: work.resultImageUri }}
+            style={styles.workImage}
+            contentFit="cover"
+          />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.6)']}
+            style={styles.workGradient}
+          />
+          <View style={styles.workOverlay}>
+            <View style={styles.workUserRow}>
+              <View style={styles.workUserAvatar}>
+                {work.userAvatar ? (
+                  <Image
+                    source={{ uri: work.userAvatar }}
+                    style={styles.workUserAvatarImage}
+                    contentFit="cover"
+                  />
+                ) : (
+                  <Text style={styles.workUserAvatarPlaceholder}>👤</Text>
+                )}
+              </View>
+              <Text style={styles.workUserName} numberOfLines={1}>
+                {work.userNickname || '用户'}
+              </Text>
+            </View>
+            <View style={styles.workStats}>
+              <View style={styles.workStat}>
+                <Heart size={12} color="#fff" fill={work.likes.length > 0 ? "#fff" : "transparent"} />
+                <Text style={styles.workStatText}>{work.likes.length}</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+        {work.templateName && (
+          <View style={styles.workFooter}>
+            <Text style={styles.workTemplateName} numberOfLines={1}>
+              {work.templateName}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={styles.container}>
-      {/* Header - 移除应用名称,只保留右侧功能区 */}
-      <View style={styles.header}>
-        <View style={styles.headerSpacer} />
-        <View style={styles.headerRight}>
-          <TouchableOpacity 
-            style={styles.coinContainer}
-            onPress={handleCoinClick}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.coinText}>💎 {coinBalance}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero Card - 直接点击进入换装页面 */}
+        {/* Hero Card - 包含钻石余额 */}
         <TouchableOpacity 
           style={styles.heroCard}
           onPress={() => router.push('/outfit-change' as any)}
@@ -70,13 +122,24 @@ export default function HomeScreen() {
             end={{ x: 1, y: 1 }}
             style={styles.heroGradient}
           >
+            {/* 钻石余额 - 右上角 */}
+            <TouchableOpacity 
+              style={styles.coinBadge}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleCoinClick();
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.coinBadgeText}>💎 {coinBalance}</Text>
+            </TouchableOpacity>
+
             <View style={styles.heroContent}>
               <View style={styles.heroLeft}>
                 <Text style={styles.heroTitle}>{t('home.oneClickOutfit')}</Text>
                 <Text style={styles.heroSubtitle}>{t('home.transformInstantly')}</Text>
               </View>
               <View style={styles.heroImageContainer}>
-                {/* 根据登录状态显示头像或爱心 */}
                 {isLoggedIn && user?.avatar ? (
                   <Image 
                     source={{ uri: user.avatar }} 
@@ -91,7 +154,6 @@ export default function HomeScreen() {
               </View>
             </View>
             
-            {/* 开始按钮 */}
             <View style={styles.heroStartButtonContainer}>
               <View style={styles.heroStartButton}>
                 <LinearGradient
@@ -105,56 +167,39 @@ export default function HomeScreen() {
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* Templates Section - 只显示标题和View All */}
+        {/* 精选效果 - 瀑布流 */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t('home.templates')}</Text>
-            <TouchableOpacity onPress={() => router.push('/outfit-change' as any)}>
-              <Text style={styles.viewAllLink}>{t('home.viewAll')}</Text>
+            <View style={styles.sectionTitleRow}>
+              <Sparkles size={18} color="#f59e0b" strokeWidth={2.5} />
+              <Text style={styles.sectionTitle}>精选效果</Text>
+            </View>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/square' as any)}>
+              <Text style={styles.viewAllLink}>查看更多</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Template Grid - 只显示最新4个模板 */}
-          <View style={styles.templateGrid}>
-            {LATEST_TEMPLATES.map((template) => (
-              <TouchableOpacity
-                key={template.id}
-                style={[styles.templateCard, template.isSpecial && styles.templateCardSpecial]}
+          {featuredWorks.length > 0 ? (
+            <View style={styles.waterfallContainer}>
+              <View style={styles.waterfallColumn}>
+                {leftColumn.map((work, index) => renderWorkCard(work, index, true))}
+              </View>
+              <View style={styles.waterfallColumn}>
+                {rightColumn.map((work, index) => renderWorkCard(work, index, false))}
+              </View>
+            </View>
+          ) : (
+            <View style={styles.emptyWorks}>
+              <Text style={styles.emptyWorksIcon}>✨</Text>
+              <Text style={styles.emptyWorksText}>精选作品即将上线</Text>
+              <TouchableOpacity 
+                style={styles.tryButton}
                 onPress={() => router.push('/outfit-change' as any)}
-                activeOpacity={0.9}
               >
-                {template.isSpecial ? (
-                  <View style={styles.randomTemplate}>
-                    <Text style={styles.randomIcon}>🎲</Text>
-                    <Text style={styles.randomLabel}>{getTemplateName(template.id)}</Text>
-                  </View>
-                ) : (
-                  <>
-                    <View style={styles.templateImageContainer}>
-                      <View style={styles.templateImagePlaceholder}>
-                        <Text style={styles.templatePlaceholderIcon}>{template.icon}</Text>
-                      </View>
-                      {template.badge && (
-                        <View style={styles.hotBadge}>
-                          <Text style={styles.hotBadgeText}>{template.badge}</Text>
-                        </View>
-                      )}
-                    </View>
-                  </>
-                )}
-                <View style={styles.templateFooter}>
-                  <View style={styles.templateIcon}>
-                    <Text style={styles.templateIconText}>{template.icon}</Text>
-                  </View>
-                  <View style={styles.templateInfo}>
-                    <Text style={styles.templateName} numberOfLines={2}>
-                      {getTemplateName(template.id)}
-                    </Text>
-                  </View>
-                </View>
+                <Text style={styles.tryButtonText}>立即体验换装</Text>
               </TouchableOpacity>
-            ))}
-          </View>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -166,50 +211,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FAFAFA',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 60 : 20,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-  },
-  headerSpacer: {
-    flex: 1,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  coinContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F1F5F9',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  coinText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#475569',
-  },
-  scrollView: {
-    flex: 1,
-  },
+  scrollView: { flex: 1 },
   content: {
-    paddingTop: 24,
-    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 24,
+    paddingHorizontal: 16,
     paddingBottom: 40,
   },
+  
+  // Hero Card
   heroCard: {
-    borderRadius: 28,
+    borderRadius: 24,
     overflow: 'hidden',
     marginBottom: 24,
     shadowColor: '#0F172A',
@@ -217,50 +228,58 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 24,
     elevation: 10,
-    minHeight: 260, // 增大高度
   },
   heroGradient: {
-    padding: 32, // 增大内边距
-    minHeight: 260,
+    padding: 24,
+    paddingTop: 20,
+    minHeight: 200,
+    position: 'relative',
+  },
+  // 钻石余额徽章
+  coinBadge: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    zIndex: 10,
+  },
+  coinBadgeText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   heroContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24, // 增加底部间距
+    alignItems: 'flex-start',
+    marginTop: 24,
+    marginBottom: 16,
   },
-  heroLeft: {
-    flex: 1,
-  },
+  heroLeft: { flex: 1, paddingRight: 16 },
   heroTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     color: '#FFFFFF',
-    lineHeight: 30,
+    lineHeight: 28,
     marginBottom: 4,
   },
   heroSubtitle: {
-    fontSize: 14,
-    color: '#CBD5E1',
+    fontSize: 13,
+    color: '#94A3B8',
     fontWeight: '500',
   },
   heroImageContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 18,
+    width: 56,
+    height: 56,
+    borderRadius: 14,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
     transform: [{ rotate: '3deg' }],
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
     backgroundColor: '#1E293B',
-  },
-  heroImage: {
-    width: '100%',
-    height: '100%',
   },
   heroImagePlaceholder: {
     width: '100%',
@@ -269,26 +288,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  heroAvatar: {
-    width: '100%',
-    height: '100%',
-  },
+  heroAvatar: { width: '100%', height: '100%' },
   heroImagePlaceholderIcon: {
-    fontSize: 32,
+    fontSize: 24,
     textAlign: 'center',
-    lineHeight: 40,
   },
-  
-  // 开始按钮
   heroStartButtonContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 8,
   },
   heroStartButton: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
@@ -296,189 +309,146 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   heroStartButtonGradient: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
   heroStartButtonText: {
-    fontSize: 18,
+    fontSize: 15,
     color: '#1a1a1a',
     fontWeight: '700',
-    letterSpacing: 0.5,
   },
 
-  uploadButtonContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderStyle: 'dashed',
-    borderRadius: 16,
-    paddingVertical: 16,
-    gap: 12,
-  },
-  uploadIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  uploadText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  section: {
-    marginBottom: 24,
-  },
+  // Section
+  section: { marginBottom: 24 },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
-    paddingHorizontal: 4,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: '#0F172A',
-    letterSpacing: -0.5,
   },
   viewAllLink: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#64748B',
   },
-  templateGrid: {
+
+  // 瀑布流
+  waterfallContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
+    gap: 12,
   },
-  templateCard: {
-    width: '47.5%',
+  waterfallColumn: { flex: 1 },
+  workCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    padding: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  templateCardSpecial: {
-    backgroundColor: '#F8FAFC',
-    borderColor: '#E2E8F0',
-    borderStyle: 'dashed',
-  },
-  templateImageContainer: {
-    aspectRatio: 3 / 4,
-    borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#F1F5F9',
-    marginBottom: 10,
-    position: 'relative',
-  },
-  templateImage: {
-    width: '100%',
-    height: '100%',
-  },
-  templateImagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#F1F5F9',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  templatePlaceholderIcon: {
-    fontSize: 48,
-  },
-  hotBadge: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: '#0F172A',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
     elevation: 3,
   },
-  hotBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#FFFFFF',
+  workImageContainer: {
+    width: '100%',
+    position: 'relative',
+    overflow: 'hidden',
+    borderRadius: 16,
   },
-  randomTemplate: {
-    aspectRatio: 3 / 4,
-    borderRadius: 12,
-    backgroundColor: 'rgba(248, 250, 252, 0.4)',
-    borderWidth: 1,
-    borderColor: 'rgba(226, 232, 240, 0.5)',
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-    gap: 8,
+  workImage: { width: '100%', height: '100%' },
+  workGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 80,
   },
-  randomIcon: {
-    fontSize: 36,
+  workOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 12,
   },
-  randomLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#0F172A',
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  templateFooter: {
+  workUserRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 4,
+    marginBottom: 4,
   },
-  templateIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
+  workUserAvatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
-  templateIconText: {
-    fontSize: 18,
-  },
-  templateInfo: {
+  workUserAvatarImage: { width: '100%', height: '100%' },
+  workUserAvatarPlaceholder: { fontSize: 12 },
+  workUserName: {
     flex: 1,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
-  templateName: {
+  workStats: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  workStat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  workStatText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  workFooter: { padding: 10 },
+  workTemplateName: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+
+  // 空状态
+  emptyWorks: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+  },
+  emptyWorksIcon: { fontSize: 48, marginBottom: 12 },
+  emptyWorksText: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#0F172A',
-    lineHeight: 18,
+    color: '#94A3B8',
+    marginBottom: 20,
+  },
+  tryButton: {
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  tryButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
