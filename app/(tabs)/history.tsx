@@ -305,9 +305,20 @@ export default function HistoryScreen() {
             {t('history.noOutfitChangeHistoryDesc')}
           </Text>
           {/* 调试信息 - 可以在确认问题解决后删除 */}
-          <Text style={styles.debugText}>
-            用户ID: {user?.userId || '未登录'}
-          </Text>
+          <View style={styles.debugBox}>
+            <Text style={styles.debugText}>
+              调试信息：
+            </Text>
+            <Text style={styles.debugText}>
+              登录状态: {isLoggedIn ? '已登录' : '未登录'}
+            </Text>
+            <Text style={styles.debugText}>
+              用户ID: {user?.userId || '无'}
+            </Text>
+            <Text style={styles.debugText}>
+              历史记录数: {outfitChangeHistory.length}
+            </Text>
+          </View>
         </View>
       </View>
     );
@@ -401,11 +412,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
+  debugBox: {
+    marginTop: 30,
+    padding: 16,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    width: '100%',
+  },
   debugText: {
-    fontSize: 11,
-    color: '#9ca3af',
-    textAlign: 'center',
-    marginTop: 20,
+    fontSize: 12,
+    color: '#6b7280',
+    textAlign: 'left',
+    marginBottom: 4,
   },
   
   // Section

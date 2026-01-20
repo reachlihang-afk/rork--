@@ -1057,89 +1057,43 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
         }
       });
       
-      // 保存到历史记录（失败不影响当前展示）
+      // 保存到历史记录
       try {
-        // 在原生平台上，将结果保存到本地文件，避免AsyncStorage存储过大的base64导致失败
-        let savedResultUri = generatedImageUri;
-        let savedOriginalUri = userImage;
-        
-        if (Platform.OS !== 'web') {
-          // 保存结果图片到文件
-          try {
-            const baseDir = getWritableDirectory();
-            if (!baseDir) {
-              throw new Error('No writable directory available');
-            }
-            const filename = `outfit_result_${Date.now()}.jpg`;
-            const filepath = `${baseDir}${filename}`;
-            await FileSystem.writeAsStringAsync(filepath, generatedImageBase64, {
-              encoding: 'base64',
-            });
-            savedResultUri = filepath;
-            console.log('[OutfitChange] Saved result to local file:', filepath);
-          } catch (fileError) {
-            console.warn('[OutfitChange] Failed to save result to file, falling back to base64:', fileError);
-          }
-          
-          // 保存原图到文件（避免原图URI失效）
-          if (userImage && !userImage.startsWith('file://')) {
-            try {
-              const baseDir = getWritableDirectory();
-              if (baseDir) {
-                const originalFilename = `outfit_original_${Date.now()}.jpg`;
-                const originalFilepath = `${baseDir}${originalFilename}`;
-                // 复制原图到应用目录
-                await FileSystem.copyAsync({
-                  from: userImage,
-                  to: originalFilepath
-                });
-                savedOriginalUri = originalFilepath;
-                console.log('[OutfitChange] Copied original to local file:', originalFilepath);
-              }
-            } catch (copyError) {
-              console.warn('[OutfitChange] Failed to copy original image:', copyError);
-              // 保持原始URI
-            }
-          }
-        } else {
-          // Web平台上，将blob URL转换为base64
-          if (userImage && !userImage.startsWith('data:')) {
-            try {
-              console.log('[OutfitChange] Converting original image to base64 for web storage...');
-              const originalBase64 = await convertToBase64(userImage, true, false);
-              savedOriginalUri = `data:image/jpeg;base64,${originalBase64}`;
-              console.log('[OutfitChange] Original image converted, size:', Math.round(originalBase64.length / 1024), 'KB');
-            } catch (convertError) {
-              console.warn('[OutfitChange] Failed to convert original image to base64:', convertError);
-            }
-          }
-        }
-        
-        // 自定义模式下，历史记录的originalImageUri应该是参考服饰，而不是用户照片
+        // 直接使用原始URI和生成的图片URI保存历史记录
+        // 避免复杂的文件系统操作，在RORK等环境中可能不支持
         const historyOriginalImage = selectedTab === 'custom' && customImages.length > 0 
           ? customImages[0] 
-          : savedOriginalUri;
+          : userImage;
+        
+        // 结果图片使用生成的base64 URI
+        const historyResultImage = generatedImageUri;
         
         console.log('[OutfitChange] Saving to history...');
         console.log('[OutfitChange] - user.userId:', user?.userId);
-        console.log('[OutfitChange] - historyOriginalImage:', historyOriginalImage?.substring(0, 50));
-        console.log('[OutfitChange] - savedResultUri:', savedResultUri?.substring(0, 50));
+        console.log('[OutfitChange] - templateName:', templateName);
         
-        await addOutfitChangeHistory(
+        const historyId = await addOutfitChangeHistory(
           historyOriginalImage,
-          savedResultUri,
+          historyResultImage,
           selectedTab === 'template' ? selectedTemplate! : 'custom-outfit',
           templateName
         );
-        console.log('[OutfitChange] History saved successfully');
+        console.log('[OutfitChange] History saved successfully, id:', historyId);
+        
+        // 显示保存成功的提示（调试用，确认问题解决后可删除）
+        Alert.alert(
+          '✅ 保存成功',
+          `历史记录已保存\nID: ${historyId}\n用户: ${user?.userId}`,
+          [{ text: '确定' }]
+        );
       } catch (historyError: any) {
         console.error('[OutfitChange] Failed to save to history:', historyError);
-        // 在移动端显示保存失败的提示
-        showAlert({
-          type: 'error',
-          title: '历史记录保存失败',
-          message: historyError?.message || '请稍后重试'
-        });
+        // 显示保存失败的提示
+        Alert.alert(
+          '❌ 历史记录保存失败',
+          `错误: ${historyError?.message || '未知错误'}\n用户ID: ${user?.userId || '未登录'}`,
+          [{ text: '确定' }]
+        );
       }
       
     } catch (error: any) {

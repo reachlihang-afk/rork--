@@ -95,10 +95,14 @@ export const [VerificationProvider, useVerification] = createContextHook(() => {
       allowSquarePublish,
     };
     
-    // 限制历史记录数量为5条，防止存储溢出（每条记录包含大量base64图片数据）
-    const updated = [historyItem, ...outfitChangeHistory].slice(0, 5);
+    // 限制历史记录数量为3条，防止存储溢出（每条记录包含大量base64图片数据）
+    const updated = [historyItem, ...outfitChangeHistory].slice(0, 3);
     console.log('[VerificationContext] Updating state with', updated.length, 'items');
+    console.log('[VerificationContext] New history item id:', historyItem.id);
+    
+    // 立即更新 state，不等待 AsyncStorage
     setOutfitChangeHistory(updated);
+    console.log('[VerificationContext] State updated');
     
     try {
       const jsonData = JSON.stringify(updated);
