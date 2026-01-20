@@ -142,7 +142,7 @@ export default function EditProfileScreen() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [nickname, avatar, updateProfile, updateUserNickname, user, isSubmitting]);
+  }, [nickname, avatar, bio, updateProfile, updateUserNickname, user, isSubmitting]);
 
   return (
     <View style={styles.container}>
