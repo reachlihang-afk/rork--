@@ -36,29 +36,32 @@ type TabType = 'template' | 'custom' | 'pro';
 // AI Prompt前缀
 const COMMON_PROMPT_PREFIX = 'IMPORTANT: Keep face, facial expression, hairstyle, pose, and photo framing EXACTLY as in original. Only change clothing in the EXACT visible areas. If only partial clothing is visible, apply only to that partial area. Do NOT extend or complete the image. ';
 
-// 21个精选模板（含前沿穿搭）
+// 高级感后缀 - 提升所有模板的品质感
+const LUXURY_QUALITY_SUFFIX = '. High-end designer quality, premium luxurious fabrics with beautiful texture and drape, impeccable tailoring with perfect fit, sophisticated color palette, elegant refined details, professional fashion editorial photography quality';
+
+// 21个精选模板（含前沿穿搭）- 升级版高级感 Prompt
 const TEMPLATES = [
   { id: 'random', name: '随机装', nameEn: 'Random', icon: '🎲', prompt: 'RANDOM_PLACEHOLDER' },
   { id: 'frontier', name: '前沿穿搭', nameEn: 'Frontier', icon: '✨', prompt: 'FRONTIER_PLACEHOLDER' },
   { id: 'neo-digital', name: '数字霓虹', nameEn: 'Neo-Digital', icon: '🌈', prompt: 'NEO_DIGITAL_PLACEHOLDER' },
-  { id: 'bikini', name: '泳装', nameEn: 'Swimwear', icon: '👙', prompt: 'elegant beach swimwear, summer beach outfit, fashionable beachwear' },
-  { id: 'formal', name: '正装', nameEn: 'Formal', icon: '👔', prompt: 'formal business attire' },
-  { id: 'sport', name: '运动装', nameEn: 'Sports', icon: '🏃', prompt: 'athletic sportswear' },
-  { id: 'fairytale-princess', name: '童话公主装', nameEn: 'Princess', icon: '👸', prompt: 'fairytale princess dress' },
-  { id: 'old-money', name: '老钱风', nameEn: 'Old Money', icon: '💰', prompt: 'old money elegant style' },
-  { id: 'tennis', name: '网球装', nameEn: 'Tennis', icon: '🎾', prompt: 'tennis outfit' },
-  { id: 'ski', name: '滑雪服', nameEn: 'Ski', icon: '⛷️', prompt: 'ski wear' },
-  { id: 'lolita', name: '洛丽塔', nameEn: 'Lolita', icon: '🎀', prompt: 'lolita fashion dress' },
-  { id: 'punk', name: '朋克装', nameEn: 'Punk', icon: '🎸', prompt: 'punk rock style' },
-  { id: 'wedding', name: '婚纱', nameEn: 'Wedding', icon: '👰', prompt: 'wedding dress' },
-  { id: 'traditional', name: '汉服', nameEn: 'Hanfu', icon: '🏮', prompt: 'traditional Chinese Hanfu' },
-  { id: 'superhero', name: '超级英雄', nameEn: 'Superhero', icon: '🦸', prompt: 'superhero costume' },
-  { id: 'starbucks-barista', name: '星巴克', nameEn: 'Starbucks', icon: '☕', prompt: 'Starbucks barista uniform' },
-  { id: 'hot-girl', name: '辣妹装', nameEn: 'Hot Girl', icon: '🔥', prompt: 'hot trendy girl style' },
-  { id: 'cowboy', name: '牛仔装', nameEn: 'Cowboy', icon: '🤠', prompt: 'western cowboy style' },
-  { id: 'outdoor', name: '户外装', nameEn: 'Outdoor', icon: '🏔️', prompt: 'outdoor adventure clothing' },
-  { id: 'flight-attendant', name: '空姐装', nameEn: 'Flight', icon: '✈️', prompt: 'flight attendant uniform' },
-  { id: 'god-of-wealth', name: '财神装', nameEn: 'Wealth God', icon: '💸', prompt: 'Chinese God of Wealth costume' },
+  { id: 'bikini', name: '泳装', nameEn: 'Swimwear', icon: '👙', prompt: 'luxury designer swimwear in elegant style, high-end resort collection quality like Zimmermann or Eres, sophisticated beach glamour with flattering cut, premium fabric with beautiful drape, chic summer elegance perfect for St. Tropez or Maldives resort' },
+  { id: 'formal', name: '正装', nameEn: 'Formal', icon: '👔', prompt: 'premium tailored business suit in luxurious Italian wool fabric, perfectly fitted blazer with sharp structured shoulders, high-quality silk blouse underneath, sophisticated executive style as seen in Vogue Business editorial, impeccable Savile Row craftsmanship, elegant minimalist accessories, powerful yet refined professional look' },
+  { id: 'sport', name: '运动装', nameEn: 'Sports', icon: '🏃', prompt: 'luxury athleisure wear from premium brands like Lululemon or Alo Yoga, high-performance fabric with sleek modern design, sophisticated sporty-chic aesthetic, flattering athletic silhouette, muted elegant color palette, fitness fashion editorial quality, stylish enough for brunch after workout' },
+  { id: 'fairytale-princess', name: '童话公主装', nameEn: 'Princess', icon: '👸', prompt: 'breathtaking haute couture princess ball gown, luxurious silk organza and tulle layers, intricate hand-sewn beading and crystal embellishments, Elie Saab or Zuhair Murad inspired elegance, romantic ethereal silhouette with dramatic train, royal sophistication worthy of a European palace, fantasy bridal editorial quality' },
+  { id: 'old-money', name: '老钱风', nameEn: 'Old Money', icon: '💰', prompt: 'quiet luxury old money aesthetic, sumptuous cashmere sweater draped elegantly over shoulders, fine pearl jewelry, Loro Piana or Brunello Cucinelli quality fabrics, understated inherited wealth elegance, preppy New England sophistication, The Row or Ralph Lauren Purple Label inspired styling, absolutely no visible logos, muted refined neutral tones in cream beige and navy, timelessly elegant aristocratic taste' },
+  { id: 'tennis', name: '网球装', nameEn: 'Tennis', icon: '🎾', prompt: 'elegant country club tennis attire, crisp white premium performance fabric with subtle texture, flattering pleated tennis skirt, sophisticated preppy athletic style like Lacoste or Tory Sport, refined sporty elegance perfect for Wimbledon or exclusive tennis club, clean minimalist design with impeccable tailoring' },
+  { id: 'ski', name: '滑雪服', nameEn: 'Ski', icon: '⛷️', prompt: 'luxury designer ski wear from Moncler or Bogner, sleek high-performance jacket with premium down insulation, sophisticated alpine chic aesthetic, elegant color-blocked design, perfect for Aspen or St. Moritz slopes, fashionable yet functional winter sports elegance, après-ski ready glamour' },
+  { id: 'lolita', name: '洛丽塔', nameEn: 'Lolita', icon: '🎀', prompt: 'exquisite Japanese Lolita fashion dress, delicate hand-made lace and ribbon details, high-quality cotton and organza fabrics, intricate Victorian-inspired design, elegant gothic or sweet Lolita aesthetic from brands like Angelic Pretty or Baby The Stars Shine Bright, romantic doll-like sophistication with impeccable craftsmanship' },
+  { id: 'punk', name: '朋克装', nameEn: 'Punk', icon: '🎸', prompt: 'high-fashion punk rock ensemble, premium Italian leather jacket with silver hardware, designer distressed denim, Balmain or Saint Laurent inspired edgy luxury, rebellious yet sophisticated attitude, runway-worthy rock chic aesthetic, bold statement pieces with impeccable construction quality' },
+  { id: 'wedding', name: '婚纱', nameEn: 'Wedding', icon: '👰', prompt: 'breathtaking haute couture wedding gown, luxurious French lace and silk satin, intricate hand-sewn beading and embroidery, Vera Wang or Monique Lhuillier inspired elegance, romantic flowing silhouette with cathedral train, bridal editorial perfection worthy of Vogue Weddings cover, timeless sophisticated bridal beauty' },
+  { id: 'traditional', name: '汉服', nameEn: 'Hanfu', icon: '🏮', prompt: 'exquisite traditional Chinese Hanfu in premium silk brocade, intricate hand-embroidered patterns with gold and silver threads, elegant flowing sleeves and graceful silhouette, museum-quality craftsmanship inspired by Tang or Ming dynasty court attire, sophisticated cultural elegance with luxurious fabric sheen and beautiful drape' },
+  { id: 'superhero', name: '超级英雄', nameEn: 'Superhero', icon: '🦸', prompt: 'high-budget Hollywood superhero costume, premium metallic and leather materials with sophisticated design, Marvel or DC cinematic quality construction, powerful heroic silhouette with sleek modern aesthetic, professional movie-grade costume design with impeccable details and luxurious finish' },
+  { id: 'starbucks-barista', name: '星巴克', nameEn: 'Starbucks', icon: '☕', prompt: 'authentic Starbucks barista uniform with signature green apron, crisp clean professional appearance, friendly coffee shop aesthetic, well-fitted comfortable workwear with neat presentation, genuine barista look ready to craft artisanal beverages' },
+  { id: 'hot-girl', name: '辣妹装', nameEn: 'Hot Girl', icon: '🔥', prompt: 'trendy hot girl aesthetic with designer edge, figure-flattering bodycon dress or stylish two-piece set, Jacquemus or Cult Gaia inspired sexy sophistication, confident glamorous style perfect for Miami or LA nightlife, premium fabrics with impeccable fit, Instagram-worthy fashion influencer look with luxurious finish' },
+  { id: 'cowboy', name: '牛仔装', nameEn: 'Cowboy', icon: '🤠', prompt: 'elevated Western cowboy style with luxury twist, premium suede or leather jacket with fringe details, high-end denim from brands like R13 or Citizens of Humanity, sophisticated ranch aesthetic meets high fashion, Isabel Marant or Ralph Lauren Western Collection inspired, rodeo chic with impeccable tailoring and luxurious materials' },
+  { id: 'outdoor', name: '户外装', nameEn: 'Outdoor', icon: '🏔️', prompt: 'luxury outdoor adventure wear from Arc teryx Veilance or Patagonia, high-performance technical fabric with sleek minimalist design, sophisticated gorpcore aesthetic, premium hiking and camping attire that transitions seamlessly to urban settings, functional elegance with impeccable construction quality' },
+  { id: 'flight-attendant', name: '空姐装', nameEn: 'Flight', icon: '✈️', prompt: 'elegant airline cabin crew uniform from prestigious carrier like Emirates or Singapore Airlines, perfectly tailored blazer and pencil skirt in sophisticated navy or burgundy, silk scarf with elegant knot, polished professional appearance with impeccable grooming, first-class service elegance with luxurious fabric quality' },
+  { id: 'god-of-wealth', name: '财神装', nameEn: 'Wealth God', icon: '💸', prompt: 'magnificent Chinese God of Wealth (Caishen) costume, luxurious imperial red and gold silk brocade with intricate dragon and auspicious symbol embroidery, elaborate traditional headdress, premium theatrical costume quality worthy of Chinese New Year celebration, prosperous festive elegance with opulent golden details and rich fabric textures' },
 ];
 
 // 随机风格库 - 完整版157种风格
@@ -806,7 +809,7 @@ KEY VISUAL ELEMENTS:
 
 Create a cutting-edge cyberpunk meets high fashion look. The outfit should appear to glow and shimmer with futuristic technology embedded in the fabric. Professional sci-fi fashion editorial quality.`;
       } else {
-        return COMMON_PROMPT_PREFIX + `Change the outfit to ${template.prompt}`;
+        return COMMON_PROMPT_PREFIX + `Change the outfit to: ${template.prompt}${LUXURY_QUALITY_SUFFIX}`;
       }
     } else if (selectedTab === 'custom' && customImages.length > 0) {
       return COMMON_PROMPT_PREFIX + 'Apply the clothing style from the reference images to the person, matching colors, patterns, and design details exactly.';
