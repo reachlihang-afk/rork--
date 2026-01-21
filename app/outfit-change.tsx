@@ -32,6 +32,304 @@ import { useAlert } from '@/contexts/AlertContext';
 import { saveToGallery } from '@/utils/share';
 
 type TabType = 'template' | 'custom' | 'pro';
+type MainTabType = 'outfit' | 'timeTravel' | 'becomeStar' | 'movieCosplay';
+
+// ========== 时空穿梭 - 年代模板 ==========
+const TIME_TRAVEL_ERAS = [
+  { 
+    id: '1970s', 
+    name: '70年代', 
+    nameEn: '70s Disco',
+    icon: '🕺', 
+    description: '迪斯科',
+    descriptionEn: 'Disco Era',
+    prompt: '1970s disco fashion style - bell-bottom pants with high waist, platform shoes, sequined halter top or polyester shirt with wide collar, gold chain necklace, afro or feathered hair, glittery makeup, Saturday Night Fever inspired glamour, studio 54 nightclub aesthetic',
+    hot: false 
+  },
+  { 
+    id: '1980s', 
+    name: '80年代', 
+    nameEn: '80s Hong Kong',
+    icon: '📼', 
+    description: '港风霓虹',
+    descriptionEn: 'Neon HK Style',
+    prompt: '1980s Hong Kong fashion style - oversized blazer with strong shoulder pads, high-waisted pleated trousers, silk blouse, bold colors like teal and magenta, chunky gold jewelry, permed hair with volume, neon lights reflection, Leslie Cheung and Anita Mui inspired elegance, vintage Hong Kong movie star aesthetic',
+    hot: true 
+  },
+  { 
+    id: '1990s', 
+    name: '90年代', 
+    nameEn: '90s Grunge',
+    icon: '🎸', 
+    description: '摇滚街头',
+    descriptionEn: 'Rock Street',
+    prompt: '1990s grunge and street fashion - oversized flannel shirt, ripped baggy jeans, combat boots or Converse, band t-shirt underneath, choker necklace, messy hair, Kurt Cobain and 90s rock aesthetic, casual rebellious attitude, vintage film grain look',
+    hot: false 
+  },
+  { 
+    id: '2000s', 
+    name: '2000年代', 
+    nameEn: '2000s Y2K',
+    icon: '💿', 
+    description: '嘻哈Y2K',
+    descriptionEn: 'Hip-Hop Y2K',
+    prompt: '2000s Y2K fashion style - low-rise jeans with butterfly belt, cropped tank top or velour tracksuit, platform sandals, chunky highlights in hair, butterfly clips, rhinestone accessories, Paris Hilton and early Britney Spears inspired, metallic and iridescent fabrics, futuristic millennium aesthetic',
+    hot: false 
+  },
+  { 
+    id: '2050s', 
+    name: '2050', 
+    nameEn: '2050 Cyber',
+    icon: '🤖', 
+    description: '赛博朋克',
+    descriptionEn: 'Cyberpunk',
+    prompt: '2050 futuristic cyberpunk fashion - sleek metallic bodysuit with LED light accents, holographic jacket, cyber goggles or AR glasses, neon hair color, chrome accessories, Blade Runner and Ghost in the Shell inspired, rain-slick streets reflection, dystopian luxury aesthetic with high-tech materials',
+    hot: true 
+  },
+  { 
+    id: '1800s', 
+    name: '1800', 
+    nameEn: '1800 Royal',
+    icon: '👑', 
+    description: '宫廷贵族',
+    descriptionEn: 'Royal Court',
+    prompt: '1800s European aristocratic court fashion - elaborate ball gown with corset bodice and full skirt, or tailored tailcoat for men, luxurious silk and velvet fabrics, intricate lace details, pearl and diamond jewelry, powdered wig or elegant updo hairstyle, Bridgerton and Pride and Prejudice inspired, grand palace ballroom setting',
+    hot: false 
+  },
+];
+
+// ========== 变身明星 - 明星/角色模板 ==========
+const BECOME_STAR_CATEGORIES = [
+  { id: 'celebrity', name: '明星', nameEn: 'Celebrity' },
+  { id: 'character', name: '角色', nameEn: 'Character' },
+  { id: 'profession', name: '职业', nameEn: 'Profession' },
+];
+
+const BECOME_STAR_TEMPLATES = [
+  // 明星类
+  { 
+    id: 'jennie-redcarpet', 
+    category: 'celebrity',
+    name: 'Jennie 红毯', 
+    nameEn: 'Jennie Red Carpet',
+    icon: '👱‍♀️', 
+    prompt: 'Jennie Kim BLACKPINK red carpet fashion - elegant haute couture Chanel gown, sophisticated glamour with K-pop star confidence, dramatic makeup with cat-eye liner, sleek straight black hair, diamond jewelry, red carpet photography lighting, Vogue cover worthy pose',
+    hot: true 
+  },
+  { 
+    id: 'iu-concert', 
+    category: 'celebrity',
+    name: 'IU 演唱会', 
+    nameEn: 'IU Concert',
+    icon: '🎤', 
+    prompt: 'IU Lee Ji-eun concert stage outfit - elegant yet youthful performance costume, sparkly dress or stylish two-piece stage outfit, soft romantic makeup, flowing brown hair, dreamy lighting effects, Korean pop star elegance, concert stage setting with dramatic lighting',
+    hot: true 
+  },
+  { 
+    id: 'lisa-airport', 
+    category: 'celebrity',
+    name: 'Lisa 机场', 
+    nameEn: 'Lisa Airport',
+    icon: '✈️', 
+    prompt: 'Lisa BLACKPINK airport fashion - trendy streetwear style, designer oversized hoodie or crop top with high-waisted pants, luxury handbag, cool sunglasses, effortlessly chic casual style, blonde hair with bangs, model-off-duty aesthetic, airport terminal background',
+    hot: false 
+  },
+  { 
+    id: 'gd-streetstyle', 
+    category: 'celebrity',
+    name: 'GD 街拍', 
+    nameEn: 'G-Dragon Street',
+    icon: '🎵', 
+    prompt: 'G-Dragon street style fashion - avant-garde designer outfit, oversized silhouette, unique layering, bold accessories, distinctive hairstyle with creative color, high-fashion streetwear fusion, confident artistic pose, urban Seoul backdrop',
+    hot: false 
+  },
+  // 角色类
+  { 
+    id: 'zhenhuan', 
+    category: 'character',
+    name: '甄嬛', 
+    nameEn: 'Zhen Huan',
+    icon: '👸', 
+    prompt: 'Zhen Huan fromErta legend of Zhen Huan - elegant Qing dynasty concubine costume, luxurious embroidered silk hanfu with intricate phoenix and floral patterns, elaborate traditional headdress with jade and gold ornaments, refined beauty makeup, palace drama aesthetic, Forbidden City imperial setting',
+    hot: true 
+  },
+  { 
+    id: 'huafei', 
+    category: 'character',
+    name: '华妃', 
+    nameEn: 'Hua Fei',
+    icon: '💃', 
+    prompt: 'Hua Fei from Legend of Zhen Huan - domineering imperial consort costume, bold red and gold Qing dynasty hanfu, elaborate phoenix crown headdress, dramatic powerful makeup with red lips, confident regal pose, luxurious palace chamber setting with silk curtains',
+    hot: false 
+  },
+  { 
+    id: 'harry-potter', 
+    category: 'character',
+    name: '霍格沃茨', 
+    nameEn: 'Hogwarts',
+    icon: '🧙', 
+    prompt: 'Hogwarts student uniform from Harry Potter - black wizarding robes with house colors (Gryffindor scarlet and gold, or Slytherin green and silver), striped tie, white shirt, grey sweater vest, wand in hand, magical castle background, cinematic Harry Potter movie aesthetic',
+    hot: true 
+  },
+  { 
+    id: 'daenerys', 
+    category: 'character',
+    name: '龙母', 
+    nameEn: 'Daenerys',
+    icon: '🐉', 
+    prompt: 'Daenerys Targaryen from Game of Thrones - elegant white or blue flowing gown, dragon scale texture details, silver-blonde long wavy hair, fierce yet beautiful expression, dragon queen aesthetic, dramatic windswept pose, Dragonstone castle or dragon backdrop',
+    hot: false 
+  },
+  // 职业类
+  { 
+    id: 'doctor', 
+    category: 'profession',
+    name: '医生', 
+    nameEn: 'Doctor',
+    icon: '👨‍⚕️', 
+    prompt: 'Professional doctor - crisp white lab coat over formal attire, stethoscope around neck, confident and caring expression, modern hospital or clinic setting, clean professional appearance, medical professional aesthetic',
+    hot: false 
+  },
+  { 
+    id: 'pilot', 
+    category: 'profession',
+    name: '飞行员', 
+    nameEn: 'Pilot',
+    icon: '👨‍✈️', 
+    prompt: 'Commercial airline pilot - professional pilot uniform with gold stripes, captain hat, aviator sunglasses, confident commanding presence, airplane cockpit or airport tarmac background, Top Gun inspired aesthetic',
+    hot: false 
+  },
+  { 
+    id: 'astronaut', 
+    category: 'profession',
+    name: '宇航员', 
+    nameEn: 'Astronaut',
+    icon: '👨‍🚀', 
+    prompt: 'NASA astronaut - white spacesuit with American flag patch, helmet held under arm or worn, space station or rocket launch background, inspirational space exploration aesthetic, Interstellar movie quality',
+    hot: true 
+  },
+  { 
+    id: 'superhero', 
+    category: 'profession',
+    name: '超级英雄', 
+    nameEn: 'Superhero',
+    icon: '🦸', 
+    prompt: 'Marvel/DC style superhero - sleek form-fitting superhero costume with cape, bold colors, heroic confident pose, city skyline background, cinematic superhero movie quality, powerful and inspiring aesthetic',
+    hot: false 
+  },
+];
+
+// ========== 影视复刻 - 影视作品模板 ==========
+const MOVIE_COSPLAY_CATEGORIES = [
+  { id: 'palace', name: '古装', nameEn: 'Period Drama' },
+  { id: 'fantasy', name: '魔幻', nameEn: 'Fantasy' },
+  { id: 'kdrama', name: '韩剧', nameEn: 'K-Drama' },
+];
+
+const MOVIE_COSPLAY_TEMPLATES = [
+  // 古装类
+  { 
+    id: 'zhenhuan-drama', 
+    category: 'palace',
+    name: '甄嬛传', 
+    nameEn: 'Legend of Zhen Huan',
+    subtitle: '后宫华服',
+    subtitleEn: 'Imperial Costume',
+    prompt: 'Legend of Zhen Huan TV drama costume - luxurious Qing dynasty palace hanfu, intricate embroidery with phoenix and peony motifs, elaborate traditional hairstyle with ornate hairpins, refined classical beauty makeup, Forbidden City palace setting, Chinese historical drama aesthetic',
+    hot: true,
+    count: '12万'
+  },
+  { 
+    id: 'yanxi-drama', 
+    category: 'palace',
+    name: '延禧攻略', 
+    nameEn: 'Story of Yanxi Palace',
+    subtitle: '宫廷华服',
+    subtitleEn: 'Palace Attire',
+    prompt: 'Story of Yanxi Palace TV drama costume - elegant Qing dynasty court dress with detailed embroidery, traditional Manchu hairstyle with floral ornaments, subtle refined makeup, palace interior with lattice windows, Wei Yingluo or Empress inspired look',
+    hot: false,
+    count: '8万'
+  },
+  { 
+    id: 'nirvana-drama', 
+    category: 'palace',
+    name: '琅琊榜', 
+    nameEn: 'Nirvana in Fire',
+    subtitle: '朝服侠客',
+    subtitleEn: 'Scholar Warrior',
+    prompt: 'Nirvana in Fire TV drama costume - elegant ancient Chinese scholarly robes or warrior hanfu, refined gentleman aesthetic, traditional hair crown, intelligent dignified expression, bamboo forest or palace study setting, Mei Changsu inspired elegance',
+    hot: false,
+    count: '5万'
+  },
+  // 魔幻类
+  { 
+    id: 'harrypotter-movie', 
+    category: 'fantasy',
+    name: '哈利波特', 
+    nameEn: 'Harry Potter',
+    subtitle: '魔法学院',
+    subtitleEn: 'Wizarding School',
+    prompt: 'Harry Potter movie costume - Hogwarts school uniform with house robes (Gryffindor/Slytherin/Ravenclaw/Hufflepuff), striped tie, wand in hand, magical Great Hall or castle corridor background, cinematic wizarding world aesthetic',
+    hot: true,
+    count: '15万'
+  },
+  { 
+    id: 'got-movie', 
+    category: 'fantasy',
+    name: '权力的游戏', 
+    nameEn: 'Game of Thrones',
+    subtitle: '龙母/雪诺',
+    subtitleEn: 'Daenerys/Jon Snow',
+    prompt: 'Game of Thrones costume - either Daenerys Targaryen flowing white/blue gown with dragon scale details and silver hair, or Jon Snow black Night Watch cloak and leather armor, dramatic windswept pose, Westeros castle or winter landscape background',
+    hot: false,
+    count: '9万'
+  },
+  { 
+    id: 'lotr-movie', 
+    category: 'fantasy',
+    name: '指环王', 
+    nameEn: 'Lord of the Rings',
+    subtitle: '精灵/巫师',
+    subtitleEn: 'Elf/Wizard',
+    prompt: 'Lord of the Rings movie costume - elegant elven robes with silver and green tones and leaf motifs like Legolas or Arwen, or grey wizard robes like Gandalf, ethereal fantasy aesthetic, Middle-earth forest or Rivendell background',
+    hot: false,
+    count: '6万'
+  },
+  // 韩剧类
+  { 
+    id: 'goblin-drama', 
+    category: 'kdrama',
+    name: '鬼怪', 
+    nameEn: 'Goblin',
+    subtitle: '新娘装',
+    subtitleEn: 'Bride Look',
+    prompt: 'Korean drama Goblin (Guardian) bride scene - elegant white wedding dress, romantic winter aesthetic, soft dreamy lighting, beautiful Korean style makeup, snowy Quebec City inspired background, K-drama romantic scene quality',
+    hot: true,
+    count: '7万'
+  },
+  { 
+    id: 'reply1988-drama', 
+    category: 'kdrama',
+    name: '请回答1988', 
+    nameEn: 'Reply 1988',
+    subtitle: '复古韩风',
+    subtitleEn: 'Retro Korean',
+    prompt: 'Reply 1988 Korean drama style - 1980s-90s Korean retro fashion, colorful vintage sweater or jacket, high-waisted jeans, nostalgic warm color grading, Ssangmun-dong alley neighborhood setting, heartwarming slice-of-life aesthetic',
+    hot: false,
+    count: '5万'
+  },
+  { 
+    id: 'itaewon-drama', 
+    category: 'kdrama',
+    name: '梨泰院Class', 
+    nameEn: 'Itaewon Class',
+    subtitle: '餐厅造型',
+    subtitleEn: 'Restaurant Style',
+    prompt: 'Itaewon Class Korean drama style - trendy casual restaurant owner look with stylish casual outfit, chestnut short haircut like Park Saeroyi, or feminine boss outfit like Jo Yiseo, Danbam restaurant bar setting, urban K-drama aesthetic',
+    hot: false,
+    count: '4万'
+  },
+];
 
 // AI Prompt前缀
 const COMMON_PROMPT_PREFIX = 'IMPORTANT: Keep face, facial expression, hairstyle, pose, and photo framing EXACTLY as in original. Only change clothing in the EXACT visible areas. If only partial clothing is visible, apply only to that partial area. Do NOT extend or complete the image. ';
@@ -376,8 +674,16 @@ export default function OutfitChangeNewScreen() {
   const { outfitChange: freeOutfitChangeCount } = getRemainingFreeCounts();
 
   // 状态管理
+  const [mainTab, setMainTab] = useState<MainTabType>('outfit');
   const [selectedTab, setSelectedTab] = useState<TabType>('template');
   const [userImage, setUserImage] = useState<string | null>(null);
+  
+  // 新功能状态
+  const [selectedEra, setSelectedEra] = useState<string | null>(null);
+  const [selectedStar, setSelectedStar] = useState<string | null>(null);
+  const [selectedStarCategory, setSelectedStarCategory] = useState<string>('celebrity');
+  const [selectedMovie, setSelectedMovie] = useState<string | null>(null);
+  const [selectedMovieCategory, setSelectedMovieCategory] = useState<string>('palace');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [customImages, setCustomImages] = useState<string[]>([]);
   const [showAllTemplates, setShowAllTemplates] = useState(false);
@@ -831,26 +1137,47 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
       return;
     }
 
-    if (selectedTab === 'template' && !selectedTemplate) {
+    // 根据不同主Tab进行验证
+    if (mainTab === 'outfit') {
+      if (selectedTab === 'template' && !selectedTemplate) {
+        showAlert({
+          type: 'info',
+          message: t('outfitChange.selectImageAndTemplate')
+        });
+        return;
+      }
+
+      if (selectedTab === 'custom' && customImages.length === 0) {
+        showAlert({
+          type: 'info',
+          message: t('outfitChange.selectOutfitImages')
+        });
+        return;
+      }
+
+      if (selectedTab === 'pro' && !selectedLookPrompt) {
+        showAlert({
+          type: 'info',
+          message: '请先从达人页面选择一个造型'
+        });
+        return;
+      }
+    } else if (mainTab === 'timeTravel' && !selectedEra) {
       showAlert({
         type: 'info',
-        message: t('outfitChange.selectImageAndTemplate')
+        message: currentLanguage === 'zh' ? '请选择一个年代' : 'Please select an era'
       });
       return;
-    }
-
-    if (selectedTab === 'custom' && customImages.length === 0) {
+    } else if (mainTab === 'becomeStar' && !selectedStar) {
       showAlert({
         type: 'info',
-        message: t('outfitChange.selectOutfitImages')
+        message: currentLanguage === 'zh' ? '请选择一个角色' : 'Please select a role'
       });
       return;
-    }
-
-    if (selectedTab === 'pro' && !selectedLookPrompt) {
+    } else if (mainTab === 'movieCosplay' && !selectedMovie) {
       showAlert({
         type: 'info',
-        message: '请先从达人页面选择一个造型'
+        message: currentLanguage === 'zh' ? '请选择一部影视作品' : 'Please select a movie/drama'
       });
       return;
     }
@@ -875,16 +1202,69 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
     setIsGenerating(true);
 
     try {
-      console.log('[OutfitChange] Starting generation, tab:', selectedTab);
+      console.log('[OutfitChange] Starting generation, mainTab:', mainTab, 'tab:', selectedTab);
       
       // 始终启用压缩以避免413错误
       const base64Image = await convertToBase64(userImage, true, true); // 强制压缩主图
       console.log('[OutfitChange] Main image converted, size:', base64Image.length);
       
       let requestBody: any;
+      let templateNameForResult = '';
       
-      if (selectedTab === 'template') {
-        // 模板模式
+      // ========== 新功能Tab处理 ==========
+      if (mainTab === 'timeTravel') {
+        // 时空穿梭模式
+        const era = TIME_TRAVEL_ERAS.find(e => e.id === selectedEra);
+        if (!era) throw new Error('Era not found');
+        
+        const finalPrompt = COMMON_PROMPT_PREFIX + era.prompt + LUXURY_QUALITY_SUFFIX;
+        templateNameForResult = currentLanguage === 'zh' 
+          ? `🕰️ ${era.name} - ${era.description}` 
+          : `🕰️ ${era.nameEn} - ${era.descriptionEn}`;
+        
+        requestBody = {
+          prompt: finalPrompt,
+          images: [{ type: 'image', image: base64Image }],
+          aspectRatio: '3:4',
+        };
+        console.log('[OutfitChange] Time Travel mode request body prepared');
+        
+      } else if (mainTab === 'becomeStar') {
+        // 变身明星模式
+        const star = BECOME_STAR_TEMPLATES.find(s => s.id === selectedStar);
+        if (!star) throw new Error('Star not found');
+        
+        const finalPrompt = COMMON_PROMPT_PREFIX + star.prompt + LUXURY_QUALITY_SUFFIX;
+        templateNameForResult = currentLanguage === 'zh' 
+          ? `⭐ ${star.name}` 
+          : `⭐ ${star.nameEn}`;
+        
+        requestBody = {
+          prompt: finalPrompt,
+          images: [{ type: 'image', image: base64Image }],
+          aspectRatio: '3:4',
+        };
+        console.log('[OutfitChange] Become Star mode request body prepared');
+        
+      } else if (mainTab === 'movieCosplay') {
+        // 影视复刻模式
+        const movie = MOVIE_COSPLAY_TEMPLATES.find(m => m.id === selectedMovie);
+        if (!movie) throw new Error('Movie not found');
+        
+        const finalPrompt = COMMON_PROMPT_PREFIX + movie.prompt + LUXURY_QUALITY_SUFFIX;
+        templateNameForResult = currentLanguage === 'zh' 
+          ? `🎬 ${movie.name} - ${movie.subtitle}` 
+          : `🎬 ${movie.nameEn} - ${movie.subtitleEn}`;
+        
+        requestBody = {
+          prompt: finalPrompt,
+          images: [{ type: 'image', image: base64Image }],
+          aspectRatio: '3:4',
+        };
+        console.log('[OutfitChange] Movie Cosplay mode request body prepared');
+        
+      } else if (selectedTab === 'template') {
+        // 原有模板模式
         const finalPrompt = buildPrompt();
         
         requestBody = {
@@ -1041,9 +1421,18 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
       await useOutfitChange();
 
       const template = selectedTab === 'template' ? TEMPLATES.find(t => t.id === selectedTemplate) : null;
-      const templateName = selectedTab === 'template' 
-        ? (template ? getTemplateName(template) : t('outfitChange.customOutfit'))
-        : selectedTab === 'custom' ? t('outfitChange.customOutfit') : 'Pro Style';
+      // 根据不同的mainTab设置模板名称
+      let templateName: string;
+      if (templateNameForResult) {
+        // 新功能Tab使用已设置的名称
+        templateName = templateNameForResult;
+      } else if (selectedTab === 'template') {
+        templateName = template ? getTemplateName(template) : t('outfitChange.customOutfit');
+      } else if (selectedTab === 'custom') {
+        templateName = t('outfitChange.customOutfit');
+      } else {
+        templateName = 'Pro Style';
+      }
 
       // 显示结果在页面上（不跳转）
       // 自定义穿搭模式：原图显示参考服饰（用户想看服饰穿身上的效果）
@@ -1184,6 +1573,53 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* 主功能Tab切换 */}
+        <View style={styles.mainTabContainer}>
+          <TouchableOpacity
+            style={[styles.mainTab, mainTab === 'outfit' && styles.mainTabActive]}
+            onPress={() => setMainTab('outfit')}
+          >
+            <Text style={styles.mainTabIcon}>👗</Text>
+            <Text style={[styles.mainTabText, mainTab === 'outfit' && styles.mainTabTextActive]}>
+              {currentLanguage === 'zh' ? '换装' : 'Outfit'}
+            </Text>
+            {mainTab === 'outfit' && <View style={styles.mainTabIndicator} />}
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[styles.mainTab, mainTab === 'timeTravel' && styles.mainTabActive]}
+            onPress={() => setMainTab('timeTravel')}
+          >
+            <Text style={styles.mainTabIcon}>🕰️</Text>
+            <Text style={[styles.mainTabText, mainTab === 'timeTravel' && styles.mainTabTextActive]}>
+              {currentLanguage === 'zh' ? '时空' : 'Time'}
+            </Text>
+            {mainTab === 'timeTravel' && <View style={styles.mainTabIndicator} />}
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[styles.mainTab, mainTab === 'becomeStar' && styles.mainTabActive]}
+            onPress={() => setMainTab('becomeStar')}
+          >
+            <Text style={styles.mainTabIcon}>⭐</Text>
+            <Text style={[styles.mainTabText, mainTab === 'becomeStar' && styles.mainTabTextActive]}>
+              {currentLanguage === 'zh' ? '变身' : 'Star'}
+            </Text>
+            {mainTab === 'becomeStar' && <View style={styles.mainTabIndicator} />}
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[styles.mainTab, mainTab === 'movieCosplay' && styles.mainTabActive]}
+            onPress={() => setMainTab('movieCosplay')}
+          >
+            <Text style={styles.mainTabIcon}>🎬</Text>
+            <Text style={[styles.mainTabText, mainTab === 'movieCosplay' && styles.mainTabTextActive]}>
+              {currentLanguage === 'zh' ? '影视' : 'Movie'}
+            </Text>
+            {mainTab === 'movieCosplay' && <View style={styles.mainTabIndicator} />}
+          </TouchableOpacity>
+        </View>
+
         {/* 钻石余额 */}
         <TouchableOpacity 
           style={styles.coinBalanceCard}
@@ -1202,57 +1638,60 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
           </View>
         </TouchableOpacity>
 
-        {/* 步骤1: 上传照片 */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {t('outfitChange.whoIsSwapping')}
-            </Text>
-            <Text style={styles.stepLabel}>{t('outfitChange.step1')}</Text>
-          </View>
-
-          <TouchableOpacity
-            style={styles.uploadArea}
-            onPress={handleUploadPhoto}
-            onLongPress={handleTakePhoto}
-            activeOpacity={0.7}
-          >
-            {userImage ? (
-              <>
-                <Image source={{ uri: userImage }} style={styles.uploadedImage} contentFit="cover" />
-                {/* 删除按钮 */}
-                <TouchableOpacity 
-                  style={styles.removeButton}
-                  onPress={() => setUserImage(null)}
-                >
-                  <X size={14} color="#fff" />
-                </TouchableOpacity>
-              </>
-            ) : (
-              <View style={styles.uploadPlaceholder}>
-                <View style={styles.cameraIcon}>
-                  <Camera size={20} color="#1a1a1a" strokeWidth={1.5} />
-                </View>
-                <Text style={styles.uploadTitle}>
-                  {t('outfitChange.uploadPhoto')}
+        {/* ========== 原有换装功能 ========== */}
+        {mainTab === 'outfit' && (
+          <>
+            {/* 步骤1: 上传照片 */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>
+                  {t('outfitChange.whoIsSwapping')}
                 </Text>
-                <Text style={styles.uploadSubtitle}>
-                  {t('outfitChange.tapToSnap')}
+                <Text style={styles.stepLabel}>{t('outfitChange.step1')}</Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.uploadArea}
+                onPress={handleUploadPhoto}
+                onLongPress={handleTakePhoto}
+                activeOpacity={0.7}
+              >
+                {userImage ? (
+                  <>
+                    <Image source={{ uri: userImage }} style={styles.uploadedImage} contentFit="cover" />
+                    {/* 删除按钮 */}
+                    <TouchableOpacity 
+                      style={styles.removeButton}
+                      onPress={() => setUserImage(null)}
+                    >
+                      <X size={14} color="#fff" />
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <View style={styles.uploadPlaceholder}>
+                    <View style={styles.cameraIcon}>
+                      <Camera size={20} color="#1a1a1a" strokeWidth={1.5} />
+                    </View>
+                    <Text style={styles.uploadTitle}>
+                      {t('outfitChange.uploadPhoto')}
+                    </Text>
+                    <Text style={styles.uploadSubtitle}>
+                      {t('outfitChange.tapToSnap')}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              <View style={styles.privacyNote}>
+                <Lock size={12} color="#9ca3af" />
+                <Text style={styles.privacyText}>
+                  {t('outfitChange.photosProcessed')}
                 </Text>
               </View>
-            )}
-          </TouchableOpacity>
+            </View>
 
-          <View style={styles.privacyNote}>
-            <Lock size={12} color="#9ca3af" />
-            <Text style={styles.privacyText}>
-              {t('outfitChange.photosProcessed')}
-            </Text>
-          </View>
-        </View>
-
-        {/* 步骤2: 选择风格 */}
-        <View style={styles.section}>
+            {/* 步骤2: 选择风格 */}
+            <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
               {t('outfitChange.selectStyle')}
@@ -1479,7 +1918,320 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
             </View>
           )}
           */}
-        </View>
+            </View>
+          </>
+        )}
+
+        {/* ========== 时空穿梭功能 ========== */}
+        {mainTab === 'timeTravel' && (
+          <>
+            {/* 上传照片 */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>
+                  {currentLanguage === 'zh' ? '📷 上传照片' : '📷 Upload Photo'}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.uploadArea}
+                onPress={handleUploadPhoto}
+                onLongPress={handleTakePhoto}
+                activeOpacity={0.7}
+              >
+                {userImage ? (
+                  <>
+                    <Image source={{ uri: userImage }} style={styles.uploadedImage} contentFit="cover" />
+                    <TouchableOpacity 
+                      style={styles.removeButton}
+                      onPress={() => setUserImage(null)}
+                    >
+                      <X size={14} color="#fff" />
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <View style={styles.uploadPlaceholder}>
+                    <View style={styles.cameraIcon}>
+                      <Camera size={20} color="#1a1a1a" strokeWidth={1.5} />
+                    </View>
+                    <Text style={styles.uploadTitle}>
+                      {t('outfitChange.uploadPhoto')}
+                    </Text>
+                    <Text style={styles.uploadSubtitle}>
+                      {t('outfitChange.tapToSnap')}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* 选择年代 */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>
+                  {currentLanguage === 'zh' ? '🕰️ 选择年代' : '🕰️ Select Era'}
+                </Text>
+              </View>
+
+              <View style={styles.eraGrid}>
+                {TIME_TRAVEL_ERAS.map((era) => (
+                  <TouchableOpacity
+                    key={era.id}
+                    style={[
+                      styles.eraCard,
+                      selectedEra === era.id && styles.eraCardSelected
+                    ]}
+                    onPress={() => setSelectedEra(era.id)}
+                    activeOpacity={0.7}
+                  >
+                    {era.hot && (
+                      <View style={styles.hotBadge}>
+                        <Text style={styles.hotBadgeText}>🔥</Text>
+                      </View>
+                    )}
+                    {selectedEra === era.id && (
+                      <View style={styles.templateCheckMark}>
+                        <Check size={12} color="#fff" strokeWidth={3} />
+                      </View>
+                    )}
+                    <Text style={styles.eraIcon}>{era.icon}</Text>
+                    <Text style={[
+                      styles.eraName,
+                      selectedEra === era.id && styles.eraNameSelected
+                    ]}>
+                      {currentLanguage === 'zh' ? era.name : era.nameEn}
+                    </Text>
+                    <Text style={styles.eraDesc}>
+                      {currentLanguage === 'zh' ? era.description : era.descriptionEn}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </>
+        )}
+
+        {/* ========== 变身明星功能 ========== */}
+        {mainTab === 'becomeStar' && (
+          <>
+            {/* 上传照片 */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>
+                  {currentLanguage === 'zh' ? '📷 上传照片' : '📷 Upload Photo'}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.uploadArea}
+                onPress={handleUploadPhoto}
+                onLongPress={handleTakePhoto}
+                activeOpacity={0.7}
+              >
+                {userImage ? (
+                  <>
+                    <Image source={{ uri: userImage }} style={styles.uploadedImage} contentFit="cover" />
+                    <TouchableOpacity 
+                      style={styles.removeButton}
+                      onPress={() => setUserImage(null)}
+                    >
+                      <X size={14} color="#fff" />
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <View style={styles.uploadPlaceholder}>
+                    <View style={styles.cameraIcon}>
+                      <Camera size={20} color="#1a1a1a" strokeWidth={1.5} />
+                    </View>
+                    <Text style={styles.uploadTitle}>
+                      {t('outfitChange.uploadPhoto')}
+                    </Text>
+                    <Text style={styles.uploadSubtitle}>
+                      {t('outfitChange.tapToSnap')}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* 选择角色 */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>
+                  {currentLanguage === 'zh' ? '⭐ 选择角色' : '⭐ Select Role'}
+                </Text>
+              </View>
+
+              {/* 分类Tab */}
+              <View style={styles.categoryTabContainer}>
+                {BECOME_STAR_CATEGORIES.map((cat) => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={[
+                      styles.categoryTab,
+                      selectedStarCategory === cat.id && styles.categoryTabActive
+                    ]}
+                    onPress={() => setSelectedStarCategory(cat.id)}
+                  >
+                    <Text style={[
+                      styles.categoryTabText,
+                      selectedStarCategory === cat.id && styles.categoryTabTextActive
+                    ]}>
+                      {currentLanguage === 'zh' ? cat.name : cat.nameEn}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* 角色网格 */}
+              <View style={styles.starGrid}>
+                {BECOME_STAR_TEMPLATES
+                  .filter(star => star.category === selectedStarCategory)
+                  .map((star) => (
+                    <TouchableOpacity
+                      key={star.id}
+                      style={[
+                        styles.starCard,
+                        selectedStar === star.id && styles.starCardSelected
+                      ]}
+                      onPress={() => setSelectedStar(star.id)}
+                      activeOpacity={0.7}
+                    >
+                      {star.hot && (
+                        <View style={styles.hotBadge}>
+                          <Text style={styles.hotBadgeText}>🔥</Text>
+                        </View>
+                      )}
+                      {selectedStar === star.id && (
+                        <View style={styles.templateCheckMark}>
+                          <Check size={12} color="#fff" strokeWidth={3} />
+                        </View>
+                      )}
+                      <Text style={styles.starIcon}>{star.icon}</Text>
+                      <Text style={[
+                        styles.starName,
+                        selectedStar === star.id && styles.starNameSelected
+                      ]} numberOfLines={1}>
+                        {currentLanguage === 'zh' ? star.name : star.nameEn}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+              </View>
+            </View>
+          </>
+        )}
+
+        {/* ========== 影视复刻功能 ========== */}
+        {mainTab === 'movieCosplay' && (
+          <>
+            {/* 上传照片 */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>
+                  {currentLanguage === 'zh' ? '📷 上传照片' : '📷 Upload Photo'}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.uploadArea}
+                onPress={handleUploadPhoto}
+                onLongPress={handleTakePhoto}
+                activeOpacity={0.7}
+              >
+                {userImage ? (
+                  <>
+                    <Image source={{ uri: userImage }} style={styles.uploadedImage} contentFit="cover" />
+                    <TouchableOpacity 
+                      style={styles.removeButton}
+                      onPress={() => setUserImage(null)}
+                    >
+                      <X size={14} color="#fff" />
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <View style={styles.uploadPlaceholder}>
+                    <View style={styles.cameraIcon}>
+                      <Camera size={20} color="#1a1a1a" strokeWidth={1.5} />
+                    </View>
+                    <Text style={styles.uploadTitle}>
+                      {t('outfitChange.uploadPhoto')}
+                    </Text>
+                    <Text style={styles.uploadSubtitle}>
+                      {t('outfitChange.tapToSnap')}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* 选择影视 */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>
+                  {currentLanguage === 'zh' ? '🎬 选择影视' : '🎬 Select Movie/Drama'}
+                </Text>
+              </View>
+
+              {/* 分类Tab */}
+              <View style={styles.categoryTabContainer}>
+                {MOVIE_COSPLAY_CATEGORIES.map((cat) => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={[
+                      styles.categoryTab,
+                      selectedMovieCategory === cat.id && styles.categoryTabActive
+                    ]}
+                    onPress={() => setSelectedMovieCategory(cat.id)}
+                  >
+                    <Text style={[
+                      styles.categoryTabText,
+                      selectedMovieCategory === cat.id && styles.categoryTabTextActive
+                    ]}>
+                      {currentLanguage === 'zh' ? cat.name : cat.nameEn}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* 影视网格 */}
+              <View style={styles.movieGrid}>
+                {MOVIE_COSPLAY_TEMPLATES
+                  .filter(movie => movie.category === selectedMovieCategory)
+                  .map((movie) => (
+                    <TouchableOpacity
+                      key={movie.id}
+                      style={[
+                        styles.movieCard,
+                        selectedMovie === movie.id && styles.movieCardSelected
+                      ]}
+                      onPress={() => setSelectedMovie(movie.id)}
+                      activeOpacity={0.7}
+                    >
+                      {movie.hot && (
+                        <View style={styles.movieHotBadge}>
+                          <Text style={styles.movieHotBadgeText}>🔥 {movie.count}</Text>
+                        </View>
+                      )}
+                      {selectedMovie === movie.id && (
+                        <View style={styles.movieCheckMark}>
+                          <Check size={14} color="#fff" strokeWidth={3} />
+                        </View>
+                      )}
+                      <Text style={[
+                        styles.movieName,
+                        selectedMovie === movie.id && styles.movieNameSelected
+                      ]}>
+                        {currentLanguage === 'zh' ? movie.name : movie.nameEn}
+                      </Text>
+                      <Text style={styles.movieSubtitle}>
+                        {currentLanguage === 'zh' ? movie.subtitle : movie.subtitleEn}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+              </View>
+            </View>
+          </>
+        )}
 
         {/* 生成结果展示区域 */}
         {generatedResult && (
@@ -1698,8 +2450,20 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
           />
         </View>
         <TouchableOpacity
-          style={[styles.generateButton, (!userImage || isGenerating) && styles.generateButtonDisabled]}
-          disabled={!userImage || isGenerating}
+          style={[styles.generateButton, (!userImage || isGenerating || 
+            (mainTab === 'outfit' && selectedTab === 'template' && !selectedTemplate) ||
+            (mainTab === 'outfit' && selectedTab === 'custom' && customImages.length === 0) ||
+            (mainTab === 'timeTravel' && !selectedEra) ||
+            (mainTab === 'becomeStar' && !selectedStar) ||
+            (mainTab === 'movieCosplay' && !selectedMovie)
+          ) && styles.generateButtonDisabled]}
+          disabled={!userImage || isGenerating || 
+            (mainTab === 'outfit' && selectedTab === 'template' && !selectedTemplate) ||
+            (mainTab === 'outfit' && selectedTab === 'custom' && customImages.length === 0) ||
+            (mainTab === 'timeTravel' && !selectedEra) ||
+            (mainTab === 'becomeStar' && !selectedStar) ||
+            (mainTab === 'movieCosplay' && !selectedMovie)
+          }
           onPress={handleGenerate}
           activeOpacity={0.9}
         >
@@ -1720,7 +2484,14 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
               <>
                 <Sparkles size={20} color="#fff" strokeWidth={2.5} />
                 <Text style={styles.generateButtonText}>
-                  {t('outfitChange.startGenerating')}
+                  {mainTab === 'timeTravel' 
+                    ? (currentLanguage === 'zh' ? '🕰️ 开始穿越' : '🕰️ Start Time Travel')
+                    : mainTab === 'becomeStar'
+                    ? (currentLanguage === 'zh' ? '⭐ 开始变身' : '⭐ Transform Now')
+                    : mainTab === 'movieCosplay'
+                    ? (currentLanguage === 'zh' ? '🎬  开始穿越' : '🎬 Enter Scene')
+                    : t('outfitChange.startGenerating')
+                  }
                 </Text>
               </>
             )}
@@ -1776,6 +2547,221 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
+  },
+  
+  // ========== 主功能Tab样式 ==========
+  mainTabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    padding: 4,
+    marginBottom: 16,
+  },
+  mainTab: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    position: 'relative',
+  },
+  mainTabActive: {
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  mainTabIcon: {
+    fontSize: 20,
+    marginBottom: 4,
+  },
+  mainTabText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#9ca3af',
+  },
+  mainTabTextActive: {
+    color: '#1a1a1a',
+    fontWeight: '600',
+  },
+  mainTabIndicator: {
+    position: 'absolute',
+    bottom: 4,
+    width: 16,
+    height: 3,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 2,
+  },
+  
+  // ========== 时空穿梭样式 ==========
+  eraGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 12,
+  },
+  eraCard: {
+    width: '48%',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    position: 'relative',
+  },
+  eraCardSelected: {
+    backgroundColor: '#f0fdf4',
+    borderColor: '#22c55e',
+  },
+  eraIcon: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  eraName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  eraNameSelected: {
+    color: '#16a34a',
+  },
+  eraDesc: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  hotBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#fef3c7',
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  hotBadgeText: {
+    fontSize: 10,
+  },
+  
+  // ========== 变身明星样式 ==========
+  categoryTabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 16,
+  },
+  categoryTab: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  categoryTabActive: {
+    backgroundColor: '#ffffff',
+  },
+  categoryTabText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6b7280',
+  },
+  categoryTabTextActive: {
+    color: '#1a1a1a',
+    fontWeight: '600',
+  },
+  starGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  starCard: {
+    width: '23%',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    position: 'relative',
+  },
+  starCardSelected: {
+    backgroundColor: '#fef3c7',
+    borderColor: '#f59e0b',
+  },
+  starIcon: {
+    fontSize: 28,
+    marginBottom: 6,
+  },
+  starName: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#1a1a1a',
+    textAlign: 'center',
+  },
+  starNameSelected: {
+    color: '#d97706',
+    fontWeight: '600',
+  },
+  
+  // ========== 影视复刻样式 ==========
+  movieGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  movieCard: {
+    width: '48%',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    position: 'relative',
+  },
+  movieCardSelected: {
+    backgroundColor: '#ede9fe',
+    borderColor: '#8b5cf6',
+  },
+  movieHotBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#fee2e2',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  movieHotBadgeText: {
+    fontSize: 10,
+    color: '#dc2626',
+    fontWeight: '600',
+  },
+  movieCheckMark: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#8b5cf6',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  movieName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  movieNameSelected: {
+    color: '#7c3aed',
+  },
+  movieSubtitle: {
+    fontSize: 12,
+    color: '#6b7280',
   },
   
   // 钻石余额卡片
