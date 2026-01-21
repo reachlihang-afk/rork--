@@ -122,13 +122,13 @@ export const [VerificationProvider, useVerification] = createContextHook(() => {
     await AsyncStorage.setItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY, JSON.stringify(updated));
   };
 
-  const markAsPublished = async (outfitChangeId: string): Promise<void> => {
+  const markAsPublished = async (outfitChangeId: string, isPublished: boolean = true): Promise<void> => {
     if (!user?.userId) {
       throw new Error('User not logged in');
     }
     const STORAGE_KEYS = getStorageKeys(user.userId);
     const updated = outfitChangeHistory.map(item => 
-      item.id === outfitChangeId ? { ...item, isPublishedToSquare: true } : item
+      item.id === outfitChangeId ? { ...item, isPublishedToSquare: isPublished } : item
     );
     setOutfitChangeHistory(updated);
     await AsyncStorage.setItem(STORAGE_KEYS.OUTFIT_CHANGE_HISTORY, JSON.stringify(updated));
