@@ -165,8 +165,8 @@ export default function HomeScreen() {
               <View style={styles.waterfallColumn}>
                 {rightColumn.map((work, index) => renderWorkCard(work, index, false))}
               </View>
-            </View>
-          ) : (
+                  </View>
+                ) : (
             <View style={styles.emptyWorks}>
               <Text style={styles.emptyWorksIcon}>✨</Text>
               <Text style={styles.emptyWorksTitle}>{t('home.featuredComingSoon')}</Text>
@@ -184,9 +184,9 @@ export default function HomeScreen() {
                 >
                   <Text style={styles.exploreButtonText}>{t('home.goToSquare')}</Text>
                 </TouchableOpacity>
-              </View>
-            </View>
-          )}
+                      </View>
+                        </View>
+                      )}
         </View>
       </ScrollView>
     </View>

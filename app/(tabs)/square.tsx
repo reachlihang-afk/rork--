@@ -525,12 +525,13 @@ export default function SquareScreen() {
           setSelectedPost(post);
         }}
       >
-        {/* 主图（变装结果） - 瀑布流高度 */}
+        {/* 主图（变装结果） - 瀑布流高度，从顶部显示避免头部被裁 */}
         <View style={[pipStyles.imageContainer, { height: imageHeight }]}>
-          <Image
+          <ExpoImage
             source={{ uri: post.resultImageUri }}
             style={pipStyles.mainImageWaterfall}
-            resizeMode="cover"
+            contentFit="cover"
+            contentPosition="top"
           />
         </View>
         
