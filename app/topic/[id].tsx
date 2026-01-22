@@ -175,7 +175,7 @@ export default function TopicDetailScreen() {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
         <Stack.Screen options={{ headerShown: false }} />
-        <Text style={styles.errorText}>话题不存在</Text>
+        <Text style={styles.errorText}>{t('square.topicNotFound')}</Text>
       </View>
     );
   }
@@ -189,7 +189,7 @@ export default function TopicDetailScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <ArrowLeft size={24} color="#1a1a1a" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>话题详情</Text>
+        <Text style={styles.headerTitle}>{t('square.topicDetail')}</Text>
         <View style={{ width: 40 }} />
       </View>
       
@@ -206,12 +206,12 @@ export default function TopicDetailScreen() {
             {topic.isOfficial && (
               <View style={styles.officialBadge}>
                 <Star size={12} color="#F59E0B" fill="#F59E0B" />
-                <Text style={styles.officialText}>官方</Text>
+                <Text style={styles.officialText}>{t('square.officialTopic')}</Text>
               </View>
             )}
             {topic.isHot && (
               <View style={styles.hotBadge}>
-                <Text style={styles.hotText}>🔥 热门</Text>
+                <Text style={styles.hotText}>🔥 {t('square.hotTopic')}</Text>
               </View>
             )}
           </View>
@@ -224,15 +224,15 @@ export default function TopicDetailScreen() {
           <View style={styles.topicStats}>
             <View style={styles.topicStatItem}>
               <Eye size={14} color="#6B7280" />
-              <Text style={styles.topicStatText}>{formatNumber(topic.viewsCount)} 浏览</Text>
+              <Text style={styles.topicStatText}>{t('square.topicViews', { count: formatNumber(topic.viewsCount) })}</Text>
             </View>
             <View style={styles.topicStatItem}>
               <Users size={14} color="#6B7280" />
-              <Text style={styles.topicStatText}>{formatNumber(topic.participantsCount)} 参与</Text>
+              <Text style={styles.topicStatText}>{t('square.topicParticipants', { count: formatNumber(topic.participantsCount) })}</Text>
             </View>
             <View style={styles.topicStatItem}>
               <MessageSquare size={14} color="#6B7280" />
-              <Text style={styles.topicStatText}>{formatNumber(topic.postsCount)} 作品</Text>
+              <Text style={styles.topicStatText}>{t('square.topicPosts', { count: formatNumber(topic.postsCount) })}</Text>
             </View>
           </View>
           
@@ -244,7 +244,7 @@ export default function TopicDetailScreen() {
               activeOpacity={0.7}
             >
               <Text style={[styles.followButtonText, isFollowingTopicState && styles.followButtonTextActive]}>
-                {isFollowingTopicState ? '已关注' : '+ 关注话题'}
+                {isFollowingTopicState ? t('square.topicFollowed') : t('square.followTopic')}
               </Text>
             </TouchableOpacity>
           )}
@@ -252,11 +252,11 @@ export default function TopicDetailScreen() {
         
         {/* 相关作品 */}
         <View style={styles.postsSection}>
-          <Text style={styles.postsSectionTitle}>相关作品</Text>
+          <Text style={styles.postsSectionTitle}>{t('square.relatedWorks')}</Text>
           {topicPosts.length === 0 ? (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>暂无作品</Text>
-              <Text style={styles.emptyHint}>成为第一个发布作品的人吧！</Text>
+              <Text style={styles.emptyText}>{t('square.noWorks')}</Text>
+              <Text style={styles.emptyHint}>{t('square.noWorksHint')}</Text>
             </View>
           ) : (
             <View style={styles.masonryContainer}>

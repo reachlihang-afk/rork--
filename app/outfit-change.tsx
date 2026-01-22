@@ -946,7 +946,7 @@ export default function OutfitChangeNewScreen() {
         setTimeout(() => {
           showAlert({
             type: 'info',
-            message: `已为你选择"${getTemplateName(matchedTemplate)}"风格，上传照片即可生成同款！`,
+            message: t('square.sameStyleSelected', { style: getTemplateName(matchedTemplate) }),
           });
         }, 500);
       }

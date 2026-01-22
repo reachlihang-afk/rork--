@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { X, Search, Hash } from 'lucide-react-native';
 import { useTopic } from '@/contexts/TopicContext';
+import { useTranslation } from 'react-i18next';
 
 interface TopicSelectorProps {
   selectedTopics: string[];        // 已选话题ID数组
@@ -21,6 +22,7 @@ export function TopicSelector({
   onTopicsChange, 
   maxTopics = 5 
 }: TopicSelectorProps) {
+  const { t } = useTranslation();
   const { hotTopics, getTopic, searchTopics, createTopic } = useTopic();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -71,7 +73,7 @@ export function TopicSelector({
         <Search size={18} color="#94a3b8" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="搜索或创建话题"
+          placeholder={t('topic.searchOrCreatePlaceholder')}
           value={searchQuery}
           onChangeText={setSearchQuery}
           onFocus={() => setIsSearching(true)}
@@ -127,7 +129,7 @@ export function TopicSelector({
       ) : (
         <>
           {/* 热门话题快速选择 */}
-          <Text style={styles.sectionTitle}>热门话题</Text>
+          <Text style={styles.sectionTitle}>{t('topic.hotTopicsTitle')}</Text>
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}

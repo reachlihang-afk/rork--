@@ -710,7 +710,7 @@ export default function SquareScreen() {
               activeOpacity={0.7}
             >
               <Star size={12} color="#22c55e" fill="#22c55e" />
-              <Text style={pipStyles.sameStyleText}>同款</Text>
+              <Text style={pipStyles.sameStyleText}>{t('square.sameStyle')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -810,7 +810,7 @@ export default function SquareScreen() {
     return (
       <View style={pipStyles.hotTopicsSection}>
         <View style={pipStyles.hotTopicsHeader}>
-          <Text style={pipStyles.hotTopicsTitle}>🔥 热门话题</Text>
+          <Text style={pipStyles.hotTopicsTitle}>{t('square.hotTopics')}</Text>
         </View>
         <ScrollView 
           horizontal 
@@ -825,7 +825,7 @@ export default function SquareScreen() {
               activeOpacity={0.7}
             >
               <Text style={pipStyles.hotTopicName}>{topic.nameWithHash}</Text>
-              <Text style={pipStyles.hotTopicCount}>{formatNumber(topic.postsCount)}条</Text>
+              <Text style={pipStyles.hotTopicCount}>{t('square.topicPosts', { count: formatNumber(topic.postsCount) })}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
