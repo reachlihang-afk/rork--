@@ -1573,7 +1573,73 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* 主功能Tab切换 */}
+        {/* 钻石余额 - 顶部 */}
+        <TouchableOpacity 
+          style={styles.coinBalanceCard}
+          onPress={() => router.push('/recharge')}
+          activeOpacity={0.7}
+        >
+          <View style={styles.coinBalanceLeft}>
+            <Text style={styles.coinIcon}>💎</Text>
+            <View>
+              <Text style={styles.coinBalanceLabel}>{t('outfitChange.diamondBalance')}</Text>
+              <Text style={styles.coinBalanceValue}>{coinBalance}</Text>
+            </View>
+          </View>
+          <View style={styles.rechargeButton}>
+            <Text style={styles.rechargeButtonText}>{t('profile.recharge')}</Text>
+          </View>
+        </TouchableOpacity>
+
+        {/* 公共上传照片区域 - 所有Tab共用 */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {t('outfitChange.whoIsSwapping')}
+            </Text>
+            <Text style={styles.stepLabel}>{t('outfitChange.step1')}</Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.uploadArea}
+            onPress={handleUploadPhoto}
+            onLongPress={handleTakePhoto}
+            activeOpacity={0.7}
+          >
+            {userImage ? (
+              <>
+                <Image source={{ uri: userImage }} style={styles.uploadedImage} contentFit="cover" />
+                <TouchableOpacity 
+                  style={styles.removeButton}
+                  onPress={() => setUserImage(null)}
+                >
+                  <X size={14} color="#fff" />
+                </TouchableOpacity>
+              </>
+            ) : (
+              <View style={styles.uploadPlaceholder}>
+                <View style={styles.cameraIcon}>
+                  <Camera size={20} color="#1a1a1a" strokeWidth={1.5} />
+                </View>
+                <Text style={styles.uploadTitle}>
+                  {t('outfitChange.uploadPhoto')}
+                </Text>
+                <Text style={styles.uploadSubtitle}>
+                  {t('outfitChange.tapToSnap')}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.privacyNote}>
+            <Lock size={12} color="#9ca3af" />
+            <Text style={styles.privacyText}>
+              {t('outfitChange.photosProcessed')}
+            </Text>
+          </View>
+        </View>
+
+        {/* 主功能Tab切换 - 在上传照片下方 */}
         <View style={styles.mainTabContainer}>
           <TouchableOpacity
             style={[styles.mainTab, mainTab === 'outfit' && styles.mainTabActive]}
@@ -1620,84 +1686,17 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
           </TouchableOpacity>
         </View>
 
-        {/* 钻石余额 */}
-        <TouchableOpacity 
-          style={styles.coinBalanceCard}
-          onPress={() => router.push('/recharge')}
-          activeOpacity={0.7}
-        >
-          <View style={styles.coinBalanceLeft}>
-            <Text style={styles.coinIcon}>💎</Text>
-            <View>
-              <Text style={styles.coinBalanceLabel}>{t('outfitChange.diamondBalance')}</Text>
-              <Text style={styles.coinBalanceValue}>{coinBalance}</Text>
-            </View>
-          </View>
-          <View style={styles.rechargeButton}>
-            <Text style={styles.rechargeButtonText}>{t('profile.recharge')}</Text>
-          </View>
-        </TouchableOpacity>
-
         {/* ========== 原有换装功能 ========== */}
         {mainTab === 'outfit' && (
           <>
-            {/* 步骤1: 上传照片 */}
+            {/* 选择风格 */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>
-                  {t('outfitChange.whoIsSwapping')}
+                  {t('outfitChange.selectStyle')}
                 </Text>
-                <Text style={styles.stepLabel}>{t('outfitChange.step1')}</Text>
+                <Text style={styles.stepLabel}>{t('outfitChange.step2')}</Text>
               </View>
-
-              <TouchableOpacity
-                style={styles.uploadArea}
-                onPress={handleUploadPhoto}
-                onLongPress={handleTakePhoto}
-                activeOpacity={0.7}
-              >
-                {userImage ? (
-                  <>
-                    <Image source={{ uri: userImage }} style={styles.uploadedImage} contentFit="cover" />
-                    {/* 删除按钮 */}
-                    <TouchableOpacity 
-                      style={styles.removeButton}
-                      onPress={() => setUserImage(null)}
-                    >
-                      <X size={14} color="#fff" />
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <View style={styles.uploadPlaceholder}>
-                    <View style={styles.cameraIcon}>
-                      <Camera size={20} color="#1a1a1a" strokeWidth={1.5} />
-                    </View>
-                    <Text style={styles.uploadTitle}>
-                      {t('outfitChange.uploadPhoto')}
-                    </Text>
-                    <Text style={styles.uploadSubtitle}>
-                      {t('outfitChange.tapToSnap')}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-
-              <View style={styles.privacyNote}>
-                <Lock size={12} color="#9ca3af" />
-                <Text style={styles.privacyText}>
-                  {t('outfitChange.photosProcessed')}
-                </Text>
-              </View>
-            </View>
-
-            {/* 步骤2: 选择风格 */}
-            <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {t('outfitChange.selectStyle')}
-            </Text>
-            <Text style={styles.stepLabel}>{t('outfitChange.step2')}</Text>
-          </View>
 
           {/* Tab选择器 */}
           <View style={styles.tabContainer}>
@@ -1925,46 +1924,6 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
         {/* ========== 时空穿梭功能 ========== */}
         {mainTab === 'timeTravel' && (
           <>
-            {/* 上传照片 */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>
-                  {currentLanguage === 'zh' ? '📷 上传照片' : '📷 Upload Photo'}
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                style={styles.uploadArea}
-                onPress={handleUploadPhoto}
-                onLongPress={handleTakePhoto}
-                activeOpacity={0.7}
-              >
-                {userImage ? (
-                  <>
-                    <Image source={{ uri: userImage }} style={styles.uploadedImage} contentFit="cover" />
-                    <TouchableOpacity 
-                      style={styles.removeButton}
-                      onPress={() => setUserImage(null)}
-                    >
-                      <X size={14} color="#fff" />
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <View style={styles.uploadPlaceholder}>
-                    <View style={styles.cameraIcon}>
-                      <Camera size={20} color="#1a1a1a" strokeWidth={1.5} />
-                    </View>
-                    <Text style={styles.uploadTitle}>
-                      {t('outfitChange.uploadPhoto')}
-                    </Text>
-                    <Text style={styles.uploadSubtitle}>
-                      {t('outfitChange.tapToSnap')}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
-
             {/* 选择年代 */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
@@ -2014,46 +1973,6 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
         {/* ========== 变身明星功能 ========== */}
         {mainTab === 'becomeStar' && (
           <>
-            {/* 上传照片 */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>
-                  {currentLanguage === 'zh' ? '📷 上传照片' : '📷 Upload Photo'}
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                style={styles.uploadArea}
-                onPress={handleUploadPhoto}
-                onLongPress={handleTakePhoto}
-                activeOpacity={0.7}
-              >
-                {userImage ? (
-                  <>
-                    <Image source={{ uri: userImage }} style={styles.uploadedImage} contentFit="cover" />
-                    <TouchableOpacity 
-                      style={styles.removeButton}
-                      onPress={() => setUserImage(null)}
-                    >
-                      <X size={14} color="#fff" />
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <View style={styles.uploadPlaceholder}>
-                    <View style={styles.cameraIcon}>
-                      <Camera size={20} color="#1a1a1a" strokeWidth={1.5} />
-                    </View>
-                    <Text style={styles.uploadTitle}>
-                      {t('outfitChange.uploadPhoto')}
-                    </Text>
-                    <Text style={styles.uploadSubtitle}>
-                      {t('outfitChange.tapToSnap')}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
-
             {/* 选择角色 */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
@@ -2124,46 +2043,6 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
         {/* ========== 影视复刻功能 ========== */}
         {mainTab === 'movieCosplay' && (
           <>
-            {/* 上传照片 */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>
-                  {currentLanguage === 'zh' ? '📷 上传照片' : '📷 Upload Photo'}
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                style={styles.uploadArea}
-                onPress={handleUploadPhoto}
-                onLongPress={handleTakePhoto}
-                activeOpacity={0.7}
-              >
-                {userImage ? (
-                  <>
-                    <Image source={{ uri: userImage }} style={styles.uploadedImage} contentFit="cover" />
-                    <TouchableOpacity 
-                      style={styles.removeButton}
-                      onPress={() => setUserImage(null)}
-                    >
-                      <X size={14} color="#fff" />
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <View style={styles.uploadPlaceholder}>
-                    <View style={styles.cameraIcon}>
-                      <Camera size={20} color="#1a1a1a" strokeWidth={1.5} />
-                    </View>
-                    <Text style={styles.uploadTitle}>
-                      {t('outfitChange.uploadPhoto')}
-                    </Text>
-                    <Text style={styles.uploadSubtitle}>
-                      {t('outfitChange.tapToSnap')}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
-
             {/* 选择影视 */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
