@@ -30,6 +30,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAlert } from '@/contexts/AlertContext';
 import { saveToGallery } from '@/utils/share';
+import { trackEvent } from '@/utils/analytics';
 
 type TabType = 'template' | 'custom' | 'pro';
 type MainTabType = 'outfit' | 'timeTravel' | 'becomeStar' | 'movieCosplay';
@@ -670,8 +671,8 @@ export default function OutfitChangeNewScreen() {
   const { publishPost } = useSquare();
   const { showAlert } = useAlert();
   
-  // 获取剩余免费次数
-  const { outfitChange: freeOutfitChangeCount } = getRemainingFreeCounts();
+  // 获取剩余免费次数（使用新API）
+  const freeQuotaInfo = getRemainingFreeCounts();
 
   // 状态管理
   const [mainTab, setMainTab] = useState<MainTabType>('outfit');
@@ -1182,12 +1183,23 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
       return;
     }
 
-    // 检查金币
-    const canUse = await canUseOutfitChange();
+    // 检查是否可以使用
+    const { canUse, needsCoins, message } = canUseOutfitChange();
+    
     if (!canUse) {
+      // 追踪免费额度用尽
+      trackEvent('free_quota_depleted', {
+        totalUsed: freeQuotaInfo.used,
+        dailyBase: freeQuotaInfo.dailyBase,
+        bonusUsed: freeQuotaInfo.total - freeQuotaInfo.dailyBase,
+        showAdPrompt: false,
+        showRechargePrompt: true,
+      });
+
+      // 显示充值提示
       Alert.alert(
         t('common.tip'),
-        t('outfitChange.insufficientCoins'),
+        message || t('outfitChange.insufficientCoins'),
         [
           { text: t('common.cancel'), style: 'cancel' },
           { 
@@ -1198,6 +1210,16 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
       );
       return;
     }
+
+    // ⭐ 追踪生成开始
+    const startTime = Date.now();
+    trackEvent('generation_start', {
+      styleId: selectedTemplate || selectedStar || selectedMovie || selectedEra,
+      styleName: selectedTemplate,
+      mainTab,
+      useFreeQuota: !needsCoins,
+      remainingFreeQuota: freeQuotaInfo.remaining,
+    });
 
     setIsGenerating(true);
 
@@ -1420,6 +1442,18 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
       // 使用换装次数（可能消耗免费次数或金币）
       await useOutfitChange();
 
+      // ⭐ 追踪生成成功
+      const duration = Date.now() - startTime;
+      const newFreeQuota = getRemainingFreeCounts();
+      trackEvent('generation_success', {
+        styleId: selectedTemplate || selectedStar || selectedMovie || selectedEra,
+        styleName: selectedTemplate,
+        mainTab,
+        duration,
+        usedFreeQuota: !needsCoins,
+        remainingFreeQuota: newFreeQuota.remaining,
+      });
+
       const template = selectedTab === 'template' ? TEMPLATES.find(t => t.id === selectedTemplate) : null;
       // 根据不同的mainTab设置模板名称
       let templateName: string;
@@ -1482,13 +1516,25 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
     } catch (error: any) {
       console.error('[OutfitChange] Generation error:', error);
       let errorMessage = t('outfitChange.generationFailed');
+      let errorCode = 'unknown';
       
       if (error.message === 'Failed to fetch') {
         errorMessage = '网络连接失败，请检查网络连接后重试';
+        errorCode = 'network_error';
         console.error('[OutfitChange] Network error - Failed to fetch');
       } else if (error.message) {
         errorMessage = error.message;
+        errorCode = 'api_error';
       }
+      
+      // ⭐ 追踪生成失败
+      trackEvent('generation_fail', {
+        styleId: selectedTemplate || selectedStar || selectedMovie || selectedEra,
+        styleName: selectedTemplate,
+        mainTab,
+        error: errorMessage,
+        errorCode,
+      });
       
       Alert.alert(t('common.error'), errorMessage);
     } finally {
@@ -1565,13 +1611,22 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
             </TouchableOpacity>
           ),
           headerRight: () => (
-            <TouchableOpacity
-              style={styles.headerCoinBadge}
-              onPress={() => router.push('/recharge')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.headerCoinText}>💎 {coinBalance}</Text>
-            </TouchableOpacity>
+            <View style={styles.headerRightContainer}>
+              {/* 免费次数显示 */}
+              <View style={styles.headerFreeBadge}>
+                <Text style={styles.headerFreeText}>
+                  🎁 {freeQuotaInfo.remaining}/{freeQuotaInfo.total}
+                </Text>
+              </View>
+              {/* 钻石余额 */}
+              <TouchableOpacity
+                style={styles.headerCoinBadge}
+                onPress={() => router.push('/recharge')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.headerCoinText}>💎 {coinBalance}</Text>
+              </TouchableOpacity>
+            </View>
           ),
         }}
       />
@@ -2377,6 +2432,29 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
+  // Header右侧容器
+  headerRightContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginRight: 8,
+  },
+  // Header免费次数徽章样式
+  headerFreeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0fdf4', // 淡绿色背景
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#86efac',
+  },
+  headerFreeText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#16a34a', // 深绿色文字
+  },
   // Header钻石余额徽章样式
   headerCoinBadge: {
     flexDirection: 'row',
@@ -2385,7 +2463,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    marginRight: 8,
   },
   headerCoinText: {
     fontSize: 13,
