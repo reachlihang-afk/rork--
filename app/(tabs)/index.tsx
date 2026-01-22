@@ -1,18 +1,34 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Heart, Sparkles } from 'lucide-react-native';
+import { Heart, Sparkles, Users, Bell, User } from 'lucide-react-native';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSquare } from '@/contexts/SquareContext';
+import { useFriends, formatNumber } from '@/contexts/FriendsContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+
+// 热门创作者类型
+interface TopCreator {
+  userId: string;
+  nickname: string;
+  avatar?: string;
+  followersCount: number;
+  totalLikes: number;
+  postsCount: number;
+}
 
 export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user, isLoggedIn } = useAuth();
   const { posts } = useSquare();
+  const { isFollowing, followUser, getFollowersCount } = useFriends();
+  const { unreadCount } = useNotifications();
+  
+  const [topCreators, setTopCreators] = useState<TopCreator[]>([]);
 
   // 获取热门作品
   const featuredWorks = useMemo(() => {
@@ -21,6 +37,57 @@ export default function HomeScreen() {
       .sort((a, b) => b.likes.length - a.likes.length)
       .slice(0, 8);
   }, [posts]);
+
+  // 计算热门创作者（基于帖子数据）
+  useEffect(() => {
+    const calculateTopCreators = async () => {
+      // 按用户分组统计
+      const creatorStats: Record<string, { 
+        userId: string; 
+        nickname: string; 
+        avatar?: string;
+        totalLikes: number;
+        postsCount: number;
+      }> = {};
+
+      posts.forEach(post => {
+        if (!creatorStats[post.userId]) {
+          creatorStats[post.userId] = {
+            userId: post.userId,
+            nickname: post.userNickname,
+            avatar: post.userAvatar,
+            totalLikes: 0,
+            postsCount: 0,
+          };
+        }
+        creatorStats[post.userId].totalLikes += post.likes.length;
+        creatorStats[post.userId].postsCount += 1;
+      });
+
+      // 转换为数组并排序（按总获赞数）
+      const sortedCreators = Object.values(creatorStats)
+        .filter(c => c.userId !== user?.userId) // 排除自己
+        .sort((a, b) => b.totalLikes - a.totalLikes)
+        .slice(0, 10);
+
+      // 获取粉丝数
+      const creatorsWithFollowers = await Promise.all(
+        sortedCreators.map(async (creator) => {
+          const followersCount = await getFollowersCount(creator.userId);
+          return {
+            ...creator,
+            followersCount,
+          };
+        })
+      );
+
+      setTopCreators(creatorsWithFollowers);
+    };
+
+    if (posts.length > 0) {
+      calculateTopCreators();
+    }
+  }, [posts, user, getFollowersCount]);
 
   // 瀑布流分列
   const { leftColumn, rightColumn } = useMemo(() => {
@@ -93,6 +160,66 @@ export default function HomeScreen() {
     );
   };
 
+  // 处理关注创作者
+  const handleFollowCreator = async (creator: TopCreator) => {
+    if (!user) return;
+    try {
+      await followUser(creator.userId, creator.nickname, creator.avatar);
+    } catch (error) {
+      console.error('Failed to follow creator:', error);
+    }
+  };
+
+  // 渲染创作者卡片
+  const renderCreatorCard = (creator: TopCreator) => {
+    const following = isFollowing(creator.userId);
+    return (
+      <TouchableOpacity
+        key={creator.userId}
+        style={styles.creatorCard}
+        onPress={() => router.push(`/user-profile/${creator.userId}` as any)}
+        activeOpacity={0.8}
+      >
+        {/* 头像 */}
+        {creator.avatar ? (
+          <Image source={{ uri: creator.avatar }} style={styles.creatorAvatar} contentFit="cover" />
+        ) : (
+          <View style={styles.creatorAvatarPlaceholder}>
+            <User size={24} color="#9ca3af" />
+          </View>
+        )}
+        
+        {/* 用户名 */}
+        <Text style={styles.creatorName} numberOfLines={1}>{creator.nickname}</Text>
+        
+        {/* 统计 */}
+        <View style={styles.creatorStats}>
+          <Text style={styles.creatorStatText}>
+            {formatNumber(creator.followersCount)} {t('profile.followers')}
+          </Text>
+        </View>
+        
+        {/* 关注按钮 */}
+        {user && !following && (
+          <TouchableOpacity
+            style={styles.creatorFollowButton}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleFollowCreator(creator);
+            }}
+          >
+            <Text style={styles.creatorFollowButtonText}>+</Text>
+          </TouchableOpacity>
+        )}
+        {following && (
+          <View style={styles.creatorFollowingBadge}>
+            <Text style={styles.creatorFollowingText}>✓</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView 
@@ -100,6 +227,30 @@ export default function HomeScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        {/* 顶部通知入口 */}
+        {isLoggedIn && (
+          <TouchableOpacity
+            style={styles.notificationBar}
+            onPress={() => router.push('/notifications' as any)}
+          >
+            <View style={styles.notificationIconContainer}>
+              <Bell size={20} color="#1a1a1a" />
+              {unreadCount > 0 && (
+                <View style={styles.notificationBadge}>
+                  <Text style={styles.notificationBadgeText}>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.notificationText}>
+              {unreadCount > 0 
+                ? t('notifications.title') + ` (${unreadCount})` 
+                : t('notifications.title')}
+            </Text>
+          </TouchableOpacity>
+        )}
+
         {/* Hero Card */}
         <TouchableOpacity 
           style={styles.heroCard}
@@ -188,6 +339,29 @@ export default function HomeScreen() {
                         </View>
                       )}
         </View>
+
+        {/* 热门创作者推荐 */}
+        {topCreators.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionTitleRow}>
+                <Users size={18} color="#8B5CF6" strokeWidth={2.5} />
+                <Text style={styles.sectionTitle}>{t('home.hotCreators')}</Text>
+              </View>
+              <TouchableOpacity onPress={() => router.push('/(tabs)/square' as any)}>
+                <Text style={styles.viewAllLink}>{t('home.viewAll')}</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.creatorsScrollContent}
+            >
+              {topCreators.map(renderCreatorCard)}
+            </ScrollView>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -441,5 +615,122 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#475569',
+  },
+
+  // 通知入口
+  notificationBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 16,
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  notificationIconContainer: {
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -8,
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  notificationBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  notificationText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1a1a1a',
+  },
+
+  // 热门创作者
+  creatorsScrollContent: {
+    paddingRight: 16,
+    gap: 12,
+  },
+  creatorCard: {
+    width: 100,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  creatorAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    marginBottom: 8,
+  },
+  creatorAvatarPlaceholder: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  creatorName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 4,
+    textAlign: 'center',
+    width: '100%',
+  },
+  creatorStats: {
+    marginBottom: 8,
+  },
+  creatorStatText: {
+    fontSize: 11,
+    color: '#9CA3AF',
+  },
+  creatorFollowButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#EF4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  creatorFollowButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    lineHeight: 20,
+  },
+  creatorFollowingBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#ECFDF5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  creatorFollowingText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#10B981',
   },
 });

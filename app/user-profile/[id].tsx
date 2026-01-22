@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, MoreHorizontal, User, MessageCircle, Users } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
-import { useFriends, UserStats } from '@/contexts/FriendsContext';
+import { useFriends, UserStats, formatNumber } from '@/contexts/FriendsContext';
 import { useSquare, SquarePost } from '@/contexts/SquareContext';
 import { useAlert } from '@/contexts/AlertContext';
 import { useTranslation } from 'react-i18next';
@@ -285,18 +285,24 @@ export default function UserProfileScreen() {
             <Text style={styles.bio}>{profileUser.bio}</Text>
           )}
 
-          {/* 统计数据 - 使用真实数据 */}
+          {/* 统计数据 - 使用真实数据，可点击查看列表 */}
           <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{userStats?.followingCount || 0}</Text>
+            <TouchableOpacity 
+              style={styles.statItem}
+              onPress={() => router.push(`/follow-list?userId=${profileUser.userId}&tab=following` as any)}
+            >
+              <Text style={styles.statNumber}>{formatNumber(userStats?.followingCount || 0)}</Text>
               <Text style={styles.statLabel}>{t('profile.following')}</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{userStats?.followersCount || 0}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.statItem}
+              onPress={() => router.push(`/follow-list?userId=${profileUser.userId}&tab=followers` as any)}
+            >
+              <Text style={styles.statNumber}>{formatNumber(userStats?.followersCount || 0)}</Text>
               <Text style={styles.statLabel}>{t('profile.followers')}</Text>
-            </View>
+            </TouchableOpacity>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{userStats?.totalLikes || 0}</Text>
+              <Text style={styles.statNumber}>{formatNumber(userStats?.totalLikes || 0)}</Text>
               <Text style={styles.statLabel}>{t('profile.likes')}</Text>
             </View>
           </View>

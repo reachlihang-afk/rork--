@@ -12,6 +12,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SquareProvider } from "@/contexts/SquareContext";
 import { FriendsContext } from "@/contexts/FriendsContext";
 import { AlertProvider } from "@/contexts/AlertContext";
+import { NotificationContext } from "@/contexts/NotificationContext";
 
 // Import CSS for web platform
 if (Platform.OS === 'web') {
@@ -77,6 +78,18 @@ function RootLayoutNav() {
           headerBackTitleVisible: false,
         }} 
       />
+      <Stack.Screen 
+        name="follow-list" 
+        options={{ 
+          headerShown: false,
+        }} 
+      />
+      <Stack.Screen 
+        name="notifications" 
+        options={{ 
+          headerShown: false,
+        }} 
+      />
     </Stack>
   );
 }
@@ -91,17 +104,19 @@ export default function RootLayout() {
       <LanguageProvider>
         <AuthContext>
           <FriendsContext>
-            <CoinProvider>
-              <VerificationProvider>
-                <SquareProvider>
-                  <AlertProvider>
-                    <GestureHandlerRootView style={{ flex: 1 }}>
-                      <RootLayoutNav />
-                    </GestureHandlerRootView>
-                  </AlertProvider>
-                </SquareProvider>
-              </VerificationProvider>
-            </CoinProvider>
+            <NotificationContext>
+              <CoinProvider>
+                <VerificationProvider>
+                  <SquareProvider>
+                    <AlertProvider>
+                      <GestureHandlerRootView style={{ flex: 1 }}>
+                        <RootLayoutNav />
+                      </GestureHandlerRootView>
+                    </AlertProvider>
+                  </SquareProvider>
+                </VerificationProvider>
+              </CoinProvider>
+            </NotificationContext>
           </FriendsContext>
         </AuthContext>
       </LanguageProvider>

@@ -12,6 +12,14 @@ export interface FollowingUser {
   followedAt: string;
 }
 
+// 粉丝用户类型（反向索引）
+export interface FollowerUser {
+  userId: string;
+  nickname: string;
+  avatar?: string;
+  followedAt: string;
+}
+
 // 用户统计数据类型
 export interface UserStats {
   userId: string;
@@ -20,6 +28,16 @@ export interface UserStats {
   totalLikes: number;      // 获赞总数
   postsCount: number;      // 发帖数
 }
+
+// 格式化数字显示（1000 -> 1k, 10000 -> 1w）
+export const formatNumber = (num: number): string => {
+  if (num >= 10000) {
+    return (num / 10000).toFixed(1).replace(/\.0$/, '') + 'w';
+  } else if (num >= 1000) {
+    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  }
+  return num.toString();
+};
 
 export const [FriendsContext, useFriends] = createContextHook(() => {
   const { user } = useAuth();
@@ -300,7 +318,7 @@ export const [FriendsContext, useFriends] = createContextHook(() => {
 
   const pendingRequestsCount = friendRequests.filter(r => r.status === 'pending').length;
 
-  // 关注用户
+  // 关注用户（同时维护反向索引）
   const followUser = useCallback(async (targetUserId: string, targetNickname: string, targetAvatar?: string) => {
     if (!user) {
       throw new Error('Not logged in');
@@ -316,11 +334,14 @@ export const [FriendsContext, useFriends] = createContextHook(() => {
       throw new Error('Already following');
     }
 
+    const now = new Date().toISOString();
+
+    // 1. 更新我的关注列表
     const newFollowing: FollowingUser = {
       userId: targetUserId,
       nickname: targetNickname,
       avatar: targetAvatar,
-      followedAt: new Date().toISOString(),
+      followedAt: now,
     };
 
     const updatedFollowing = [...following, newFollowing];
@@ -329,20 +350,47 @@ export const [FriendsContext, useFriends] = createContextHook(() => {
     const followingKey = `following_${user.userId}`;
     await AsyncStorage.setItem(followingKey, JSON.stringify(updatedFollowing));
 
+    // 2. 更新对方的粉丝列表（反向索引）
+    const followersKey = `followers_${targetUserId}`;
+    const followersData = await AsyncStorage.getItem(followersKey);
+    const currentFollowers: FollowerUser[] = followersData ? JSON.parse(followersData) : [];
+    
+    // 避免重复添加
+    if (!currentFollowers.some(f => f.userId === user.userId)) {
+      const newFollower: FollowerUser = {
+        userId: user.userId,
+        nickname: user.nickname || user.userId,
+        avatar: user.avatar,
+        followedAt: now,
+      };
+      currentFollowers.push(newFollower);
+      await AsyncStorage.setItem(followersKey, JSON.stringify(currentFollowers));
+    }
+
     return newFollowing;
   }, [user, following]);
 
-  // 取消关注
+  // 取消关注（同时维护反向索引）
   const unfollowUser = useCallback(async (targetUserId: string) => {
     if (!user) {
       throw new Error('Not logged in');
     }
 
+    // 1. 更新我的关注列表
     const updatedFollowing = following.filter(f => f.userId !== targetUserId);
     setFollowing(updatedFollowing);
 
     const followingKey = `following_${user.userId}`;
     await AsyncStorage.setItem(followingKey, JSON.stringify(updatedFollowing));
+
+    // 2. 从对方的粉丝列表移除（反向索引）
+    const followersKey = `followers_${targetUserId}`;
+    const followersData = await AsyncStorage.getItem(followersKey);
+    if (followersData) {
+      const currentFollowers: FollowerUser[] = JSON.parse(followersData);
+      const updatedFollowers = currentFollowers.filter(f => f.userId !== user.userId);
+      await AsyncStorage.setItem(followersKey, JSON.stringify(updatedFollowers));
+    }
   }, [user, following]);
 
   // 检查是否已关注某用户
@@ -353,32 +401,49 @@ export const [FriendsContext, useFriends] = createContextHook(() => {
   // 获取关注列表中的用户ID数组
   const followingUserIds = following.map(f => f.userId);
 
-  // 获取用户的粉丝数（被多少人关注）
+  // 获取用户的粉丝数（使用反向索引，O(1)复杂度）
   const getFollowersCount = useCallback(async (targetUserId: string): Promise<number> => {
     try {
-      // 获取所有用户
-      const usersKey = 'all_users';
-      const stored = await AsyncStorage.getItem(usersKey);
-      const allUsers: { userId: string }[] = stored ? JSON.parse(stored) : [];
-      
-      let count = 0;
-      
-      // 遍历每个用户，检查他们是否关注了目标用户
-      for (const u of allUsers) {
-        const followingKey = `following_${u.userId}`;
-        const followingData = await AsyncStorage.getItem(followingKey);
-        if (followingData) {
-          const userFollowing: FollowingUser[] = JSON.parse(followingData);
-          if (userFollowing.some(f => f.userId === targetUserId)) {
-            count++;
-          }
-        }
+      const followersKey = `followers_${targetUserId}`;
+      const followersData = await AsyncStorage.getItem(followersKey);
+      if (followersData) {
+        const followers: FollowerUser[] = JSON.parse(followersData);
+        return followers.length;
       }
-      
-      return count;
+      return 0;
     } catch (error) {
       console.error('Failed to get followers count:', error);
       return 0;
+    }
+  }, []);
+
+  // 获取用户的粉丝列表
+  const getFollowersList = useCallback(async (targetUserId: string): Promise<FollowerUser[]> => {
+    try {
+      const followersKey = `followers_${targetUserId}`;
+      const followersData = await AsyncStorage.getItem(followersKey);
+      if (followersData) {
+        return JSON.parse(followersData);
+      }
+      return [];
+    } catch (error) {
+      console.error('Failed to get followers list:', error);
+      return [];
+    }
+  }, []);
+
+  // 获取用户的关注列表
+  const getFollowingList = useCallback(async (targetUserId: string): Promise<FollowingUser[]> => {
+    try {
+      const followingKey = `following_${targetUserId}`;
+      const followingData = await AsyncStorage.getItem(followingKey);
+      if (followingData) {
+        return JSON.parse(followingData);
+      }
+      return [];
+    } catch (error) {
+      console.error('Failed to get following list:', error);
+      return [];
     }
   }, []);
 
@@ -497,6 +562,8 @@ export const [FriendsContext, useFriends] = createContextHook(() => {
     // 新增粉丝数统计方法
     getFollowersCount,
     getFollowingCount,
+    getFollowersList,
+    getFollowingList,
     getUserStats,
     isMutualFollow,
   };

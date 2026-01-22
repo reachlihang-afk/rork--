@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSquare, SquarePost, SquareComment } from '@/contexts/SquareContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAlert } from '@/contexts/AlertContext';
-import { useFriends } from '@/contexts/FriendsContext';
+import { useFriends, formatNumber } from '@/contexts/FriendsContext';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { saveToGallery } from '@/utils/share';
@@ -607,7 +607,7 @@ export default function SquareScreen() {
             {followersCache[post.userId] !== undefined && followersCache[post.userId] > 0 && (
               <View style={pipStyles.followersBadge}>
                 <User size={10} color="#9CA3AF" />
-                <Text style={pipStyles.followersCount}>{followersCache[post.userId]}</Text>
+                <Text style={pipStyles.followersCount}>{formatNumber(followersCache[post.userId])}</Text>
               </View>
             )}
             {/* 互关标识 */}
