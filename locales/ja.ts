@@ -155,6 +155,16 @@ export default {
     invalidCode: '電話番号と認証コードを入力してください',
     wrongCode: '認証コードが無効です',
     codeSent: '認証コードを送信しました',
+    // 🆕 統計とプロフィール関連
+    myDiamonds: 'マイダイヤモンド',
+    following: 'フォロー中',
+    followers: 'フォロワー',
+    swaps: 'スワップ',
+    likes: 'いいね',
+    addBio: '自己紹介を追加',
+    bio: '自己紹介',
+    bioPlaceholder: '自己紹介を入力してください...',
+    language: '言語設定',
   },
   login: {
     welcome: 'おかえりなさい',

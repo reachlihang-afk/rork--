@@ -155,6 +155,16 @@ export default {
     invalidCode: 'Please enter phone number and verification code',
     wrongCode: 'Invalid verification code',
     codeSent: 'Verification code sent',
+    // 🆕 Stats and profile related
+    myDiamonds: 'My Diamonds',
+    following: 'Following',
+    followers: 'Followers',
+    swaps: 'Swaps',
+    likes: 'Likes',
+    addBio: 'Add Bio',
+    bio: 'Bio',
+    bioPlaceholder: 'Tell us about yourself...',
+    language: 'Language',
   },
   login: {
     welcome: 'Welcome Back',

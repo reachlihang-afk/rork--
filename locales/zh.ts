@@ -155,6 +155,16 @@ export default {
     invalidCode: '请输入手机号和验证码',
     wrongCode: '验证码错误',
     codeSent: '验证码已发送',
+    // 🆕 从login部分移过来的统计相关翻译
+    myDiamonds: '我的钻石',
+    following: '关注',
+    followers: '粉丝',
+    swaps: '换装',
+    likes: '获赞',
+    addBio: '添加个人介绍',
+    bio: '个人介绍',
+    bioPlaceholder: '介绍一下自己吧...',
+    language: '语言设置',
   },
   login: {
     welcome: '欢迎回来',

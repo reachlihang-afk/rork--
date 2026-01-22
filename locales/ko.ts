@@ -155,6 +155,16 @@ export default {
     invalidCode: '전화번호와 인증 코드를 입력하세요',
     wrongCode: '인증 코드가 올바르지 않습니다',
     codeSent: '인증 코드가 전송되었습니다',
+    // 🆕 통계 및 프로필 관련
+    myDiamonds: '내 다이아몬드',
+    following: '팔로잉',
+    followers: '팔로워',
+    swaps: '스왑',
+    likes: '좋아요',
+    addBio: '자기소개 추가',
+    bio: '자기소개',
+    bioPlaceholder: '자신에 대해 소개해주세요...',
+    language: '언어 설정',
   },
   login: {
     welcome: '다시 오신 것을 환영합니다',
