@@ -3,7 +3,9 @@ import createContextHook from '@nkzw/create-context-hook';
 import { useState, useEffect, useCallback } from 'react';
 
 interface User {
-  phone: string;
+  phone?: string;
+  email?: string;
+  loginMethod: 'phone' | 'email' | 'apple' | 'google';
   loginTime: string;
   userId: string;
   nickname?: string;
@@ -12,6 +14,8 @@ interface User {
   followingCount?: number;
   followersCount?: number;
   following?: string[]; // 关注的用户ID列表
+  appleId?: string;
+  googleId?: string;
 }
 
 export const [AuthContext, useAuth] = createContextHook(() => {
@@ -33,7 +37,7 @@ export const [AuthContext, useAuth] = createContextHook(() => {
             await AsyncStorage.removeItem('user');
           } else {
             const parsed = JSON.parse(stored);
-            if (parsed && typeof parsed === 'object' && parsed.phone) {
+            if (parsed && typeof parsed === 'object' && (parsed.phone || parsed.email || parsed.appleId || parsed.googleId)) {
               setUser(parsed);
             } else {
               console.warn('Invalid user data, clearing storage');
@@ -93,6 +97,7 @@ export const [AuthContext, useAuth] = createContextHook(() => {
     
     const newUser: User = {
       phone,
+      loginMethod: 'phone',
       loginTime: new Date().toISOString(),
       userId: isNewUser ? generateUserId() : existingUser.userId,
       nickname: !isNewUser && existingUser?.nickname ? existingUser.nickname : undefined,
@@ -115,6 +120,180 @@ export const [AuthContext, useAuth] = createContextHook(() => {
       } catch (error) {
         console.error('Failed to initialize coins:', error);
       }
+    }
+  }, [generateUserId]);
+
+  const loginWithEmail = useCallback(async (email: string, password: string) => {
+    // TODO: 实际应该调用后端API验证邮箱和密码
+    const storedUser = await AsyncStorage.getItem('user');
+    let existingUser = null;
+    if (storedUser && 
+        typeof storedUser === 'string' && 
+        storedUser.trim() !== '' && 
+        storedUser !== 'undefined' &&
+        storedUser !== 'null' &&
+        !storedUser.includes('[object Object]') &&
+        storedUser.startsWith('{')) {
+      try {
+        existingUser = JSON.parse(storedUser);
+      } catch (e) {
+        console.error('Failed to parse stored user during login:', e);
+        await AsyncStorage.removeItem('user');
+      }
+    }
+    const isNewUser = !existingUser || existingUser.email !== email;
+    
+    const newUser: User = {
+      email,
+      loginMethod: 'email',
+      loginTime: new Date().toISOString(),
+      userId: isNewUser ? generateUserId() : existingUser.userId,
+      nickname: !isNewUser && existingUser?.nickname ? existingUser.nickname : undefined,
+      avatar: !isNewUser && existingUser?.avatar ? existingUser.avatar : undefined,
+      bio: !isNewUser && existingUser?.bio ? existingUser.bio : undefined,
+      followingCount: !isNewUser && existingUser?.followingCount ? existingUser.followingCount : 0,
+      followersCount: !isNewUser && existingUser?.followersCount ? existingUser.followersCount : 0,
+      following: !isNewUser && existingUser?.following ? existingUser.following : [],
+    };
+    setUser(newUser);
+    await AsyncStorage.setItem('user', JSON.stringify(newUser));
+    
+    if (isNewUser) {
+      const coinKey = `user_coins_${email}`;
+      try {
+        const existingCoins = await AsyncStorage.getItem(coinKey);
+        if (!existingCoins) {
+          await AsyncStorage.setItem(coinKey, JSON.stringify(1000));
+        }
+      } catch (error) {
+        console.error('Failed to initialize coins:', error);
+      }
+    }
+  }, [generateUserId]);
+
+  const loginWithApple = useCallback(async () => {
+    // TODO: 集成 Apple Sign In
+    // 需要安装: expo install expo-apple-authentication
+    // import * as AppleAuthentication from 'expo-apple-authentication';
+    
+    try {
+      // Demo模式：模拟Apple登录
+      // 实际实现请参考：https://docs.expo.dev/versions/latest/sdk/apple-authentication/
+      
+      const appleId = 'demo_apple_' + Date.now();
+      const email = 'demo@icloud.com';
+      
+      const storedUser = await AsyncStorage.getItem('user');
+      let existingUser = null;
+      if (storedUser && 
+          typeof storedUser === 'string' && 
+          storedUser.trim() !== '' && 
+          storedUser !== 'undefined' &&
+          storedUser !== 'null' &&
+          !storedUser.includes('[object Object]') &&
+          storedUser.startsWith('{')) {
+        try {
+          existingUser = JSON.parse(storedUser);
+        } catch (e) {
+          console.error('Failed to parse stored user during login:', e);
+          await AsyncStorage.removeItem('user');
+        }
+      }
+      const isNewUser = !existingUser || existingUser.appleId !== appleId;
+      
+      const newUser: User = {
+        appleId,
+        email,
+        loginMethod: 'apple',
+        loginTime: new Date().toISOString(),
+        userId: isNewUser ? generateUserId() : existingUser.userId,
+        nickname: !isNewUser && existingUser?.nickname ? existingUser.nickname : undefined,
+        avatar: !isNewUser && existingUser?.avatar ? existingUser.avatar : undefined,
+        bio: !isNewUser && existingUser?.bio ? existingUser.bio : undefined,
+        followingCount: !isNewUser && existingUser?.followingCount ? existingUser.followingCount : 0,
+        followersCount: !isNewUser && existingUser?.followersCount ? existingUser.followersCount : 0,
+        following: !isNewUser && existingUser?.following ? existingUser.following : [],
+      };
+      setUser(newUser);
+      await AsyncStorage.setItem('user', JSON.stringify(newUser));
+      
+      if (isNewUser) {
+        const coinKey = `user_coins_${appleId}`;
+        try {
+          const existingCoins = await AsyncStorage.getItem(coinKey);
+          if (!existingCoins) {
+            await AsyncStorage.setItem(coinKey, JSON.stringify(1000));
+          }
+        } catch (error) {
+          console.error('Failed to initialize coins:', error);
+        }
+      }
+    } catch (error: any) {
+      console.error('Apple login error:', error);
+      throw error;
+    }
+  }, [generateUserId]);
+
+  const loginWithGoogle = useCallback(async () => {
+    // TODO: 集成 Google Sign In
+    // 需要安装: expo install @react-native-google-signin/google-signin
+    // 或使用 expo-auth-session: expo install expo-auth-session expo-web-browser
+    
+    try {
+      // Demo模式：模拟Google登录
+      // 实际实现请参考：https://docs.expo.dev/guides/authentication/#google
+      
+      const googleId = 'demo_google_' + Date.now();
+      const email = 'demo@gmail.com';
+      
+      const storedUser = await AsyncStorage.getItem('user');
+      let existingUser = null;
+      if (storedUser && 
+          typeof storedUser === 'string' && 
+          storedUser.trim() !== '' && 
+          storedUser !== 'undefined' &&
+          storedUser !== 'null' &&
+          !storedUser.includes('[object Object]') &&
+          storedUser.startsWith('{')) {
+        try {
+          existingUser = JSON.parse(storedUser);
+        } catch (e) {
+          console.error('Failed to parse stored user during login:', e);
+          await AsyncStorage.removeItem('user');
+        }
+      }
+      const isNewUser = !existingUser || existingUser.googleId !== googleId;
+      
+      const newUser: User = {
+        googleId,
+        email,
+        loginMethod: 'google',
+        loginTime: new Date().toISOString(),
+        userId: isNewUser ? generateUserId() : existingUser.userId,
+        nickname: !isNewUser && existingUser?.nickname ? existingUser.nickname : undefined,
+        avatar: !isNewUser && existingUser?.avatar ? existingUser.avatar : undefined,
+        bio: !isNewUser && existingUser?.bio ? existingUser.bio : undefined,
+        followingCount: !isNewUser && existingUser?.followingCount ? existingUser.followingCount : 0,
+        followersCount: !isNewUser && existingUser?.followersCount ? existingUser.followersCount : 0,
+        following: !isNewUser && existingUser?.following ? existingUser.following : [],
+      };
+      setUser(newUser);
+      await AsyncStorage.setItem('user', JSON.stringify(newUser));
+      
+      if (isNewUser) {
+        const coinKey = `user_coins_${googleId}`;
+        try {
+          const existingCoins = await AsyncStorage.getItem(coinKey);
+          if (!existingCoins) {
+            await AsyncStorage.setItem(coinKey, JSON.stringify(1000));
+          }
+        } catch (error) {
+          console.error('Failed to initialize coins:', error);
+        }
+      }
+    } catch (error: any) {
+      console.error('Google login error:', error);
+      throw error;
     }
   }, [generateUserId]);
 
@@ -235,6 +414,9 @@ export const [AuthContext, useAuth] = createContextHook(() => {
     isLoading,
     isLoggedIn: !!user,
     login,
+    loginWithEmail,
+    loginWithApple,
+    loginWithGoogle,
     logout,
     updateProfile,
     followUser,

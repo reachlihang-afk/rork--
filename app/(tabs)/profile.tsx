@@ -449,13 +449,36 @@ export default function ProfileScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {/* 新的登录入口 */}
+          <View style={styles.modernLoginHero}>
+            <LinearGradient
+              colors={['#667eea', '#764ba2']}
+              style={styles.modernLoginGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.modernLoginContent}>
+                <Text style={styles.modernLoginIcon}>✨</Text>
+                <Text style={styles.modernLoginTitle}>{t('home.title')}</Text>
+                <Text style={styles.modernLoginSubtitle}>{t('home.transformInstantly')}</Text>
+                <TouchableOpacity 
+                  style={styles.modernLoginButton}
+                  onPress={() => router.push('/login' as any)}
+                >
+                  <Text style={styles.modernLoginButtonText}>{t('profile.login')}</Text>
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
+          </View>
+
+          {/* 保留原有的手机号登录（作为快捷登录） */}
           <View style={styles.loginHero}>
             <View style={styles.loginHeroContent}>
               <View style={styles.loginIconWrapper}>
                 <User size={40} color="#1a1a1a" strokeWidth={2} />
               </View>
               <Text style={styles.loginHeroTitle}>{t('profile.phoneLogin')}</Text>
-              <Text style={styles.loginHeroSubtitle}>{t('home.transformInstantly')}</Text>
+              <Text style={styles.loginHeroSubtitle}>{currentLanguage === 'zh' ? '快速登录' : 'Quick Login'}</Text>
             </View>
           </View>
 
@@ -602,9 +625,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  modernLoginHero: {
+    marginTop: Platform.OS === 'ios' ? 60 : 40,
+    marginHorizontal: 20,
+    marginBottom: 24,
+    borderRadius: 24,
+    overflow: 'hidden',
+    shadowColor: '#667eea',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  modernLoginGradient: {
+    padding: 40,
+  },
+  modernLoginContent: {
+    alignItems: 'center',
+  },
+  modernLoginIcon: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  modernLoginTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  modernLoginSubtitle: {
+    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginBottom: 24,
+  },
+  modernLoginButton: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 48,
+    paddingVertical: 14,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  modernLoginButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#667eea',
+  },
   loginHero: {
-    paddingTop: Platform.OS === 'ios' ? 100 : 80,
-    paddingBottom: 60,
+    paddingTop: 20,
+    paddingBottom: 30,
     paddingHorizontal: 24,
     backgroundColor: '#ffffff',
     alignItems: 'center',
