@@ -28,6 +28,8 @@ import { useVerification } from '@/contexts/VerificationContext';
 import { useSquare } from '@/contexts/SquareContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTopic } from '@/contexts/TopicContext';
+import { TopicSelector } from '@/components/TopicSelector';
 import { useAlert } from '@/contexts/AlertContext';
 import { saveToGallery } from '@/utils/share';
 import { trackEvent } from '@/utils/analytics';
@@ -657,7 +659,13 @@ export default function OutfitChangeNewScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { currentLanguage } = useLanguage();
-  const params = useLocalSearchParams();
+  const params = useLocalSearchParams<{
+    photoUri?: string;
+    mode?: string;
+    lookPrompt?: string;
+    autoStyle?: string;    // 🆕 自动选择的风格名称
+    fromPost?: string;     // 🆕 来源帖子ID
+  }>();
   
   // 根据语言获取模板名称
   const getTemplateName = (template: { name: string; nameEn: string }) => {
@@ -670,6 +678,7 @@ export default function OutfitChangeNewScreen() {
   const { addOutfitChangeHistory, markAsPublished } = useVerification();
   const { publishPost } = useSquare();
   const { showAlert } = useAlert();
+  const { getTopic } = useTopic();
   
   // 获取剩余免费次数（使用新API）
   const freeQuotaInfo = getRemainingFreeCounts();
@@ -749,6 +758,7 @@ export default function OutfitChangeNewScreen() {
   const [isPublished, setIsPublished] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [showOriginalInPost, setShowOriginalInPost] = useState(false); // 默认不展示原图
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]); // 🆕 选中的话题ID列表
 
   const getWritableDirectory = () => {
     const fsAny = FileSystem as unknown as {
@@ -767,6 +777,7 @@ export default function OutfitChangeNewScreen() {
       return;
     }
     setShowOriginalInPost(false); // 重置开关为默认关闭
+    setSelectedTopics([]);        // 🆕 重置话题选择
     setShowPublishModal(true);
   };
 
@@ -777,6 +788,15 @@ export default function OutfitChangeNewScreen() {
     setShowPublishModal(false);
     setIsPublishing(true);
     try {
+      // 🆕 获取选中话题的完整信息
+      const topicNames: string[] = [];
+      for (const topicId of selectedTopics) {
+        const topic = await getTopic(topicId);
+        if (topic) {
+          topicNames.push(topic.nameWithHash);
+        }
+      }
+
       await publishPost({
         userId: user.userId,
         userNickname: user.nickname || user.userId,
@@ -789,6 +809,8 @@ export default function OutfitChangeNewScreen() {
         customOutfitImages: generatedResult.customOutfitImages,
         showOriginal: showOriginalInPost, // 传递是否展示原图的选项
         pinnedCommentId: undefined,
+        topics: selectedTopics,      // 🆕 话题ID数组
+        topicNames: topicNames,      // 🆕 话题名称数组
       });
 
       setIsPublished(true);
@@ -894,6 +916,42 @@ export default function OutfitChangeNewScreen() {
       setSelectedLookPrompt(typeof params.lookPrompt === 'string' ? params.lookPrompt : null);
     }
   }, [params.mode, params.lookPrompt, params.influencerId]);
+
+  // 🆕 从广场"生成同款"跳转过来的自动选择
+  useEffect(() => {
+    if (params.autoStyle && typeof params.autoStyle === 'string') {
+      // 查找匹配的模板
+      const matchedTemplate = TEMPLATES.find(t => {
+        const templateName = getTemplateName(t);
+        return templateName === params.autoStyle || 
+               t.name === params.autoStyle || 
+               t.nameEn === params.autoStyle;
+      });
+
+      if (matchedTemplate) {
+        setMainTab('outfit');
+        setSelectedTab('template');
+        setSelectedTemplate(matchedTemplate.id);
+        
+        // 追踪来源
+        if (params.fromPost) {
+          trackEvent('same_style_start', {
+            fromPost: params.fromPost,
+            selectedStyle: params.autoStyle,
+            templateId: matchedTemplate.id,
+          });
+        }
+
+        // 提示用户
+        setTimeout(() => {
+          showAlert({
+            type: 'info',
+            message: `已为你选择"${getTemplateName(matchedTemplate)}"风格，上传照片即可生成同款！`,
+          });
+        }, 500);
+      }
+    }
+  }, [params.autoStyle, params.fromPost]);
 
   // 上传照片
   const handleUploadPhoto = async () => {
@@ -2307,6 +2365,15 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
               </Text>
             </View>
             
+            {/* 🆕 话题选择器 */}
+            <View style={styles.topicSelectorContainer}>
+              <TopicSelector
+                selectedTopics={selectedTopics}
+                onTopicsChange={setSelectedTopics}
+                maxTopics={3}
+              />
+            </View>
+            
             {/* 按钮 */}
             <View style={styles.publishModalButtons}>
               <TouchableOpacity
@@ -3626,6 +3693,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9ca3af',
     flex: 1,
+  },
+  // 🆕 话题选择器容器
+  topicSelectorContainer: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
   },
   publishModalButtons: {
     flexDirection: 'row',

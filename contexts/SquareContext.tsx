@@ -28,6 +28,9 @@ export interface SquarePost {
   comments: SquareComment[];
   pinnedCommentId?: string;
   userRatings: UserRating[];
+  // 话题相关字段 🆕
+  topics?: string[];              // 话题ID数组
+  topicNames?: string[];          // 话题名称数组（带#，用于显示）
 }
 
 export interface SquareComment {

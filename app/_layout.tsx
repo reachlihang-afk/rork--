@@ -13,6 +13,7 @@ import { SquareProvider } from "@/contexts/SquareContext";
 import { FriendsContext } from "@/contexts/FriendsContext";
 import { AlertProvider } from "@/contexts/AlertContext";
 import { NotificationContext } from "@/contexts/NotificationContext";
+import { TopicProvider } from "@/contexts/TopicContext";
 
 // Import CSS for web platform
 if (Platform.OS === 'web') {
@@ -107,13 +108,15 @@ export default function RootLayout() {
             <NotificationContext>
               <CoinProvider>
                 <VerificationProvider>
-                  <SquareProvider>
-                    <AlertProvider>
-                      <GestureHandlerRootView style={{ flex: 1 }}>
-                        <RootLayoutNav />
-                      </GestureHandlerRootView>
-                    </AlertProvider>
-                  </SquareProvider>
+                  <TopicProvider>
+                    <SquareProvider>
+                      <AlertProvider>
+                        <GestureHandlerRootView style={{ flex: 1 }}>
+                          <RootLayoutNav />
+                        </GestureHandlerRootView>
+                      </AlertProvider>
+                    </SquareProvider>
+                  </TopicProvider>
                 </VerificationProvider>
               </CoinProvider>
             </NotificationContext>

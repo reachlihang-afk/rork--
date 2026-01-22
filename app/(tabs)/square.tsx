@@ -8,9 +8,11 @@ import { useSquare, SquarePost, SquareComment } from '@/contexts/SquareContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAlert } from '@/contexts/AlertContext';
 import { useFriends, formatNumber } from '@/contexts/FriendsContext';
+import { useTopic } from '@/contexts/TopicContext';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { saveToGallery } from '@/utils/share';
+import { trackEvent } from '@/utils/analytics';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_GAP = 10;
@@ -103,6 +105,7 @@ export default function SquareScreen() {
   const { user } = useAuth();
   const { showAlert } = useAlert();
   const { followingUserIds, followUser, unfollowUser, isFollowing, getFollowersCount, isMutualFollow } = useFriends();
+  const { getTopic, getTopicByName, hotTopics } = useTopic();
   const { highlightPostId } = useLocalSearchParams<{ highlightPostId?: string }>();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -544,6 +547,40 @@ export default function SquareScreen() {
     return t('square.daysAgo', { count: days });
   };
 
+  // 🆕 "生成同款"按钮点击处理
+  const handleGenerateSameStyle = useCallback((post: SquarePost) => {
+    // 追踪埋点
+    trackEvent('same_style_click', {
+      postId: post.id,
+      styleName: post.templateName,
+      authorId: post.userId,
+    });
+
+    // 跳转到换装页，自动选择该风格
+    router.push({
+      pathname: '/outfit-change',
+      params: {
+        autoStyle: post.templateName || '', // 自动选择该模板
+        fromPost: post.id,                  // 来源帖子ID
+      },
+    } as any);
+  }, []);
+
+  // 🆕 话题点击处理
+  const handleTopicClick = useCallback((topicName: string) => {
+    const topic = getTopicByName(topicName);
+    if (topic) {
+      // 跳转到话题详情页
+      router.push(`/topic/${topic.id}` as any);
+      
+      trackEvent('topic_click', {
+        topicId: topic.id,
+        topicName: topic.name,
+        source: 'square_post',
+      });
+    }
+  }, [getTopicByName]);
+
   
 
   // 渲染画中画卡片 - 支持瀑布流不同高度
@@ -578,6 +615,22 @@ export default function SquareScreen() {
           <Text style={pipStyles.description} numberOfLines={2}>
             {post.description}
           </Text>
+        )}
+        
+        {/* 🆕 话题标签 */}
+        {post.topicNames && post.topicNames.length > 0 && (
+          <View style={pipStyles.topicTags}>
+            {post.topicNames.slice(0, 2).map((topicName, idx) => (
+              <TouchableOpacity
+                key={idx}
+                style={pipStyles.topicTag}
+                onPress={() => handleTopicClick(topicName)}
+                activeOpacity={0.7}
+              >
+                <Text style={pipStyles.topicTagText}>{topicName}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         )}
         
         {/* 用户信息和点赞 */}
@@ -632,19 +685,34 @@ export default function SquareScreen() {
             )}
           </View>
           
-          <TouchableOpacity 
-            style={pipStyles.likeButton}
-            onPress={() => handleLike(post.id)}
-          >
-            <Heart
-              size={14}
-              color={isLiked ? '#EF4444' : '#9CA3AF'}
-              fill={isLiked ? '#EF4444' : 'none'}
-            />
-            <Text style={[pipStyles.likeCount, isLiked && pipStyles.likeCountActive]}>
-              {post.likes.length}
-            </Text>
-          </TouchableOpacity>
+          <View style={pipStyles.actions}>
+            <TouchableOpacity 
+              style={pipStyles.likeButton}
+              onPress={() => handleLike(post.id)}
+            >
+              <Heart
+                size={14}
+                color={isLiked ? '#EF4444' : '#9CA3AF'}
+                fill={isLiked ? '#EF4444' : 'none'}
+              />
+              <Text style={[pipStyles.likeCount, isLiked && pipStyles.likeCountActive]}>
+                {post.likes.length}
+              </Text>
+            </TouchableOpacity>
+            
+            {/* 🆕 "生成同款"按钮 */}
+            <TouchableOpacity
+              style={pipStyles.sameStyleButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleGenerateSameStyle(post);
+              }}
+              activeOpacity={0.7}
+            >
+              <Star size={12} color="#22c55e" fill="#22c55e" />
+              <Text style={pipStyles.sameStyleText}>同款</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         
         {/* 预览评论 */}
@@ -735,6 +803,36 @@ export default function SquareScreen() {
     </View>
   );
 
+  // 🆕 渲染热门话题横滑区
+  const renderHotTopics = () => {
+    if (hotTopics.length === 0) return null;
+    
+    return (
+      <View style={pipStyles.hotTopicsSection}>
+        <View style={pipStyles.hotTopicsHeader}>
+          <Text style={pipStyles.hotTopicsTitle}>🔥 热门话题</Text>
+        </View>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={pipStyles.hotTopicsScroll}
+        >
+          {hotTopics.map(topic => (
+            <TouchableOpacity
+              key={topic.id}
+              style={pipStyles.hotTopicChip}
+              onPress={() => handleTopicClick(topic.nameWithHash)}
+              activeOpacity={0.7}
+            >
+              <Text style={pipStyles.hotTopicName}>{topic.nameWithHash}</Text>
+              <Text style={pipStyles.hotTopicCount}>{formatNumber(topic.postsCount)}条</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
   // 渲染空状态
   const renderEmptyState = () => {
     // 搜索无结果
@@ -790,6 +888,9 @@ export default function SquareScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={pipStyles.scrollContent}
       >
+        {/* 🆕 热门话题横滑区 */}
+        {!isSearching && renderHotTopics()}
+        
         {filteredAndSortedPosts.length === 0 ? (
           renderEmptyState()
         ) : (
@@ -2555,6 +2656,27 @@ const pipStyles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingTop: 10,
   },
+  // 🆕 话题标签样式
+  topicTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingTop: 8,
+  },
+  topicTag: {
+    backgroundColor: '#f0fdf4',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: '#86efac',
+  },
+  topicTagText: {
+    fontSize: 11,
+    color: '#16a34a',
+    fontWeight: '600',
+  },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2639,11 +2761,15 @@ const pipStyles = StyleSheet.create({
     color: '#6B7280',
     maxWidth: 60,
   },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   likeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingLeft: 8,
   },
   likeCount: {
     fontSize: 12,
@@ -2652,6 +2778,68 @@ const pipStyles = StyleSheet.create({
   },
   likeCountActive: {
     color: '#EF4444',
+  },
+  // 🆕 "生成同款"按钮样式
+  sameStyleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#f0fdf4',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: '#86efac',
+  },
+  sameStyleText: {
+    fontSize: 11,
+    color: '#16a34a',
+    fontWeight: '600',
+  },
+  // 🆕 热门话题横滑区样式
+  hotTopicsSection: {
+    marginBottom: 12,
+    backgroundColor: '#fff',
+  },
+  hotTopicsHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  hotTopicsTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  hotTopicsScroll: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    gap: 8,
+  },
+  hotTopicChip: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  hotTopicName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  hotTopicCount: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    fontWeight: '500',
   },
   // 预览评论样式
   commentsPreview: {
