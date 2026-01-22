@@ -19,11 +19,6 @@ export default function ProfileScreen() {
   const { pendingRequestsCount, privacySettings, updatePrivacySettings } = useFriends();
   const { showAlert } = useAlert();
   const { outfitChangeHistory } = useVerification();
-  const [phone, setPhone] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [codeSent, setCodeSent] = useState(false);
-  const [countdown, setCountdown] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showVisibilityModal, setShowVisibilityModal] = useState(false);
   const [showTimeRangeModal, setShowTimeRangeModal] = useState(false);
@@ -34,95 +29,6 @@ export default function ProfileScreen() {
     await changeLanguage(lang);
     setShowLanguageModal(false);
   };
-
-  const handleSendCode = async () => {
-    if (!phone || phone.length !== 11) {
-      showAlert({
-        type: 'info',
-        message: t('profile.invalidPhone')
-      });
-      return;
-    }
-
-    setCodeSent(true);
-    setCountdown(60);
-    
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    showAlert({
-      type: 'success',
-      title: t('profile.codeSent'),
-      message: t('profile.demoCode')
-    });
-  };
-
-  const handleLogin = useCallback(async () => {
-    if (!phone || !verificationCode) {
-      showAlert({
-        type: 'info',
-        message: t('profile.invalidCode')
-      });
-      return;
-    }
-
-    if (verificationCode !== '123456') {
-      showAlert({
-        type: 'error',
-        message: t('profile.wrongCode')
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await login(phone);
-      showAlert({
-        type: 'success',
-        message: t('profile.loginSuccess')
-      });
-      setPhone('');
-      setVerificationCode('');
-      setCodeSent(false);
-    } catch {
-      showAlert({
-        type: 'error',
-        message: t('profile.loginFailed')
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [phone, verificationCode, login, t]);
-
-  const lastAutoLoginKeyRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    const isComplete = verificationCode.length === 6 && phone.length === 11;
-    const key = `${phone}:${verificationCode}`;
-
-    if (!isComplete) {
-      lastAutoLoginKeyRef.current = null;
-      return;
-    }
-
-    if (isSubmitting) {
-      return;
-    }
-
-    if (lastAutoLoginKeyRef.current === key) {
-      return;
-    }
-
-    lastAutoLoginKeyRef.current = key;
-    handleLogin();
-  }, [verificationCode, phone, isSubmitting, handleLogin]);
 
   const handleLogout = () => {
     showAlert({
@@ -471,86 +377,7 @@ export default function ProfileScreen() {
             </LinearGradient>
           </View>
 
-          {/* 保留原有的手机号登录（作为快捷登录） */}
-          <View style={styles.loginHero}>
-            <View style={styles.loginHeroContent}>
-              <View style={styles.loginIconWrapper}>
-                <User size={40} color="#1a1a1a" strokeWidth={2} />
-              </View>
-              <Text style={styles.loginHeroTitle}>{t('profile.phoneLogin')}</Text>
-              <Text style={styles.loginHeroSubtitle}>{currentLanguage === 'zh' ? '快速登录' : 'Quick Login'}</Text>
-            </View>
-          </View>
-
-          <View style={styles.content}>
-            <View style={styles.form}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>{t('profile.phone')}</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder={t('profile.phonePlaceholder')}
-                  keyboardType="phone-pad"
-                  inputMode="tel"
-                  maxLength={11}
-                  value={phone}
-                  onChangeText={setPhone}
-                  editable={true}
-                  selectTextOnFocus={true}
-                  autoComplete={Platform.OS === 'web' ? 'tel' : 'off'}
-                  placeholderTextColor="#94a3b8"
-                  keyboardAppearance="light"
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>{t('profile.verificationCode')}</Text>
-                <View style={styles.codeRow}>
-                  <TextInput
-                    style={[styles.input, styles.codeInput]}
-                    placeholder={t('profile.verificationCodePlaceholder')}
-                    keyboardType="number-pad"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={verificationCode}
-                    onChangeText={setVerificationCode}
-                    editable={true}
-                    selectTextOnFocus={true}
-                    autoComplete={Platform.OS === 'web' ? 'one-time-code' : 'off'}
-                    placeholderTextColor="#94a3b8"
-                    keyboardAppearance="light"
-                  />
-                  <TouchableOpacity
-                    style={[styles.sendCodeButton, (countdown > 0) && styles.sendCodeButtonDisabled]}
-                    onPress={handleSendCode}
-                    disabled={countdown > 0}
-                  >
-                    <Text style={[styles.sendCodeButtonText, (countdown > 0) && styles.sendCodeButtonTextDisabled]}>
-                      {countdown > 0 ? `${countdown}s` : t('profile.sendCode')}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {codeSent && (
-                <View style={styles.tipBox}>
-                  <Text style={styles.tipBoxText}>{t('profile.demoCode')}</Text>
-                </View>
-              )}
-
-              <TouchableOpacity
-                style={[styles.loginButton, isSubmitting && styles.loginButtonDisabled]}
-                onPress={handleLogin}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.loginButtonText}>{t('profile.login')}</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity 
+          <TouchableOpacity 
               style={styles.languageCard}
               onPress={() => setShowLanguageModal(true)}
             >
@@ -673,48 +500,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#667eea',
-  },
-  loginHero: {
-    paddingTop: 20,
-    paddingBottom: 30,
-    paddingHorizontal: 24,
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  loginHeroContent: {
-    alignItems: 'center',
-  },
-  loginIconWrapper: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#f8fafc',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 2,
-  },
-  loginHeroTitle: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#1a1a1a',
-    letterSpacing: -1,
-    marginBottom: 8,
-  },
-  loginHeroSubtitle: {
-    fontSize: 16,
-    color: '#64748b',
-    fontWeight: '600',
-    letterSpacing: 0.5,
   },
   header: {
     alignItems: 'center',
@@ -846,98 +631,6 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#1a1a1a',
     letterSpacing: -1,
-  },
-  form: {
-    marginBottom: 32,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  input: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#1a1a1a',
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-    outlineStyle: 'none' as any,
-    ...(Platform.OS === 'web' && {
-      outlineWidth: 0,
-      cursor: 'text' as any,
-    }),
-  },
-  codeRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  codeInput: {
-    flex: 1,
-  },
-  sendCodeButton: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    paddingHorizontal: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    minWidth: 100,
-    borderWidth: 1.5,
-    borderColor: '#1a1a1a',
-  },
-  sendCodeButtonDisabled: {
-    backgroundColor: '#f8fafc',
-    borderColor: '#e2e8f0',
-  },
-  sendCodeButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1a1a1a',
-  },
-  sendCodeButtonTextDisabled: {
-    color: '#94a3b8',
-  },
-  tipBox: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-    borderStyle: 'dashed',
-  },
-  tipBoxText: {
-    fontSize: 14,
-    color: '#64748b',
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  loginButton: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    padding: 18,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  loginButtonDisabled: {
-    backgroundColor: '#f1f5f9',
-  },
-  loginButtonText: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#ffffff',
-    letterSpacing: 0.5,
   },
   coinCard: {
     backgroundColor: '#ffffff',
