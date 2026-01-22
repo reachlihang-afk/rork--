@@ -121,30 +121,106 @@ export default function TimeTravelAlbumScreen() {
     }
   }, []);
 
+  // Web平台图片压缩函数
+  const compressImageWeb = async (blob: Blob, maxWidth: number = 800, quality: number = 0.7): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      if (Platform.OS !== 'web') {
+        resolve(blob);
+        return;
+      }
+      
+      const img = document.createElement('img') as HTMLImageElement;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (newBlob) => {
+            if (newBlob) {
+              resolve(newBlob);
+            } else {
+              reject(new Error('Canvas toBlob failed'));
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(blob);
+    });
+  };
+
   // 压缩并转换图片为Base64
   const convertToBase64 = async (uri: string): Promise<string> => {
-    try {
-      // 先压缩图片
-      const manipResult = await ImageManipulator.manipulateAsync(
-        uri,
-        [{ resize: { width: 800 } }],
-        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
-      );
-      
-      // 转换为Base64
-      const base64 = await FileSystem.readAsStringAsync(manipResult.uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      
-      console.log('[TimeTravelAlbum] Image compressed, base64 length:', base64.length);
-      return base64;
-    } catch (error) {
-      console.error('[TimeTravelAlbum] Compression error:', error);
-      // 压缩失败时直接转换
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      return base64;
+    if (Platform.OS === 'web') {
+      try {
+        console.log('[TimeTravelAlbum] Converting web image:', uri.substring(0, 100));
+        const response = await fetch(uri);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status}`);
+        }
+        let blob = await response.blob();
+        console.log('[TimeTravelAlbum] Original blob size:', blob.size, 'bytes');
+        
+        // 压缩图片
+        const maxWidth = 800;
+        const quality = 0.7;
+        blob = await compressImageWeb(blob, maxWidth, quality);
+        console.log('[TimeTravelAlbum] After compression:', blob.size, 'bytes');
+        
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = reader.result as string;
+            const base64Data = base64.split(',')[1];
+            console.log('[TimeTravelAlbum] Conversion complete, base64 size:', Math.round(base64Data.length / 1024), 'KB');
+            resolve(base64Data);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch (error) {
+        console.error('[TimeTravelAlbum] Web conversion error:', error);
+        throw new Error('图片转换失败，请重新选择图片');
+      }
+    } else {
+      // Native平台
+      try {
+        const manipResult = await ImageManipulator.manipulateAsync(
+          uri,
+          [{ resize: { width: 800 } }],
+          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        
+        const base64 = await FileSystem.readAsStringAsync(manipResult.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
+        console.log('[TimeTravelAlbum] Image compressed, base64 length:', base64.length);
+        return base64;
+      } catch (error) {
+        console.error('[TimeTravelAlbum] Native compression error:', error);
+        const base64 = await FileSystem.readAsStringAsync(uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        return base64;
+      }
     }
   };
 
