@@ -1,18 +1,20 @@
 import { Tabs, useRouter } from "expo-router";
-import { Home, Clock, User, ArrowLeft, Grid3x3 } from "lucide-react-native";
+import { Home, Clock, User, ArrowLeft, Grid3x3, Bell } from "lucide-react-native";
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { TouchableOpacity, Text, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useCoin } from "@/contexts/CoinContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/contexts/NotificationContext";
 
-// 首页header右侧的钻石组件
-function HeaderCoinBadge() {
+// 首页header右侧组件（通知+钻石）
+function HeaderRightSection() {
   const { coinBalance } = useCoin();
   const { isLoggedIn } = useAuth();
+  const { unreadCount } = useNotifications();
   const router = useRouter();
 
-  const handlePress = () => {
+  const handleCoinPress = () => {
     if (isLoggedIn) {
       router.push('/recharge' as any);
     } else {
@@ -20,18 +22,81 @@ function HeaderCoinBadge() {
     }
   };
 
+  const handleNotificationPress = () => {
+    if (isLoggedIn) {
+      router.push('/notifications' as any);
+    } else {
+      router.push('/(tabs)/profile' as any);
+    }
+  };
+
   return (
-    <TouchableOpacity
-      style={headerStyles.coinBadge}
-      onPress={handlePress}
-      activeOpacity={0.7}
-    >
-      <Text style={headerStyles.coinText}>💎 {coinBalance}</Text>
-    </TouchableOpacity>
+    <View style={headerStyles.headerRightContainer}>
+      {/* 通知图标 */}
+      {isLoggedIn && (
+        <TouchableOpacity
+          style={headerStyles.notificationButton}
+          onPress={handleNotificationPress}
+          activeOpacity={0.7}
+        >
+          <Bell size={20} color="#475569" />
+          {unreadCount > 0 && (
+            <View style={headerStyles.notificationBadge}>
+              <Text style={headerStyles.notificationBadgeText}>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      )}
+      
+      {/* 钻石余额 */}
+      <TouchableOpacity
+        style={headerStyles.coinBadge}
+        onPress={handleCoinPress}
+        activeOpacity={0.7}
+      >
+        <Text style={headerStyles.coinText}>💎 {coinBalance}</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const headerStyles = StyleSheet.create({
+  headerRightContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginRight: 16,
+  },
+  notificationButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    minWidth: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: '#fff',
+  },
+  notificationBadgeText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
   coinBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -39,7 +104,6 @@ const headerStyles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    marginRight: 16,
   },
   coinText: {
     fontSize: 13,
@@ -86,7 +150,7 @@ export default function TabLayout() {
         options={{
           title: t('home.title'),
           tabBarIcon: ({ color }) => <Home size={22} color={color} strokeWidth={2} />,
-          headerRight: () => <HeaderCoinBadge />,
+          headerRight: () => <HeaderRightSection />,
         }}
       />
       <Tabs.Screen

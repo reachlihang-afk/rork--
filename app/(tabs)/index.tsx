@@ -1,12 +1,11 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Heart, Sparkles, Users, Bell, User } from 'lucide-react-native';
+import { Heart, Sparkles, Users, User } from 'lucide-react-native';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSquare } from '@/contexts/SquareContext';
 import { useFriends, formatNumber } from '@/contexts/FriendsContext';
-import { useNotifications } from '@/contexts/NotificationContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo, useState, useEffect } from 'react';
 
@@ -26,7 +25,6 @@ export default function HomeScreen() {
   const { user, isLoggedIn } = useAuth();
   const { posts } = useSquare();
   const { isFollowing, followUser, getFollowersCount } = useFriends();
-  const { unreadCount } = useNotifications();
   
   const [topCreators, setTopCreators] = useState<TopCreator[]>([]);
 
@@ -227,30 +225,6 @@ export default function HomeScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* 顶部通知入口 */}
-        {isLoggedIn && (
-          <TouchableOpacity
-            style={styles.notificationBar}
-            onPress={() => router.push('/notifications' as any)}
-          >
-            <View style={styles.notificationIconContainer}>
-              <Bell size={20} color="#1a1a1a" />
-              {unreadCount > 0 && (
-                <View style={styles.notificationBadge}>
-                  <Text style={styles.notificationBadgeText}>
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </Text>
-                </View>
-              )}
-            </View>
-            <Text style={styles.notificationText}>
-              {unreadCount > 0 
-                ? t('notifications.title') + ` (${unreadCount})` 
-                : t('notifications.title')}
-            </Text>
-          </TouchableOpacity>
-        )}
-
         {/* Hero Card */}
         <TouchableOpacity 
           style={styles.heroCard}
@@ -615,48 +589,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#475569',
-  },
-
-  // 通知入口
-  notificationBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 16,
-    gap: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  notificationIconContainer: {
-    position: 'relative',
-  },
-  notificationBadge: {
-    position: 'absolute',
-    top: -6,
-    right: -8,
-    backgroundColor: '#EF4444',
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  notificationBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  notificationText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#1a1a1a',
   },
 
   // 热门创作者
