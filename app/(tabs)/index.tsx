@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Heart, Sparkles, Users, User } from 'lucide-react-native';
+import { Heart, Sparkles, Users, User, Wand2 } from 'lucide-react-native';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
@@ -269,6 +269,108 @@ export default function HomeScreen() {
             </View>
           </LinearGradient>
         </TouchableOpacity>
+
+        {/* 创意玩法区域 */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleRow}>
+              <Wand2 size={18} color="#8b5cf6" strokeWidth={2.5} />
+              <Text style={styles.sectionTitle}>{t('home.creativePlayground')}</Text>
+            </View>
+          </View>
+          
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.creativeScrollContent}
+          >
+            {/* 反差萌挑战 */}
+            <TouchableOpacity
+              style={styles.creativeCard}
+              onPress={() => router.push('/contrast-challenge' as any)}
+              activeOpacity={0.9}
+            >
+              <LinearGradient
+                colors={['#1a1a2e', '#16213e']}
+                style={styles.creativeCardGradient}
+              >
+                <Text style={styles.creativeCardIcon}>🎭</Text>
+                <Text style={styles.creativeCardTitle}>
+                  {t('home.contrastChallenge')}
+                </Text>
+                <Text style={styles.creativeCardDesc}>
+                  {t('home.contrastChallengeDesc')}
+                </Text>
+                <View style={styles.creativeCardBadge}>
+                  <Text style={styles.creativeCardBadgeText}>HOT</Text>
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* 穿搭DNA */}
+            <TouchableOpacity
+              style={styles.creativeCard}
+              onPress={() => router.push('/style-dna' as any)}
+              activeOpacity={0.9}
+            >
+              <LinearGradient
+                colors={['#7c3aed', '#a855f7']}
+                style={styles.creativeCardGradient}
+              >
+                <Text style={styles.creativeCardIcon}>🧬</Text>
+                <Text style={styles.creativeCardTitle}>
+                  {t('home.styleDNA')}
+                </Text>
+                <Text style={styles.creativeCardDesc}>
+                  {t('home.styleDNADesc')}
+                </Text>
+                <View style={styles.creativeCardBadge}>
+                  <Text style={styles.creativeCardBadgeText}>NEW</Text>
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* 穿越相册 */}
+            <TouchableOpacity
+              style={styles.creativeCard}
+              onPress={() => router.push('/time-travel-album' as any)}
+              activeOpacity={0.9}
+            >
+              <LinearGradient
+                colors={['#0f766e', '#14b8a6']}
+                style={styles.creativeCardGradient}
+              >
+                <Text style={styles.creativeCardIcon}>🕰️</Text>
+                <Text style={styles.creativeCardTitle}>
+                  {t('home.timeTravelAlbum')}
+                </Text>
+                <Text style={styles.creativeCardDesc}>
+                  {t('home.timeTravelAlbumDesc')}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* 如果我是 */}
+            <TouchableOpacity
+              style={styles.creativeCard}
+              onPress={() => router.push('/what-if-i-am' as any)}
+              activeOpacity={0.9}
+            >
+              <LinearGradient
+                colors={['#ea580c', '#f97316']}
+                style={styles.creativeCardGradient}
+              >
+                <Text style={styles.creativeCardIcon}>🌟</Text>
+                <Text style={styles.creativeCardTitle}>
+                  {t('home.whatIfIAm')}
+                </Text>
+                <Text style={styles.creativeCardDesc}>
+                  {t('home.whatIfIAmDesc')}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
 
         {/* Featured Effects - Waterfall */}
         <View style={styles.section}>
@@ -589,6 +691,51 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#475569',
+  },
+
+  // 创意玩法
+  creativeScrollContent: {
+    paddingRight: 16,
+    gap: 12,
+  },
+  creativeCard: {
+    width: 140,
+    height: 160,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  creativeCardGradient: {
+    flex: 1,
+    padding: 14,
+    justifyContent: 'space-between',
+  },
+  creativeCardIcon: {
+    fontSize: 28,
+  },
+  creativeCardTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#fff',
+    marginTop: 8,
+  },
+  creativeCardDesc: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: 4,
+  },
+  creativeCardBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#ef4444',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  creativeCardBadgeText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#fff',
   },
 
   // 热门创作者
