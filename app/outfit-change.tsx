@@ -1564,6 +1564,15 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
               <ArrowLeft size={26} color="#1a1a1a" strokeWidth={2.5} />
             </TouchableOpacity>
           ),
+          headerRight: () => (
+            <TouchableOpacity
+              style={styles.headerCoinBadge}
+              onPress={() => router.push('/recharge')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.headerCoinText}>💎 {coinBalance}</Text>
+            </TouchableOpacity>
+          ),
         }}
       />
 
@@ -1573,24 +1582,6 @@ Create a cutting-edge cyberpunk meets high fashion look. The outfit should appea
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* 钻石余额 - 顶部 */}
-        <TouchableOpacity 
-          style={styles.coinBalanceCard}
-          onPress={() => router.push('/recharge')}
-          activeOpacity={0.7}
-        >
-          <View style={styles.coinBalanceLeft}>
-            <Text style={styles.coinIcon}>💎</Text>
-            <View>
-              <Text style={styles.coinBalanceLabel}>{t('outfitChange.diamondBalance')}</Text>
-              <Text style={styles.coinBalanceValue}>{coinBalance}</Text>
-            </View>
-          </View>
-          <View style={styles.rechargeButton}>
-            <Text style={styles.rechargeButtonText}>{t('profile.recharge')}</Text>
-          </View>
-        </TouchableOpacity>
-
         {/* 公共上传照片区域 - 所有Tab共用 */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -2385,6 +2376,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  // Header钻石余额徽章样式
+  headerCoinBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
+  },
+  headerCoinText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#475569',
   },
   loginRequiredContainer: {
     flex: 1,
