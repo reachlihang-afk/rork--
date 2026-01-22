@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Image as ExpoImage } from 'expo-image';
 import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, RefreshControl, Alert, TextInput, Keyboard, TouchableWithoutFeedback, Platform, KeyboardAvoidingView, Modal, PanResponder, Animated, Dimensions } from 'react-native';
-import { Heart, MessageSquare, Trash2, MoreHorizontal, Pin, X, AlertTriangle, Download, Search, ChevronLeft, Share2, User, Edit3, Star, MessageCircle } from 'lucide-react-native';
+import { Heart, MessageSquare, Trash2, MoreHorizontal, Pin, X, AlertTriangle, Download, Search, ChevronLeft, Share2, User, Edit3, Star, MessageCircle, Users } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSquare, SquarePost, SquareComment } from '@/contexts/SquareContext';
@@ -102,7 +102,7 @@ export default function SquareScreen() {
   const { posts, likePost, deletePost, addComment, deleteComment, pinComment } = useSquare();
   const { user } = useAuth();
   const { showAlert } = useAlert();
-  const { followingUserIds, followUser, unfollowUser, isFollowing } = useFriends();
+  const { followingUserIds, followUser, unfollowUser, isFollowing, getFollowersCount, isMutualFollow } = useFriends();
   const { highlightPostId } = useLocalSearchParams<{ highlightPostId?: string }>();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -120,11 +120,49 @@ export default function SquareScreen() {
   const [expandedIntros, setExpandedIntros] = useState<Set<string>>(new Set());
   const [selectedPost, setSelectedPost] = useState<SquarePost | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [followersCache, setFollowersCache] = useState<Record<string, number>>({});
+  const [mutualCache, setMutualCache] = useState<Record<string, boolean>>({});
   const scrollViewRef = useRef<ScrollView>(null);
   const postRefs = useRef<Map<string, View>>(new Map());
   const inputRef = useRef<TextInput>(null);
   const searchInputRef = useRef<TextInput>(null);
   const insets = useSafeAreaInsets();
+
+  // 批量加载创作者粉丝数（使用缓存避免重复查询）
+  useEffect(() => {
+    const loadFollowersCounts = async () => {
+      const uniqueUserIds = [...new Set(posts.map(p => p.userId))];
+      const newCache: Record<string, number> = {};
+      const newMutualCache: Record<string, boolean> = {};
+      
+      for (const userId of uniqueUserIds) {
+        // 跳过已缓存的
+        if (followersCache[userId] !== undefined) {
+          newCache[userId] = followersCache[userId];
+        } else {
+          const count = await getFollowersCount(userId);
+          newCache[userId] = count;
+        }
+        
+        // 检查互关状态
+        if (user && userId !== user.userId) {
+          if (mutualCache[userId] !== undefined) {
+            newMutualCache[userId] = mutualCache[userId];
+          } else {
+            const mutual = await isMutualFollow(userId);
+            newMutualCache[userId] = mutual;
+          }
+        }
+      }
+      
+      setFollowersCache(prev => ({ ...prev, ...newCache }));
+      setMutualCache(prev => ({ ...prev, ...newMutualCache }));
+    };
+    
+    if (posts.length > 0) {
+      loadFollowersCounts();
+    }
+  }, [posts, user, getFollowersCount, isMutualFollow]);
 
   // 计算帖子的综合分数（热度 + 时间权重）
   const calculateScore = useCallback((post: SquarePost) => {
@@ -565,23 +603,30 @@ export default function SquareScreen() {
               )}
               <Text style={pipStyles.nickname} numberOfLines={1}>{post.userNickname}</Text>
             </TouchableOpacity>
+            {/* 粉丝数显示 */}
+            {followersCache[post.userId] !== undefined && followersCache[post.userId] > 0 && (
+              <View style={pipStyles.followersBadge}>
+                <User size={10} color="#9CA3AF" />
+                <Text style={pipStyles.followersCount}>{followersCache[post.userId]}</Text>
+              </View>
+            )}
+            {/* 互关标识 */}
+            {mutualCache[post.userId] && (
+              <View style={pipStyles.mutualBadge}>
+                <Users size={10} color="#10B981" />
+              </View>
+            )}
             {/* 关注按钮 - 只对非自己的帖子显示 */}
-            {user && post.userId !== user.userId && (
+            {user && post.userId !== user.userId && !isFollowing(post.userId) && (
               <TouchableOpacity
-                style={[
-                  pipStyles.followBadge,
-                  isFollowing(post.userId) && pipStyles.followBadgeActive
-                ]}
+                style={pipStyles.followBadge}
                 onPress={(e) => {
                   e.stopPropagation();
                   handleFollowToggle(post.userId, post.userNickname, post.userAvatar);
                 }}
               >
-                <Text style={[
-                  pipStyles.followBadgeText,
-                  isFollowing(post.userId) && pipStyles.followBadgeTextActive
-                ]}>
-                  {isFollowing(post.userId) ? t('square.following') : t('square.followUser')}
+                <Text style={pipStyles.followBadgeText}>
+                  {t('square.followUser')}
                 </Text>
               </TouchableOpacity>
             )}
@@ -2545,6 +2590,30 @@ const pipStyles = StyleSheet.create({
   },
   followBadgeTextActive: {
     color: '#6B7280',
+  },
+  // 粉丝数标识
+  followersBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+  },
+  followersCount: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: '#9CA3AF',
+  },
+  // 互关标识
+  mutualBadge: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#ECFDF5',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatar: {
     width: 24,

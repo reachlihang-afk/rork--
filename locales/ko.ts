@@ -164,6 +164,7 @@ export default {
     following: '팔로잉',
     followers: '팔로워',
     swaps: '착장',
+    likes: '좋아요',
   },
   verdict: {
     authentic: '사진 일치',

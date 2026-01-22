@@ -164,6 +164,7 @@ export default {
     following: '关注',
     followers: '粉丝',
     swaps: '换装',
+    likes: '获赞',
   },
   verdict: {
     authentic: '照片一致',

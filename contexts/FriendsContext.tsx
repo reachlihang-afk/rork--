@@ -12,6 +12,15 @@ export interface FollowingUser {
   followedAt: string;
 }
 
+// 用户统计数据类型
+export interface UserStats {
+  userId: string;
+  followersCount: number;  // 粉丝数
+  followingCount: number;  // 关注数
+  totalLikes: number;      // 获赞总数
+  postsCount: number;      // 发帖数
+}
+
 export const [FriendsContext, useFriends] = createContextHook(() => {
   const { user } = useAuth();
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -344,6 +353,104 @@ export const [FriendsContext, useFriends] = createContextHook(() => {
   // 获取关注列表中的用户ID数组
   const followingUserIds = following.map(f => f.userId);
 
+  // 获取用户的粉丝数（被多少人关注）
+  const getFollowersCount = useCallback(async (targetUserId: string): Promise<number> => {
+    try {
+      // 获取所有用户
+      const usersKey = 'all_users';
+      const stored = await AsyncStorage.getItem(usersKey);
+      const allUsers: { userId: string }[] = stored ? JSON.parse(stored) : [];
+      
+      let count = 0;
+      
+      // 遍历每个用户，检查他们是否关注了目标用户
+      for (const u of allUsers) {
+        const followingKey = `following_${u.userId}`;
+        const followingData = await AsyncStorage.getItem(followingKey);
+        if (followingData) {
+          const userFollowing: FollowingUser[] = JSON.parse(followingData);
+          if (userFollowing.some(f => f.userId === targetUserId)) {
+            count++;
+          }
+        }
+      }
+      
+      return count;
+    } catch (error) {
+      console.error('Failed to get followers count:', error);
+      return 0;
+    }
+  }, []);
+
+  // 获取用户的关注数
+  const getFollowingCount = useCallback(async (targetUserId: string): Promise<number> => {
+    try {
+      const followingKey = `following_${targetUserId}`;
+      const followingData = await AsyncStorage.getItem(followingKey);
+      if (followingData) {
+        const userFollowing: FollowingUser[] = JSON.parse(followingData);
+        return userFollowing.length;
+      }
+      return 0;
+    } catch (error) {
+      console.error('Failed to get following count:', error);
+      return 0;
+    }
+  }, []);
+
+  // 获取用户完整统计数据
+  const getUserStats = useCallback(async (targetUserId: string): Promise<UserStats> => {
+    const followersCount = await getFollowersCount(targetUserId);
+    const followingCount = await getFollowingCount(targetUserId);
+    
+    // 获取帖子数和获赞数需要从 square_posts 中计算
+    let totalLikes = 0;
+    let postsCount = 0;
+    
+    try {
+      const postsData = await AsyncStorage.getItem('square_posts');
+      if (postsData) {
+        const allPosts = JSON.parse(postsData);
+        const userPosts = allPosts.filter((p: any) => p.userId === targetUserId);
+        postsCount = userPosts.length;
+        totalLikes = userPosts.reduce((sum: number, p: any) => sum + (p.likes?.length || 0), 0);
+      }
+    } catch (error) {
+      console.error('Failed to get posts stats:', error);
+    }
+    
+    return {
+      userId: targetUserId,
+      followersCount,
+      followingCount,
+      totalLikes,
+      postsCount,
+    };
+  }, [getFollowersCount, getFollowingCount]);
+
+  // 检查两个用户是否互相关注
+  const isMutualFollow = useCallback(async (targetUserId: string): Promise<boolean> => {
+    if (!user) return false;
+    
+    // 检查当前用户是否关注了目标用户
+    const iAmFollowing = isFollowing(targetUserId);
+    if (!iAmFollowing) return false;
+    
+    // 检查目标用户是否关注了当前用户
+    try {
+      const followingKey = `following_${targetUserId}`;
+      const followingData = await AsyncStorage.getItem(followingKey);
+      if (followingData) {
+        const targetFollowing: FollowingUser[] = JSON.parse(followingData);
+        return targetFollowing.some(f => f.userId === user.userId);
+      }
+    } catch (error) {
+      console.error('Failed to check mutual follow:', error);
+    }
+    
+    return false;
+  }, [user, isFollowing]);
+
   const getFilteredHistory = useCallback(async (targetUserId: string, allHistory: any[]): Promise<any[]> => {
     const privacyKey = `privacy_settings_${targetUserId}`;
     const privacyData = await AsyncStorage.getItem(privacyKey);
@@ -387,5 +494,10 @@ export const [FriendsContext, useFriends] = createContextHook(() => {
     followUser,
     unfollowUser,
     isFollowing,
+    // 新增粉丝数统计方法
+    getFollowersCount,
+    getFollowingCount,
+    getUserStats,
+    isMutualFollow,
   };
 });

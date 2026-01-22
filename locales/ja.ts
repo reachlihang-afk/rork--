@@ -164,6 +164,7 @@ export default {
     following: 'フォロー中',
     followers: 'フォロワー',
     swaps: '着せ替え',
+    likes: 'いいね',
   },
   verdict: {
     authentic: '写真一致',

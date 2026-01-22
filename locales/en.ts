@@ -164,6 +164,7 @@ export default {
     following: 'Following',
     followers: 'Followers',
     swaps: 'Swaps',
+    likes: 'Likes',
   },
   verdict: {
     authentic: 'Photo Matches',

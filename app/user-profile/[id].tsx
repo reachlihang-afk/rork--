@@ -12,9 +12,9 @@ import {
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, MoreHorizontal, User, MessageCircle } from 'lucide-react-native';
+import { ArrowLeft, MoreHorizontal, User, MessageCircle, Users } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
-import { useFriends } from '@/contexts/FriendsContext';
+import { useFriends, UserStats } from '@/contexts/FriendsContext';
 import { useSquare, SquarePost } from '@/contexts/SquareContext';
 import { useAlert } from '@/contexts/AlertContext';
 import { useTranslation } from 'react-i18next';
@@ -39,11 +39,13 @@ export default function UserProfileScreen() {
   const { id: userId } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const { isFollowing, followUser, unfollowUser } = useFriends();
+  const { isFollowing, followUser, unfollowUser, getUserStats, isMutualFollow } = useFriends();
   const { posts } = useSquare();
   const { showAlert } = useAlert();
   
   const [profileUser, setProfileUser] = useState<ProfileUser | null>(null);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [isMutual, setIsMutual] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
 
@@ -52,7 +54,7 @@ export default function UserProfileScreen() {
     return posts.filter(p => p.userId === userId);
   }, [posts, userId]);
 
-  // 加载用户资料
+  // 加载用户资料和统计数据
   const loadUserProfile = useCallback(async () => {
     try {
       // 从 all_users 存储中查找用户
@@ -78,12 +80,22 @@ export default function UserProfileScreen() {
           });
         }
       }
+      
+      // 加载用户统计数据（真实的粉丝数/关注数）
+      if (typeof userId === 'string') {
+        const stats = await getUserStats(userId);
+        setUserStats(stats);
+        
+        // 检查是否互相关注
+        const mutual = await isMutualFollow(userId);
+        setIsMutual(mutual);
+      }
     } catch (error) {
       console.error('Failed to load user profile:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [userId, posts]);
+  }, [userId, posts, getUserStats, isMutualFollow]);
 
   useEffect(() => {
     loadUserProfile();
@@ -103,6 +115,7 @@ export default function UserProfileScreen() {
           title: t('common.success'),
           message: t('square.unfollowed'),
         });
+        setIsMutual(false);
       } else {
         await followUser(profileUser.userId, profileUser.nickname, profileUser.avatar);
         showAlert({
@@ -110,7 +123,14 @@ export default function UserProfileScreen() {
           title: t('common.success'),
           message: t('square.followed'),
         });
+        // 检查是否变成互关
+        const mutual = await isMutualFollow(profileUser.userId);
+        setIsMutual(mutual);
       }
+      
+      // 重新加载统计数据
+      const stats = await getUserStats(profileUser.userId);
+      setUserStats(stats);
     } catch (error: any) {
       console.error('Follow toggle error:', error);
       showAlert({
@@ -265,19 +285,19 @@ export default function UserProfileScreen() {
             <Text style={styles.bio}>{profileUser.bio}</Text>
           )}
 
-          {/* 统计数据 */}
+          {/* 统计数据 - 使用真实数据 */}
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{profileUser.followingCount || 0}</Text>
+              <Text style={styles.statNumber}>{userStats?.followingCount || 0}</Text>
               <Text style={styles.statLabel}>{t('profile.following')}</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{profileUser.followersCount || 0}</Text>
+              <Text style={styles.statNumber}>{userStats?.followersCount || 0}</Text>
               <Text style={styles.statLabel}>{t('profile.followers')}</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{userPosts.length}</Text>
-              <Text style={styles.statLabel}>{t('profile.swaps')}</Text>
+              <Text style={styles.statNumber}>{userStats?.totalLikes || 0}</Text>
+              <Text style={styles.statLabel}>{t('profile.likes')}</Text>
             </View>
           </View>
 
@@ -288,6 +308,7 @@ export default function UserProfileScreen() {
                 style={[
                   styles.followButton,
                   following && styles.followingButton,
+                  isMutual && styles.mutualButton,
                 ]}
                 onPress={handleFollowToggle}
                 disabled={isFollowLoading}
@@ -296,12 +317,15 @@ export default function UserProfileScreen() {
                 {isFollowLoading ? (
                   <ActivityIndicator size="small" color={following ? '#1a1a1a' : '#fff'} />
                 ) : (
-                  <Text style={[
-                    styles.followButtonText,
-                    following && styles.followingButtonText,
-                  ]}>
-                    {following ? t('userProfile.following') : t('userProfile.follow')}
-                  </Text>
+                  <View style={styles.followButtonContent}>
+                    {isMutual && <Users size={16} color="#1a1a1a" strokeWidth={2} style={{ marginRight: 6 }} />}
+                    <Text style={[
+                      styles.followButtonText,
+                      following && styles.followingButtonText,
+                    ]}>
+                      {isMutual ? t('userProfile.mutualFollow') : (following ? t('userProfile.following') : t('userProfile.follow'))}
+                    </Text>
+                  </View>
                 )}
               </TouchableOpacity>
               
@@ -508,6 +532,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderWidth: 1.5,
     borderColor: '#e5e7eb',
+  },
+  mutualButton: {
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1.5,
+    borderColor: '#86efac',
+  },
+  followButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   followButtonText: {
     fontSize: 15,
