@@ -2567,8 +2567,8 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   starCardSelected: {
-    backgroundColor: '#fef3c7',
-    borderColor: '#f59e0b',
+    backgroundColor: '#f0fdf4',
+    borderColor: '#22c55e',
   },
   starIcon: {
     fontSize: 28,
@@ -2581,7 +2581,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   starNameSelected: {
-    color: '#d97706',
+    color: '#16a34a',
     fontWeight: '600',
   },
   
@@ -2601,8 +2601,8 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   movieCardSelected: {
-    backgroundColor: '#ede9fe',
-    borderColor: '#8b5cf6',
+    backgroundColor: '#f0fdf4',
+    borderColor: '#22c55e',
   },
   movieHotBadge: {
     position: 'absolute',
@@ -2636,7 +2636,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   movieNameSelected: {
-    color: '#7c3aed',
+    color: '#16a34a',
   },
   movieSubtitle: {
     fontSize: 12,
