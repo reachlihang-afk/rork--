@@ -106,7 +106,8 @@ const CAREER_OPTIONS = [
   },
 ];
 
-const QUALITY_SUFFIX = '. Professional photography, cinematic lighting, highly detailed, 4K quality, magazine cover worthy';
+const COMMON_PROMPT_PREFIX = 'IMPORTANT: Keep face, facial expression, hairstyle, pose, and photo framing EXACTLY as in original. Only change clothing in the EXACT visible areas. If only partial clothing is visible, apply only to that partial area. Do NOT extend or complete the image. ';
+const QUALITY_SUFFIX = '. High-end designer quality, premium luxurious fabrics with beautiful texture and drape, impeccable tailoring with perfect fit, sophisticated color palette, elegant refined details, professional fashion editorial photography quality';
 
 export default function WhatIfIAmScreen() {
   const { t } = useTranslation();
@@ -193,7 +194,7 @@ export default function WhatIfIAmScreen() {
 
     try {
       const base64Image = await convertToBase64(userImage);
-      const prompt = selectedCareer.prompt + QUALITY_SUFFIX;
+      const prompt = COMMON_PROMPT_PREFIX + 'Change the outfit to: ' + selectedCareer.prompt + QUALITY_SUFFIX;
 
       const requestBody = {
         prompt,

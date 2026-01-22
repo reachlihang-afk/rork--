@@ -106,8 +106,8 @@ const CONTRAST_PAIRS = [
   },
 ];
 
-const COMMON_PROMPT_PREFIX = 'Transform this person into ';
-const QUALITY_SUFFIX = '. High-end fashion photography quality, professional lighting, beautiful composition, 4K detailed';
+const COMMON_PROMPT_PREFIX = 'IMPORTANT: Keep face, facial expression, hairstyle, pose, and photo framing EXACTLY as in original. Only change clothing in the EXACT visible areas. If only partial clothing is visible, apply only to that partial area. Do NOT extend or complete the image. ';
+const QUALITY_SUFFIX = '. High-end designer quality, premium luxurious fabrics with beautiful texture and drape, impeccable tailoring with perfect fit, sophisticated color palette, elegant refined details, professional fashion editorial photography quality';
 
 export default function ContrastChallengeScreen() {
   const { t } = useTranslation();
@@ -180,7 +180,7 @@ export default function ContrastChallengeScreen() {
 
   // 生成单个风格
   const generateStyle = async (style: typeof CONTRAST_PAIRS[0]['styleA'], base64Image: string): Promise<string> => {
-    const prompt = COMMON_PROMPT_PREFIX + style.prompt + QUALITY_SUFFIX;
+    const prompt = COMMON_PROMPT_PREFIX + 'Change the outfit to: ' + style.prompt + QUALITY_SUFFIX;
     
     const requestBody = {
       prompt,

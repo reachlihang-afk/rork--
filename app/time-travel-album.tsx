@@ -90,8 +90,8 @@ const HISTORICAL_SCENES = [
   },
 ];
 
-const COMMON_PROMPT_PREFIX = '';
-const QUALITY_SUFFIX = '. Cinematic photography, dramatic lighting, highly detailed, professional quality, 4K resolution';
+const COMMON_PROMPT_PREFIX = 'IMPORTANT: Keep face, facial expression, hairstyle, pose, and photo framing EXACTLY as in original. Only change clothing in the EXACT visible areas. If only partial clothing is visible, apply only to that partial area. Do NOT extend or complete the image. ';
+const QUALITY_SUFFIX = '. High-end designer quality, premium luxurious fabrics with beautiful texture and drape, impeccable tailoring with perfect fit, sophisticated color palette, elegant refined details, professional fashion editorial photography quality, cinematic photography, dramatic lighting, highly detailed';
 
 export default function TimeTravelAlbumScreen() {
   const { t } = useTranslation();
@@ -178,7 +178,7 @@ export default function TimeTravelAlbumScreen() {
 
     try {
       const base64Image = await convertToBase64(userImage);
-      const prompt = COMMON_PROMPT_PREFIX + selectedScene.prompt + QUALITY_SUFFIX;
+      const prompt = COMMON_PROMPT_PREFIX + 'Change the outfit to: ' + selectedScene.prompt + QUALITY_SUFFIX;
 
       const requestBody = {
         prompt,
