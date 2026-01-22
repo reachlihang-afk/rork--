@@ -202,12 +202,30 @@ export default function ContrastChallengeScreen() {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[ContrastChallenge] API Error:', response.status, errorText);
-      throw new Error(`Generation failed: ${response.status}`);
+      
+      if (response.status === 413) {
+        throw new Error('图片数据过大，请选择更小的照片');
+      }
+      
+      if (response.status === 422) {
+        throw new Error('该风格暂时无法处理，请更换照片或选择其他风格');
+      }
+      
+      throw new Error(`生成失败: HTTP ${response.status}`);
     }
 
     const data = await response.json();
     console.log('[ContrastChallenge] API response data:', JSON.stringify(data).substring(0, 200));
-    return data.images?.[0]?.url || data.output?.[0]?.url || data.image;
+    
+    if (!data.image || !data.image.base64Data) {
+      console.error('[ContrastChallenge] Invalid response data:', data);
+      throw new Error('生成失败: 服务器返回数据格式错误');
+    }
+
+    const generatedImageBase64 = data.image.base64Data;
+    const generatedImageUri = `data:${data.image.mimeType};base64,${generatedImageBase64}`;
+    
+    return generatedImageUri;
   };
 
   // 开始生成对比图
