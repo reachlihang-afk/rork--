@@ -180,25 +180,32 @@ export default function TimeTravelAlbumScreen() {
       const base64Image = await convertToBase64(userImage);
       const prompt = COMMON_PROMPT_PREFIX + selectedScene.prompt + QUALITY_SUFFIX;
 
-      const response = await fetch('https://api.rfrm.app/v1/images/generations', {
+      const requestBody = {
+        prompt,
+        images: [{ type: 'image', image: base64Image }],
+        aspectRatio: '3:4',
+      };
+
+      console.log('[TimeTravelAlbum] Sending request to API...');
+      const response = await fetch('https://toolkit.rork.com/images/edit/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer rk-9IkXUdcuC9ET9p6xVgJv5nW67cXUmyPqzUkVAwlpLdc',
         },
-        body: JSON.stringify({
-          prompt,
-          images: [{ type: 'image', image: base64Image }],
-          aspectRatio: '3:4',
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      console.log('[TimeTravelAlbum] API response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Generation failed');
+        const errorText = await response.text();
+        console.error('[TimeTravelAlbum] API Error:', response.status, errorText);
+        throw new Error(`Generation failed: ${response.status}`);
       }
 
       const data = await response.json();
-      const resultUrl = data.images?.[0]?.url || data.output?.[0]?.url;
+      console.log('[TimeTravelAlbum] API response data:', JSON.stringify(data).substring(0, 200));
+      const resultUrl = data.images?.[0]?.url || data.output?.[0]?.url || data.image;
       
       setResult(resultUrl);
       await useOutfitChange();
