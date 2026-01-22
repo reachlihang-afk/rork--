@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCoin } from '@/contexts/CoinContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -135,12 +136,31 @@ export default function WhatIfIAmScreen() {
     }
   }, []);
 
-  // 转换图片为Base64
+  // 压缩并转换图片为Base64
   const convertToBase64 = async (uri: string): Promise<string> => {
-    const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-    return base64;
+    try {
+      // 先压缩图片
+      const manipResult = await ImageManipulator.manipulateAsync(
+        uri,
+        [{ resize: { width: 800 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
+      
+      // 转换为Base64
+      const base64 = await FileSystem.readAsStringAsync(manipResult.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      
+      console.log('[WhatIfIAm] Image compressed, base64 length:', base64.length);
+      return base64;
+    } catch (error) {
+      console.error('[WhatIfIAm] Compression error:', error);
+      // 压缩失败时直接转换
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      return base64;
+    }
   };
 
   // 生成职业照片
